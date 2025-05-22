@@ -1,6 +1,6 @@
 import express from 'express';
-import { getAllReservations, getReservationsByDateRange, insertReservation } from '../utils/mongodb';
-import { Reservation } from '../models/Reservation';
+import { getAllReservations, getReservationsByDateRange, insertReservation } from '../utils/mongodb.js';
+import { Reservation } from '../models/Reservation.js';
 
 const router = express.Router();
 
@@ -25,8 +25,8 @@ router.get('/range', async (req, res) => {
             return res.status(400).json({ error: 'Start date and end date are required' });
         }
 
-        const start = new Date(startDate as string);
-        const end = new Date(endDate as string);
+        const start = new Date(startDate);
+        const end = new Date(endDate);
 
         if (isNaN(start.getTime()) || isNaN(end.getTime())) {
             return res.status(400).json({ error: 'Invalid date format' });
@@ -43,7 +43,7 @@ router.get('/range', async (req, res) => {
 // Create a new reservation
 router.post('/', async (req, res) => {
     try {
-        const reservationData: Reservation = req.body;
+        const reservationData = req.body;
 
         // Validate required fields
         if (!reservationData.name || !reservationData.size || !reservationData.startTime || !reservationData.endTime) {

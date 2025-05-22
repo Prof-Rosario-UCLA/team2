@@ -1,5 +1,5 @@
-import { Reservation } from '../models/Reservation';
-import { WalkIn } from '../models/WalkIn';
+import { Reservation } from '../models/Reservation.js';
+import { WalkIn } from '../models/WalkIn.js';
 import mongoose from 'mongoose';
 
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/restaurant_db';
@@ -15,7 +15,7 @@ export const connectDB = async () => {
     }
 };
 
-export async function insertReservation(reservationData: Partial<Reservation>) {
+export async function insertReservation(reservationData) {
     try {
         const reservation = new Reservation(reservationData);
         const savedReservation = await reservation.save();
@@ -50,7 +50,7 @@ export async function getAllWalkIns() {
     }
 }
 
-export async function getReservationsByDateRange(startDate: Date, endDate: Date) {
+export async function getReservationsByDateRange(startDate, endDate) {
     try {
         const reservations = await Reservation.find({
             startTime: {
@@ -67,7 +67,7 @@ export async function getReservationsByDateRange(startDate: Date, endDate: Date)
     }
 }
 
-export async function getWalkInsByDateRange(startDate: Date, endDate: Date) {
+export async function getWalkInsByDateRange(startDate, endDate) {
     try {
         const walkIns = await WalkIn.find({
             timeAddedToWaitlist: {

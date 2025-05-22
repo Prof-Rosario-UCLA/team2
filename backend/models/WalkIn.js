@@ -1,17 +1,5 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
-export interface WalkIn {
-    name: string;
-    phoneNumber: string;
-    tableNum?: number;
-    size: number;
-    timeAddedToWaitlist: Date;
-    startTime?: Date;
-    endTime?: Date;
-    comments?: string;
-    createdAt: Date;
-    updatedAt: Date;
-}
 
 const walkInSchema = new mongoose.Schema({
     name: {
@@ -49,4 +37,4 @@ const walkInSchema = new mongoose.Schema({
 });
 
 
-export const WalkIn = mongoose.model<WalkIn>('WalkIn', walkInSchema); 
+export const WalkIn = mongoose.model('WalkIn', walkInSchema); 
