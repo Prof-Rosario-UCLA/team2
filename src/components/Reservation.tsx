@@ -9,15 +9,25 @@ import {
   Select,
   Textarea,
 } from "@mantine/core";
+// import { DatePicker } from '@mantine/dates';
+// import { TimeInput } from '@mantine/dates';
 import { useForm } from "@mantine/form";
+import "../styles/Reservation.scss";
 
-function ReservationForm() {
+function ReservationForm({ onClose }: { onClose: () => void }) {
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
+  const formLabelFontSize = "1.3rem";
+  const inputStyles = {
+    width: "300px",
+    height: "2rem",
+  };
+
   const form = useForm({
     initialValues: {
-      name: "",
+      firstname: "",
+      lastname: "",
       email: "",
       phone: "",
       date: null,
@@ -27,8 +37,14 @@ function ReservationForm() {
     },
 
     validate: {
-      name: (value: string) =>
-        value.trim().length < 2 ? "Name must be at least 2 characters" : null,
+      firstname: (value: string) =>
+        value.trim().length < 2
+          ? "First name must be at least 2 characters"
+          : null,
+      lastname: (value: string) =>
+        value.trim().length < 2
+          ? "Last name must be at least 2 characters"
+          : null,
       email: (value: string) =>
         /^\S+@\S+$/.test(value) ? null : "Invalid email",
       phone: (value: string) =>
@@ -82,35 +98,95 @@ function ReservationForm() {
   }
 
   return (
-    <Box style={{ maxWidth: 500, color: "black" }} mx="auto" my="xl">
-      <Title order={2} mb="md">
+    <Box
+      style={{
+        maxWidth: "50%",
+        height: "80%",
+        color: "black",
+        backgroundColor: "red",
+        paddingTop: "30px",
+        boxSizing: "border-box",
+      }}
+      mx="auto"
+    >
+      <Title order={2} mb="md" ta="center" mt="0">
         Make a Reservation
       </Title>
 
-      <form onSubmit={form.onSubmit(handleSubmit)}>
-        <TextInput
-          label="Name"
-          placeholder="Your full name"
-          required
-          mb="md"
-          {...form.getInputProps("name")}
-        />
+      <button className="close-button" onClick={onClose}>
+        X
+      </button>
 
-        <TextInput
-          label="Email"
-          placeholder="your@email.com"
-          required
-          mb="md"
-          {...form.getInputProps("email")}
-        />
+      <form
+        onSubmit={form.onSubmit(handleSubmit)}
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "flex-start",
+        }}
+        className="form"
+      >
+        <div className="contact-container">
+          <TextInput
+            label="First Name"
+            placeholder="Your first name"
+            required
+            mb="md"
+            labelProps={{
+              style: {
+                textAlign: "flex-start",
+                fontSize: formLabelFontSize,
+              },
+            }}
+            styles={{ input: inputStyles }}
+            {...form.getInputProps("firstname")}
+          />
 
-        <TextInput
-          label="Phone"
-          placeholder="Your phone number"
-          required
-          mb="md"
-          {...form.getInputProps("phone")}
-        />
+          <TextInput
+            label="Last Name"
+            placeholder="Your last name"
+            required
+            mb="md"
+            labelProps={{
+              style: {
+                textAlign: "flex-start",
+                fontSize: formLabelFontSize,
+              },
+            }}
+            styles={{ input: inputStyles }}
+            {...form.getInputProps("lastname")}
+          />
+
+          <TextInput
+            label="Email"
+            placeholder="your@email.com"
+            required
+            mb="md"
+            labelProps={{
+              style: {
+                textAlign: "flex-start",
+                fontSize: formLabelFontSize,
+              },
+            }}
+            styles={{ input: inputStyles }}
+            {...form.getInputProps("email")}
+          />
+
+          <TextInput
+            label="Phone"
+            placeholder="Your phone number"
+            required
+            mb="md"
+            labelProps={{
+              style: {
+                textAlign: "flex-start",
+                fontSize: formLabelFontSize,
+              },
+            }}
+            styles={{ input: inputStyles }}
+            {...form.getInputProps("phone")}
+          />
+        </div>
 
         {/* <Group grow mb="md">
           <DatePicker
@@ -135,6 +211,13 @@ function ReservationForm() {
           min={1}
           max={20}
           mb="md"
+          labelProps={{
+            style: {
+              textAlign: "flex-start",
+              fontSize: formLabelFontSize,
+            },
+          }}
+          styles={{ input: inputStyles }}
           {...form.getInputProps("partySize")}
         />
 
@@ -142,14 +225,27 @@ function ReservationForm() {
           label="Special Requests"
           placeholder="Any special requests or notes"
           mb="xl"
+          labelProps={{
+            style: {
+              textAlign: "flex-start",
+              fontSize: formLabelFontSize,
+            },
+          }}
+          styles={{
+            input: {
+              ...inputStyles,
+              width: "100%",
+            },
+          }}
+          style={{ width: "100%" }}
           {...form.getInputProps("specialRequests")}
         />
 
-        <Group justify="flex-end">
-          <Button type="submit" loading={loading}>
+        <div className="submit-container">
+          <Button type="submit" loading={loading} className="submit-button">
             Submit Reservation
           </Button>
-        </Group>
+        </div>
       </form>
     </Box>
   );

@@ -1,14 +1,27 @@
 import React from "react";
-import { Button, Text, Group } from "@mantine/core";
+import { Flex } from "@mantine/core";
 import logo from "./logo.svg";
 import "./App.css";
-import ReservationForm from "./components/Reservation";
+import MainPage from "./components/MainPage";
+import Sidebar from "./components/Sidebar";
+import Navbar from "./components/Navbar";
 
 function App() {
   return (
     <div className="App">
-      <header className="App-header">
-        <ReservationForm />
+      <nav className="navbar">
+        <Navbar />
+      </nav>
+      <header
+        className="App-header"
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 4fr",
+          marginTop: "70px",
+        }}
+      >
+        <Sidebar />
+        <MainPage />
       </header>
     </div>
   );
