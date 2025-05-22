@@ -3,6 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@mantine/core": "^8.0.1",
+    "@mantine/dates": "^8.0.1",
+    "@mantine/form": "^8.0.1",
+    "@mantine/hooks": "^8.0.1",
+    "@mantine/styles": "^6.0.22",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
@@ -46,5 +52,6 @@
   },
   "devDependencies": {
     "concurrently": "^9.1.2"
+    "sass": "^1.89.0"
   }
 }
