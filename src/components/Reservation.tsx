@@ -70,6 +70,7 @@ function ReservationForm({ onClose }: { onClose: () => void }) {
       if (response.ok) {
         form.reset();
         setSubmitted(true);
+        onClose();
       } else {
         const error = await response.json();
         console.error("Submission error:", error);
@@ -225,6 +226,8 @@ function ReservationForm({ onClose }: { onClose: () => void }) {
           label="Special Requests"
           placeholder="Any special requests or notes"
           mb="xl"
+          autosize
+          minRows={5}
           labelProps={{
             style: {
               textAlign: "flex-start",
@@ -235,6 +238,7 @@ function ReservationForm({ onClose }: { onClose: () => void }) {
             input: {
               ...inputStyles,
               width: "100%",
+              padding: 6,
             },
           }}
           style={{ width: "100%" }}

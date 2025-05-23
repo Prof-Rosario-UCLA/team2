@@ -12,17 +12,18 @@ function App() {
       <nav className="navbar">
         <Navbar />
       </nav>
-      <header
+
+      <section
         className="App-header"
         style={{
           display: "grid",
           gridTemplateColumns: "1fr 4fr",
-          marginTop: "70px",
+          paddingTop: "76px",
         }}
       >
         <Sidebar />
         <MainPage />
-      </header>
+      </section>
     </div>
   );
 }
