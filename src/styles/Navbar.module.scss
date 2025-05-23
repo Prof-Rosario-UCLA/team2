@@ -20,7 +20,7 @@
 // }
 
 .header {
-  height: 76px;
+  // height: 76px;
   // margin-bottom: 120px;
   // background-color: var(--mantine-color-body);
   background-color: rgb(28, 43, 96);
@@ -33,6 +33,7 @@
 }
 
 .inner {
+  width: 100%;
   height: 56px;
   display: flex;
   justify-content: space-between;
@@ -45,7 +46,7 @@
   padding: 8px 12px;
   border-radius: var(--mantine-radius-sm);
   text-decoration: none;
-  color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-dark-0));
+  color: light-dark(white, var(--mantine-color-dark-0));
   font-size: var(--mantine-font-size-sm);
   font-weight: 500;
 
@@ -64,4 +65,5 @@
 .itemGroup {
   display: flex;
   flex-direction: row;
+  color: white;
 }

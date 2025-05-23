@@ -12,17 +12,13 @@ import {
 // import { DatePicker } from '@mantine/dates';
 // import { TimeInput } from '@mantine/dates';
 import { useForm } from "@mantine/form";
-import "../styles/Reservation.scss";
+import classes from "../styles/Reservation.module.scss";
 
 function ReservationForm({ onClose }: { onClose: () => void }) {
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
   const formLabelFontSize = "1.3rem";
-  const inputStyles = {
-    width: "300px",
-    height: "2rem",
-  };
 
   const form = useForm({
     initialValues: {
@@ -104,9 +100,10 @@ function ReservationForm({ onClose }: { onClose: () => void }) {
         maxWidth: "50%",
         height: "80%",
         color: "black",
-        backgroundColor: "red",
-        paddingTop: "30px",
+        backgroundColor: "#e3e6e7",
         boxSizing: "border-box",
+        borderRadius: "8px",
+        alignContent: "center",
       }}
       mx="auto"
     >
@@ -114,7 +111,7 @@ function ReservationForm({ onClose }: { onClose: () => void }) {
         Make a Reservation
       </Title>
 
-      <button className="close-button" onClick={onClose}>
+      <button className={classes.closeButton} onClick={onClose}>
         X
       </button>
 
@@ -125,9 +122,9 @@ function ReservationForm({ onClose }: { onClose: () => void }) {
           flexDirection: "column",
           alignItems: "flex-start",
         }}
-        className="form"
+        className={classes.form}
       >
-        <div className="contact-container">
+        <div className={classes.contactContainer}>
           <TextInput
             label="First Name"
             placeholder="Your first name"
@@ -139,7 +136,7 @@ function ReservationForm({ onClose }: { onClose: () => void }) {
                 fontSize: formLabelFontSize,
               },
             }}
-            styles={{ input: inputStyles }}
+            classNames={{ input: classes.inputStyles }}
             {...form.getInputProps("firstname")}
           />
 
@@ -154,7 +151,7 @@ function ReservationForm({ onClose }: { onClose: () => void }) {
                 fontSize: formLabelFontSize,
               },
             }}
-            styles={{ input: inputStyles }}
+            classNames={{ input: classes.inputStyles }}
             {...form.getInputProps("lastname")}
           />
 
@@ -169,7 +166,7 @@ function ReservationForm({ onClose }: { onClose: () => void }) {
                 fontSize: formLabelFontSize,
               },
             }}
-            styles={{ input: inputStyles }}
+            classNames={{ input: classes.inputStyles }}
             {...form.getInputProps("email")}
           />
 
@@ -184,7 +181,7 @@ function ReservationForm({ onClose }: { onClose: () => void }) {
                 fontSize: formLabelFontSize,
               },
             }}
-            styles={{ input: inputStyles }}
+            classNames={{ input: classes.inputStyles }}
             {...form.getInputProps("phone")}
           />
         </div>
@@ -218,14 +215,14 @@ function ReservationForm({ onClose }: { onClose: () => void }) {
               fontSize: formLabelFontSize,
             },
           }}
-          styles={{ input: inputStyles }}
+          classNames={{ input: classes.inputStyles }}
           {...form.getInputProps("partySize")}
         />
 
         <Textarea
-          label="Special Requests"
-          placeholder="Any special requests or notes"
-          mb="xl"
+          label="Additional comments"
+          placeholder="Any additional comments or notes"
+          mb="md"
           autosize
           minRows={5}
           labelProps={{
@@ -234,9 +231,9 @@ function ReservationForm({ onClose }: { onClose: () => void }) {
               fontSize: formLabelFontSize,
             },
           }}
+          classNames={{ input: classes.inputStyles }}
           styles={{
             input: {
-              ...inputStyles,
               width: "100%",
               padding: 6,
             },
@@ -245,8 +242,12 @@ function ReservationForm({ onClose }: { onClose: () => void }) {
           {...form.getInputProps("specialRequests")}
         />
 
-        <div className="submit-container">
-          <Button type="submit" loading={loading} className="submit-button">
+        <div className={classes.submitContainer}>
+          <Button
+            type="submit"
+            loading={loading}
+            className={classes.submitButton}
+          >
             Submit Reservation
           </Button>
         </div>

@@ -75,15 +75,13 @@ export function Navbar() {
 
   return (
     <header className={classes.header}>
-      <Container size="md">
-        <div className={classes.inner}>
-          <Title>ReserveEase</Title>
-          <Group gap={5} visibleFrom="sm" className={classes.itemGroup}>
-            {items}
-          </Group>
-          <Burger opened={opened} onClick={toggle} size="sm" hiddenFrom="sm" />
-        </div>
-      </Container>
+      <div className={classes.inner}>
+        <Title>ReserveEase</Title>
+        <Group gap={5} visibleFrom="sm" className={classes.itemGroup}>
+          {items}
+        </Group>
+        <Burger opened={opened} onClick={toggle} size="sm" hiddenFrom="sm" />
+      </div>
     </header>
   );
 }

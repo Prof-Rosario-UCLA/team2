@@ -1,16 +1,16 @@
-.create-reservation-button {
-  width: 50%;
-  height: 2.5rem;
+.createReservationButton {
+  // width: 50%;
+  width: fit-content;
   font-size: 1rem;
   border-radius: 8px;
   //background-color: #36496b;
 }
 
-.create-reservation-button:hover {
+.createReservationButton:hover {
   cursor: pointer;
 }
 
-.reservation-form-container {
+.reservationFormContainer {
   position: fixed;
   top: 10%;
   left: 0;

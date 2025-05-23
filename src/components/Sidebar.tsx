@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Title } from "@mantine/core";
-import "../styles/Sidebar.scss";
+import classes from "../styles/Sidebar.module.scss";
 import ReservationForm from "./Reservation";
 
 function Sidebar() {
@@ -12,14 +12,14 @@ function Sidebar() {
         backgroundColor: "#e0e0e0",
         height: "100%",
         color: "black",
-        paddingTop: 30,
+        paddingTop: "20px",
       }}
     >
       <Title style={{ fontSize: "2rem", marginBottom: 10 }}>
         New Reservation
       </Title>
       <button
-        className="create-reservation-button"
+        className={classes.createReservationButton}
         onClick={() => {
           setShowReservationForm(true);
           console.log("clicked");
@@ -29,7 +29,7 @@ function Sidebar() {
       </button>
 
       {showReservationForm && (
-        <section className="reservation-form-container">
+        <section className={classes.reservationFormContainer}>
           <ReservationForm onClose={() => setShowReservationForm(false)} />
         </section>
       )}
