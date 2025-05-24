@@ -104,6 +104,7 @@ function ReservationForm({ onClose }: { onClose: () => void }) {
         boxSizing: "border-box",
         borderRadius: "8px",
         alignContent: "center",
+        zIndex: 10,
       }}
       mx="auto"
     >
