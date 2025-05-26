@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState, useRef } from "react";
 import {
   TextInput,
   NumberInput,
@@ -8,17 +8,44 @@ import {
   Title,
   Select,
   Textarea,
+  ActionIcon,
 } from "@mantine/core";
-// import { DatePicker } from '@mantine/dates';
-// import { TimeInput } from '@mantine/dates';
+import { DatesProvider, DatePickerInput, TimePicker } from "@mantine/dates";
 import { useForm } from "@mantine/form";
+import { IconClock } from "@tabler/icons-react";
 import classes from "../styles/Reservation.module.scss";
+//import dajys from "dajys";
 
-function ReservationForm({ onClose }: { onClose: () => void }) {
+type ReservationFormProps = {
+  onClose: () => void;
+  reservationType: string;
+};
+
+function ReservationForm({ onClose, reservationType }: ReservationFormProps) {
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [dropdownOpened, setDropdownOpened] = useState(false);
 
   const formLabelFontSize = "1.3rem";
+
+  const ref = useRef<HTMLInputElement>(null);
+
+  const pickerControl = (
+    <ActionIcon
+      variant="subtle"
+      color="gray"
+      onClick={() => setDropdownOpened(true)}
+    >
+      <IconClock size={16} stroke={1.5} />
+    </ActionIcon>
+  );
+
+  const times = Array.from({ length: 21 }, (_, i) => {
+    const totalMinutes = 17 * 60 + i * 15; // Start at 5 PM (17:00)
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    return `${hours}:${minutes.toString().padStart(2, "0")}`;
+  });
 
   const form = useForm({
     initialValues: {
@@ -45,8 +72,8 @@ function ReservationForm({ onClose }: { onClose: () => void }) {
         /^\S+@\S+$/.test(value) ? null : "Invalid email",
       phone: (value: string) =>
         value.trim().length < 10 ? "Please enter a valid phone number" : null,
-      //   date: (value) => (value === null ? 'Please select a date' : null),
-      //   time: (value) => (value === null ? 'Please select a time' : null),
+      date: (value: any) => (value === null ? "Please select a date" : null),
+      time: (value: any) => (value === null ? "Please select a time" : null),
       partySize: (value: number) =>
         value < 1 ? "Party size must be at least 1" : null,
     },
@@ -98,7 +125,7 @@ function ReservationForm({ onClose }: { onClose: () => void }) {
     <Box
       style={{
         maxWidth: "50%",
-        height: "80%",
+        padding: "40px",
         color: "black",
         backgroundColor: "#e3e6e7",
         boxSizing: "border-box",
@@ -109,13 +136,14 @@ function ReservationForm({ onClose }: { onClose: () => void }) {
       mx="auto"
     >
       <Title order={2} mb="md" ta="center" mt="0">
-        Make a Reservation
+        {reservationType === "reservation"
+          ? "Make a Reservation"
+          : "Add to Waitlist"}
       </Title>
 
       <button className={classes.closeButton} onClick={onClose}>
         X
       </button>
-
       <form
         onSubmit={form.onSubmit(handleSubmit)}
         style={{
@@ -128,7 +156,7 @@ function ReservationForm({ onClose }: { onClose: () => void }) {
         <div className={classes.contactContainer}>
           <TextInput
             label="First Name"
-            placeholder="Your first name"
+            placeholder="First name"
             required
             mb="md"
             labelProps={{
@@ -143,7 +171,7 @@ function ReservationForm({ onClose }: { onClose: () => void }) {
 
           <TextInput
             label="Last Name"
-            placeholder="Your last name"
+            placeholder="Last name"
             required
             mb="md"
             labelProps={{
@@ -158,8 +186,7 @@ function ReservationForm({ onClose }: { onClose: () => void }) {
 
           <TextInput
             label="Email"
-            placeholder="your@email.com"
-            required
+            placeholder="example@email.com"
             mb="md"
             labelProps={{
               style: {
@@ -173,8 +200,7 @@ function ReservationForm({ onClose }: { onClose: () => void }) {
 
           <TextInput
             label="Phone"
-            placeholder="Your phone number"
-            required
+            placeholder="Phone number"
             mb="md"
             labelProps={{
               style: {
@@ -187,21 +213,49 @@ function ReservationForm({ onClose }: { onClose: () => void }) {
           />
         </div>
 
-        {/* <Group grow mb="md">
-          <DatePicker
-            label="Date"
-            placeholder="Select date"
-            required
-            {...form.getInputProps('date')}
-          />
-          
-          <TimeInput
+        <Group>
+          <DatesProvider settings={{ locale: "en", firstDayOfWeek: 0 }}>
+            <DatePickerInput
+              label="Date"
+              placeholder="Pick a date"
+              required
+              clearable
+              valueFormat="MM/DD/YYYY"
+              minDate={new Date()}
+              maxDate={new Date(new Date().setMonth(new Date().getMonth() + 3))}
+              labelProps={{
+                style: {
+                  textAlign: "flex-start",
+                  fontSize: formLabelFontSize,
+                },
+              }}
+              classNames={{ input: classes.inputStyles }}
+              {...form.getInputProps("date")}
+            />
+          </DatesProvider>
+
+          <TimePicker
             label="Time"
-            placeholder="Select time"
+            ref={ref}
+            rightSection={pickerControl}
             required
-            {...form.getInputProps('time')}
+            presets={times}
+            format="12h"
+            readOnly
+            popoverProps={{
+              opened: dropdownOpened,
+              onChange: (_opened) => !_opened && setDropdownOpened(false),
+            }}
+            labelProps={{
+              style: {
+                textAlign: "flex-start",
+                fontSize: formLabelFontSize,
+              },
+            }}
+            classNames={{ input: classes.inputStyles }}
+            {...form.getInputProps("time")}
           />
-        </Group> */}
+        </Group>
 
         <NumberInput
           label="Party Size"

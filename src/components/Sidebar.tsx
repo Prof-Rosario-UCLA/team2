@@ -40,11 +40,16 @@ function Sidebar() {
         Create Reservation
       </button>
 
-      {/* Have this stay in the sidebar, no popup? */}
       {showReservationForm && (
-        <section className={classes.reservationFormContainer}>
-          <ReservationForm onClose={() => setShowReservationForm(false)} />
-        </section>
+        <div>
+          <section className={classes.reservationFormContainer}>
+            <ReservationForm
+              onClose={() => setShowReservationForm(false)}
+              reservationType="reservation"
+            />
+          </section>
+          <div className={classes.grayedBackground}></div>
+        </div>
       )}
       <div className={classes.waitlistContainer}>
         <div className={classes.waitlistTitleSection}>
