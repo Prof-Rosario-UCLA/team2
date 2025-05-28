@@ -95,9 +95,15 @@ function ReservationForm({ onClose, reservationType }: ReservationFormProps) {
           ? "Last name must be at least 2 characters"
           : null,
       email: (value: string) =>
-        /^\S+@\S+$/.test(value) ? null : "Invalid email",
-      phone: (value: string) =>
-        value.trim().length < 10 ? "Please enter a valid phone number" : null,
+        value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
+          ? "Invalid email address"
+          : null,
+      phone: (value: string) => {
+        const cleaned = value.replace(/\D/g, ""); // remove non-digit characters
+        return value && cleaned.length < 10
+          ? "Please enter a valid phone number"
+          : null;
+      },
       date: (value: any) => (value === null ? "Please select a date" : null),
       time: (value: any) => (value === null ? "Please select a time" : null),
       partySize: (value: number) =>
@@ -108,7 +114,7 @@ function ReservationForm({ onClose, reservationType }: ReservationFormProps) {
   const handleSubmit = async (values: any) => {
     setLoading(true);
     try {
-      const response = await fetch("/api/reservations", {
+      const response = await fetch("/reservations/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
