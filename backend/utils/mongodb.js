@@ -2,7 +2,7 @@ import { Reservation } from '../models/Reservation.js';
 import { WalkIn } from '../models/WalkIn.js';
 import mongoose from 'mongoose';
 
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/restaurant_db';
+const MONGO_URI = process.env.MONGO_URI;
 
 export const connectDB = async () => {
     try {
@@ -31,6 +31,7 @@ export async function getAllReservations() {
         const reservations = await Reservation.find()
             .sort({ startTime: 1 })
             .exec();
+        console.log(reservations);
         return reservations;
     } catch (error) {
         console.error('Error fetching reservations:', error);
