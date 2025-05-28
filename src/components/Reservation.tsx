@@ -113,14 +113,18 @@ function ReservationForm({ onClose, reservationType }: ReservationFormProps) {
 
   const handleSubmit = async (values: any) => {
     setLoading(true);
+    console.log(values);
     try {
-      const response = await fetch("/reservations/create", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(values),
-      });
+      const response = await fetch(
+        "http://localhost:1919/reservations/create",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(values),
+        }
+      );
 
       if (response.ok) {
         form.reset();
