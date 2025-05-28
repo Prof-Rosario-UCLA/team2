@@ -6,6 +6,20 @@
   padding: 14px 28px;
 }
 
+.calendarIcon {
+  margin-left: 20px;
+  border: 1px solid rgb(82, 82, 82);
+  border-radius: 8px;
+  width: 1.8rem;
+  height: 1.8rem;
+  padding: 4px;
+}
+
+.calendarIcon:hover {
+  cursor: pointer;
+  border-color: rgb(0, 102, 255);
+}
+
 .timeItem,
 .timeItemSelected {
   margin-top: 20px;

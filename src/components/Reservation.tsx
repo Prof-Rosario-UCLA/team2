@@ -6,7 +6,6 @@ import {
   Group,
   Box,
   Title,
-  Select,
   Textarea,
   ActionIcon,
 } from "@mantine/core";
