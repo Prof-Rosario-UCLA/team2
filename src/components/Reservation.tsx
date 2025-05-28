@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState, useRef } from "react";
 import {
   TextInput,
   NumberInput,
@@ -6,23 +6,65 @@ import {
   Group,
   Box,
   Title,
-  Select,
   Textarea,
+  ActionIcon,
 } from "@mantine/core";
-// import { DatePicker } from '@mantine/dates';
-// import { TimeInput } from '@mantine/dates';
+import {
+  DatesProvider,
+  DatePickerInput,
+  TimePicker,
+  TimeInput,
+} from "@mantine/dates";
 import { useForm } from "@mantine/form";
-import "../styles/Reservation.scss";
+import { IconClock } from "@tabler/icons-react";
+import classes from "../styles/Reservation.module.scss";
+//import dajys from "dajys";
 
-function ReservationForm({ onClose }: { onClose: () => void }) {
+type ReservationFormProps = {
+  onClose: () => void;
+  reservationType: string;
+};
+
+function ReservationForm({ onClose, reservationType }: ReservationFormProps) {
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [dropdownOpened, setDropdownOpened] = useState(false);
 
   const formLabelFontSize = "1.3rem";
-  const inputStyles = {
-    width: "300px",
-    height: "2rem",
-  };
+
+  const ref = useRef<HTMLInputElement>(null);
+
+  const pickerControlDropdown = (
+    <ActionIcon
+      variant="subtle"
+      color="gray"
+      onClick={() => setDropdownOpened(true)}
+    >
+      <IconClock size={16} stroke={1.5} />
+    </ActionIcon>
+  );
+
+  const pickerControlNative = (
+    <ActionIcon
+      variant="subtle"
+      color="gray"
+      onClick={() => ref.current?.showPicker()}
+    >
+      <IconClock size={16} stroke={1.5} />
+    </ActionIcon>
+  );
+
+  const pickerControl =
+    reservationType === "reservation"
+      ? pickerControlDropdown
+      : pickerControlNative;
+
+  const times = Array.from({ length: 21 }, (_, i) => {
+    const totalMinutes = 17 * 60 + i * 15; // Start at 5 PM (17:00)
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    return `${hours}:${minutes.toString().padStart(2, "0")}`;
+  });
 
   const form = useForm({
     initialValues: {
@@ -30,8 +72,15 @@ function ReservationForm({ onClose }: { onClose: () => void }) {
       lastname: "",
       email: "",
       phone: "",
-      date: null,
-      time: null,
+      date: new Date(),
+      time:
+        reservationType === "waitlist"
+          ? new Date().toLocaleTimeString("en-US", {
+              hour12: false,
+              hour: "2-digit",
+              minute: "2-digit",
+            })
+          : null,
       partySize: 2,
       specialRequests: "",
     },
@@ -46,11 +95,17 @@ function ReservationForm({ onClose }: { onClose: () => void }) {
           ? "Last name must be at least 2 characters"
           : null,
       email: (value: string) =>
-        /^\S+@\S+$/.test(value) ? null : "Invalid email",
-      phone: (value: string) =>
-        value.trim().length < 10 ? "Please enter a valid phone number" : null,
-      //   date: (value) => (value === null ? 'Please select a date' : null),
-      //   time: (value) => (value === null ? 'Please select a time' : null),
+        value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
+          ? "Invalid email address"
+          : null,
+      phone: (value: string) => {
+        const cleaned = value.replace(/\D/g, ""); // remove non-digit characters
+        return value && cleaned.length < 10
+          ? "Please enter a valid phone number"
+          : null;
+      },
+      date: (value: any) => (value === null ? "Please select a date" : null),
+      time: (value: any) => (value === null ? "Please select a time" : null),
       partySize: (value: number) =>
         value < 1 ? "Party size must be at least 1" : null,
     },
@@ -59,7 +114,7 @@ function ReservationForm({ onClose }: { onClose: () => void }) {
   const handleSubmit = async (values: any) => {
     setLoading(true);
     try {
-      const response = await fetch("/api/reservations", {
+      const response = await fetch("/reservations/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -70,6 +125,7 @@ function ReservationForm({ onClose }: { onClose: () => void }) {
       if (response.ok) {
         form.reset();
         setSubmitted(true);
+        onClose();
       } else {
         const error = await response.json();
         console.error("Submission error:", error);
@@ -101,22 +157,25 @@ function ReservationForm({ onClose }: { onClose: () => void }) {
     <Box
       style={{
         maxWidth: "50%",
-        height: "80%",
+        padding: "40px",
         color: "black",
-        backgroundColor: "red",
-        paddingTop: "30px",
+        backgroundColor: "#e3e6e7",
         boxSizing: "border-box",
+        borderRadius: "8px",
+        alignContent: "center",
+        zIndex: 10,
       }}
       mx="auto"
     >
       <Title order={2} mb="md" ta="center" mt="0">
-        Make a Reservation
+        {reservationType === "reservation"
+          ? "Make a Reservation"
+          : "Add to Waitlist"}
       </Title>
 
-      <button className="close-button" onClick={onClose}>
+      <button className={classes.closeButton} onClick={onClose}>
         X
       </button>
-
       <form
         onSubmit={form.onSubmit(handleSubmit)}
         style={{
@@ -124,12 +183,12 @@ function ReservationForm({ onClose }: { onClose: () => void }) {
           flexDirection: "column",
           alignItems: "flex-start",
         }}
-        className="form"
+        className={classes.form}
       >
-        <div className="contact-container">
+        <div className={classes.contactContainer}>
           <TextInput
             label="First Name"
-            placeholder="Your first name"
+            placeholder="First name"
             required
             mb="md"
             labelProps={{
@@ -138,13 +197,13 @@ function ReservationForm({ onClose }: { onClose: () => void }) {
                 fontSize: formLabelFontSize,
               },
             }}
-            styles={{ input: inputStyles }}
+            classNames={{ input: classes.inputStyles }}
             {...form.getInputProps("firstname")}
           />
 
           <TextInput
             label="Last Name"
-            placeholder="Your last name"
+            placeholder="Last name"
             required
             mb="md"
             labelProps={{
@@ -153,56 +212,105 @@ function ReservationForm({ onClose }: { onClose: () => void }) {
                 fontSize: formLabelFontSize,
               },
             }}
-            styles={{ input: inputStyles }}
+            classNames={{ input: classes.inputStyles }}
             {...form.getInputProps("lastname")}
           />
 
-          <TextInput
-            label="Email"
-            placeholder="your@email.com"
-            required
-            mb="md"
-            labelProps={{
-              style: {
-                textAlign: "flex-start",
-                fontSize: formLabelFontSize,
-              },
-            }}
-            styles={{ input: inputStyles }}
-            {...form.getInputProps("email")}
-          />
+          {reservationType === "reservation" ? (
+            <TextInput
+              label="Email"
+              placeholder="example@email.com"
+              mb="md"
+              labelProps={{
+                style: {
+                  textAlign: "flex-start",
+                  fontSize: formLabelFontSize,
+                },
+              }}
+              classNames={{ input: classes.inputStyles }}
+              {...form.getInputProps("email")}
+            />
+          ) : null}
 
           <TextInput
             label="Phone"
-            placeholder="Your phone number"
-            required
+            placeholder="Phone number"
             mb="md"
+            required={reservationType === "waitlist"}
             labelProps={{
               style: {
                 textAlign: "flex-start",
                 fontSize: formLabelFontSize,
               },
             }}
-            styles={{ input: inputStyles }}
+            classNames={{ input: classes.inputStyles }}
             {...form.getInputProps("phone")}
           />
         </div>
 
-        {/* <Group grow mb="md">
-          <DatePicker
-            label="Date"
-            placeholder="Select date"
-            required
-            {...form.getInputProps('date')}
-          />
-          
-          <TimeInput
-            label="Time"
-            placeholder="Select time"
-            required
-            {...form.getInputProps('time')}
-          />
-        </Group> */}
+        <Group>
+          {reservationType === "reservation" && (
+            <DatesProvider settings={{ locale: "en", firstDayOfWeek: 0 }}>
+              <DatePickerInput
+                label="Date"
+                placeholder="Pick a date"
+                required
+                clearable
+                valueFormat="MM/DD/YYYY"
+                minDate={new Date()}
+                maxDate={
+                  new Date(new Date().setMonth(new Date().getMonth() + 3))
+                }
+                labelProps={{
+                  style: {
+                    textAlign: "flex-start",
+                    fontSize: formLabelFontSize,
+                  },
+                }}
+                classNames={{ input: classes.inputStyles }}
+                {...form.getInputProps("date")}
+              />
+            </DatesProvider>
+          )}
+
+          {reservationType === "reservation" ? (
+            <TimePicker
+              label="Time"
+              rightSection={pickerControl}
+              required
+              presets={times}
+              format="12h"
+              readOnly
+              popoverProps={{
+                opened: dropdownOpened,
+                onChange: (_opened) => !_opened && setDropdownOpened(false),
+              }}
+              labelProps={{
+                style: {
+                  textAlign: "flex-start",
+                  fontSize: formLabelFontSize,
+                },
+              }}
+              classNames={{ input: classes.inputStyles }}
+              {...form.getInputProps("time")}
+            />
+          ) : (
+            <TimeInput
+              label="Time"
+              ref={ref}
+              rightSection={pickerControl}
+              required
+              labelProps={{
+                style: {
+                  textAlign: "flex-start",
+                  fontSize: formLabelFontSize,
+                },
+              }}
+              classNames={{ input: classes.inputStyles }}
+              {...form.getInputProps("time")}
+            />
+          )}
+        </Group>
 
         <NumberInput
           label="Party Size"
@@ -217,33 +325,42 @@ function ReservationForm({ onClose }: { onClose: () => void }) {
               fontSize: formLabelFontSize,
             },
           }}
-          styles={{ input: inputStyles }}
+          classNames={{ input: classes.inputStyles }}
           {...form.getInputProps("partySize")}
         />
 
         <Textarea
-          label="Special Requests"
-          placeholder="Any special requests or notes"
-          mb="xl"
+          label="Additional comments"
+          placeholder="Any additional comments or notes"
+          mb="md"
+          autosize
+          minRows={5}
           labelProps={{
             style: {
               textAlign: "flex-start",
               fontSize: formLabelFontSize,
             },
           }}
+          classNames={{ input: classes.inputStyles }}
           styles={{
             input: {
-              ...inputStyles,
               width: "100%",
+              padding: 6,
             },
           }}
           style={{ width: "100%" }}
           {...form.getInputProps("specialRequests")}
         />
 
-        <div className="submit-container">
-          <Button type="submit" loading={loading} className="submit-button">
-            Submit Reservation
+        <div className={classes.submitContainer}>
+          <Button
+            type="submit"
+            loading={loading}
+            className={classes.submitButton}
+          >
+            {reservationType === "reservation"
+              ? "Submit Reservation"
+              : "Add to Waitlist"}
           </Button>
         </div>
       </form>

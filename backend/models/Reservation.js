@@ -1,18 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
 
-export interface Reservation {
-    name: string;
-    email?: string;
-    phoneNumber?: string;
-    tableNum?: number;
-    size: number;
-    startTime: Date;
-    endTime: Date;
-    comments?: string;
-    createdAt: Date;
-    updatedAt: Date;
-}
-
 const reservationSchema = new mongoose.Schema({
     name: {
         type: String,
@@ -49,4 +36,4 @@ const reservationSchema = new mongoose.Schema({
     timestamps: true
 });
 
-export const Reservation = mongoose.model<Reservation>('Reservation', reservationSchema); 
+export const Reservation = mongoose.model('Reservation', reservationSchema); 

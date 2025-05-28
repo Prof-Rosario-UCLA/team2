@@ -1,0 +1,93 @@
+.sidebarContainer {
+  background-color: #e0e0e0;
+  height: 100%;
+  color: black;
+  padding: 20px 24px;
+}
+
+.sidebarContainer p {
+  font-size: medium;
+}
+
+.reservationTitleContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  // padding: 0px 20px;
+}
+
+.createReservationButton,
+.addToWaitlistButton {
+  width: fit-content;
+  height: fit-content;
+  font-size: 0.8rem;
+  border-radius: 8px;
+  background-color: #36496b;
+  padding: 6px 12px;
+}
+
+.createReservationButton:hover {
+  cursor: pointer;
+}
+
+.reservationFormContainer {
+  z-index: 10;
+  position: fixed;
+  top: 10%;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.grayedBackground {
+  z-index: 5;
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  background-color: rgba(0, 0, 0, 0.3);
+  top: 0;
+  left: 0;
+}
+
+.waitlistContainer {
+  margin-top: 30px;
+}
+
+.waitlistTitleSection {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.waitlistItem {
+  background-color: rgb(193, 95, 70);
+  color: white;
+  margin: 14px 12px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 24px;
+}
+
+.waitlistItemName,
+.waitlistItemTime {
+  margin: 0;
+  margin-bottom: -5px;
+  font-size: 1.7rem;
+}
+
+.numPartyText,
+.addedAtText {
+  margin: 0;
+  color: rgb(213, 213, 213);
+  font-size: 1rem;
+}
+
+.plusIcon {
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 25px;
+  padding: 1px;
+}

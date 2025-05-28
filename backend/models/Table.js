@@ -1,14 +1,5 @@
 import mongoose, { Schema, Types } from 'mongoose';
 
-export interface Table {
-    tableCapacity: number;
-    reservedTimes: Types.ObjectId[];
-    reservedTimesModel: 'Reservation' | 'WalkIn';
-    comments?: string;
-    createdAt: Date;
-    updatedAt: Date;
-}
-
 const tableSchema = new mongoose.Schema({
     tableCapacity: {
         type: Number,
@@ -31,4 +22,4 @@ const tableSchema = new mongoose.Schema({
     timestamps: true
 });
 
-export const Table = mongoose.model<Table>('Table', tableSchema); 
+export const Table = mongoose.model('Table', tableSchema); 

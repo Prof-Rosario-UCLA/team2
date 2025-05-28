@@ -1,16 +1,18 @@
-.close-button {
+.closeButton {
   position: absolute;
-  top: 20px;
-  right: calc(25% + 20px);
+  top: 22px;
+  right: calc(25% + 22px);
+  font-size: 1rem;
 }
 
-.close-button:hover {
+.closeButton:hover {
   cursor: pointer;
 }
 
 .form {
   text-align: start;
   width: fit-content;
+  // width: 100%;
   margin-left: auto;
   margin-right: auto;
   padding: 0;
@@ -25,15 +27,27 @@
   }
 }
 
-.contact-container {
+.contactContainer {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 1rem;
 }
 
-.submit-container {
+.inputStyles {
+  width: 300px;
+  height: 2rem;
+}
+
+.submitContainer {
   width: 100%;
-  margin-top: 50px;
-  background-color: pink;
+  margin-top: 10px;
   text-align: end;
+}
+
+.submitButton {
+  font-size: 1rem;
+}
+
+.submitButton:hover {
+  cursor: pointer;
 }
