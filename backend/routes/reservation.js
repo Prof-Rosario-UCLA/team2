@@ -41,29 +41,36 @@ router.get('/range', async (req, res) => {
 });
 
 // Create a new reservation
-router.post('/', async (req, res) => {
+router.post('/create', async (req, res) => {
     try {
+        console.log('Trying to CREATE a reservation:', req.body);
         const reservationData = req.body;
 
         // Validate required fields
-        if (!reservationData.name || !reservationData.size || !reservationData.startTime || !reservationData.endTime) {
+        if (!reservationData.size || !reservationData.startTime || !reservationData.endTime) {
             return res.status(400).json({ error: 'Missing required fields' });
         }
 
         // Validate dates
-        const startTime = new Date(reservationData.startTime);
-        const endTime = new Date(reservationData.endTime);
+        const startTime = new Date(reservationData.time);
+        const endTime = new Date(startTime.getTime() + (2 * 60 * 60 * 1000));
 
-        if (isNaN(startTime.getTime()) || isNaN(endTime.getTime())) {
+        if (isNaN(startTime.getTime())) {
             return res.status(400).json({ error: 'Invalid date format' });
         }
 
-        if (startTime >= endTime) {
-            return res.status(400).json({ error: 'End time must be after start time' });
-        }
+        const newReservation = {
+            name: `${reservationData.firstname} ${reservationData.lastname}`,
+            email: reservationData.email || '',
+            phone: reservationData.phone || '',
+            size: reservationData.partySize,
+            startTime: startTime,
+            endTime: endTime,
+            specialRequests: reservationData.specialRequests || ''
+        };
 
-        const newReservation = await insertReservation(reservationData);
-        res.status(201).json(newReservation);
+        const result = await insertReservation(newReservation);
+        res.status(201).json(result);
     } catch (error) {
         console.error('Error in POST /reservations:', error);
         res.status(500).json({ error: 'Failed to create reservation' });
