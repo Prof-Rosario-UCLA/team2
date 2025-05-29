@@ -16,7 +16,7 @@ const PORT = 1919;
 
 // Connect to databases
 const { mongoConnected, redisConnected } = await initializeDatabases();
-if (!mongoConnected) {
+if (!mongoConnected || !redisConnected) {
   process.exit(1); 
 }
 
