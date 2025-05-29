@@ -53,9 +53,21 @@ router.post("/create", async (req, res) => {
   try {
     const reservationData = req.body;
 
-    // Validate dates
-    const startTime = new Date(reservationData.date);
+    const datePart = new Date(reservationData.date);
+    const timePart = new Date(reservationData.time);
+
+    // Extract date components
+    const year = datePart.getFullYear();
+    const month = datePart.getMonth();
+    const day = datePart.getDate();
+
+    // Extract time components
+    const [hours, minutes] = reservationData.time.split(":").map(Number);
+
+    const startTime = new Date(year, month, day, hours, minutes);
     const endTime = new Date(startTime.getTime() + 2 * 60 * 60 * 1000);
+
+    console.log(startTime);
 
     if (isNaN(startTime.getTime())) {
       return res.status(400).json({ error: "Invalid date format" });
