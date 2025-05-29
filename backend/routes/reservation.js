@@ -51,13 +51,7 @@ router.get("/range", async (req, res) => {
 // Create a new reservation
 router.post("/create", async (req, res) => {
   try {
-    
     const reservationData = req.body;
-
-    // Validate required fields
-    if (!reservationData.partySize) {
-      return res.status(400).json({ error: "Missing required fields" });
-    }
 
     // Validate dates
     const startTime = new Date(reservationData.date);
@@ -71,10 +65,11 @@ router.post("/create", async (req, res) => {
       name: `${reservationData.firstname} ${reservationData.lastname}`,
       email: reservationData.email || "",
       phone: reservationData.phone || "",
+      tableNum: null,
       size: reservationData.partySize,
       startTime: startTime,
       endTime: endTime,
-      specialRequests: reservationData.specialRequests || "",
+      comments: reservationData.specialRequests || "",
     };
 
     const result = await insertReservation(newReservation);

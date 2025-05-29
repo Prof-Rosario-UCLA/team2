@@ -42,9 +42,7 @@ router.get("/range", async (req, res) => {
     res.json(walkIns);
   } catch (error) {
     console.error("Error in GET /walkins/range:", error);
-    res
-      .status(500)
-      .json({ error: "Failed to fetch walk-ins by date range" });
+    res.status(500).json({ error: "Failed to fetch walk-ins by date range" });
   }
 });
 
@@ -53,17 +51,25 @@ router.post("/create", async (req, res) => {
   try {
     const walkInData = req.body;
 
-    // Validate required fields
-    if (!walkInData.size || !walkInData.name) {
-      return res.status(400).json({ error: "Missing required fields" });
-    }
+    const [hours, minutes] = walkInData.time.split(":").map(Number);
+    const now = new Date();
+    const dateWithTime = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+      hours,
+      minutes
+    );
 
     const newWalkIn = {
-      name: walkInData.name,
-      phoneNumber: walkInData.phoneNumber,
-      size: walkInData.size,
-      timeAddedToWaitlist: new Date(),
-      comments: walkInData.comments || "",
+      name: `${walkInData.firstname} ${walkInData.lastname}`,
+      phoneNumber: walkInData.phone,
+      tableNumber: null,
+      size: walkInData.partySize,
+      timeAddedToWaitlist: dateWithTime,
+      startTime: null,
+      endTime: null,
+      comments: walkInData.specialRequests || "",
     };
 
     const result = await insertWalkIn(newWalkIn);
