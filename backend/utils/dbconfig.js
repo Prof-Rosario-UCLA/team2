@@ -1,26 +1,12 @@
 import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+dotenv.config();
 // import { createClient } from 'redis';
 
 // Database configuration
-export const DB_NAME = 'restaurants';
-export const COLLECTION = 'mammoth';
-export const MONGO_PORT = '27017';
-export const DEBUG = true;
 
-const PROTOCOL = 'mongodb://';
-const MONGO_USER = '';
-const MONGO_PASS = '';
-const mongoHost = DEBUG ? 'localhost' : 'cs144.org';
-
-const ATLAS_URI = process.env.ATLAS_URI;
-
-
-const mongoLogin = MONGO_USER && MONGO_PASS ? `${MONGO_USER}:${MONGO_PASS}` : '';
-const mongoHostPort = MONGO_PORT ? `${mongoHost}:${MONGO_PORT}/${DB_NAME}` : `${mongoHost}/${DB_NAME}`;
-
-export const MONGO_URI = DEBUG
-  ? `${PROTOCOL}${mongoHostPort}`
-  : `${ATLAS_URI}/${DB_NAME}`;
+const ATLAS_URI = process.env.MONGO_URI;
+export const MONGO_URI = `${ATLAS_URI}`;
 
 // Redis configuration
 export const REDIS_PREFIX = 'mammoth:';

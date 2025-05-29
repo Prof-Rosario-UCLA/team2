@@ -1,19 +1,5 @@
 import { Reservation } from '../models/Reservation.js';
 import { WalkIn } from '../models/WalkIn.js';
-import mongoose from 'mongoose';
-
-const MONGO_URI = process.env.MONGO_URI;
-
-export const connectDB = async () => {
-    try {
-        await mongoose.connect(MONGO_URI);
-        console.log('Connected to MongoDB');
-        return true;
-    } catch (err) {
-        console.error('Failed to connect to MongoDB:', err);
-        return false;
-    }
-};
 
 export async function insertReservation(reservationData) {
     try {

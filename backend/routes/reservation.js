@@ -51,7 +51,7 @@ router.get("/range", async (req, res) => {
 // Create a new reservation
 router.post("/create", async (req, res) => {
   try {
-    console.log("Trying to CREATE a reservation:", req.body);
+    
     const reservationData = req.body;
 
     // Validate required fields
