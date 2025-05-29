@@ -1,13 +1,36 @@
+.formContainer {
+  position: relative;
+  color: black;
+  background-color: #e3e6e7;
+  box-sizing: border-box;
+  padding: 40px 100px;
+  border-radius: 8px;
+  align-content: center;
+  z-index: 10;
+}
+
 .closeButton {
   position: absolute;
-  top: 22px;
-  right: calc(25% + 22px);
+  top: 16px;
+  right: 16px;
   font-size: 1rem;
 }
 
-.closeButton:hover {
+.popupCloseButton {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 1rem;
+}
+
+.closeButton:hover,
+.popupCloseButton {
   cursor: pointer;
 }
+
+// .popupCloseButton {
+//   right: calc();
+// }
 
 .form {
   text-align: start;
@@ -50,4 +73,16 @@
 
 .submitButton:hover {
   cursor: pointer;
+}
+
+.submittedPopup {
+  position: relative;
+  background-color: #e0e0e0;
+  width: fit-content;
+  height: 300px;
+  border-radius: 8px;
+  padding: 0px 80px;
+  margin: auto;
+  margin-top: auto;
+  align-content: center;
 }

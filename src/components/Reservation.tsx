@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   TextInput,
   NumberInput,
@@ -113,19 +113,24 @@ function ReservationForm({ onClose, reservationType }: ReservationFormProps) {
 
   const handleSubmit = async (values: any) => {
     setLoading(true);
+    console.log(values);
     try {
-      const response = await fetch("/reservations/create", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(values),
-      });
+      const response = await fetch(
+        reservationType === "reservation"
+          ? "http://localhost:1919/reservations/create"
+          : "http://localhost:1919/walkins/create",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(values),
+        }
+      );
 
       if (response.ok) {
         form.reset();
         setSubmitted(true);
-        onClose();
       } else {
         const error = await response.json();
         console.error("Submission error:", error);
@@ -141,32 +146,38 @@ function ReservationForm({ onClose, reservationType }: ReservationFormProps) {
 
   if (submitted) {
     return (
-      <Box style={{ maxWidth: 500 }} mx="auto" my="xl">
-        <Title order={2}>Reservation Submitted!</Title>
-        <p>
-          Thank you for your reservation. We'll contact you shortly to confirm.
-        </p>
-        <Button onClick={() => setSubmitted(false)}>
-          Make Another Reservation
+      <Box className={classes.submittedPopup}>
+        <Title order={2}>Reservation Submitted</Title>
+        <p>Reservation has been submitted successfully!</p>
+        <button className={classes.popupCloseButton} onClick={onClose}>
+          X
+        </button>
+        <Button
+          onClick={() => setSubmitted(false)}
+          style={{ marginTop: "60px", bottom: "-16px" }}
+        >
+          Make another reservation
         </Button>
       </Box>
     );
   }
 
   return (
-    <Box
-      style={{
-        maxWidth: "50%",
-        padding: "40px",
-        color: "black",
-        backgroundColor: "#e3e6e7",
-        boxSizing: "border-box",
-        borderRadius: "8px",
-        alignContent: "center",
-        zIndex: 10,
-      }}
-      mx="auto"
-    >
+    <Box className={classes.formContainer} mx="auto">
+      {/* {submitted && (
+        <Box style={{ maxWidth: 500, zIndex: 500 }} mx="auto" my="xl">
+          <Title order={2}>Reservation Submitted!</Title>
+          <p>Reservation created successfully.</p>
+          <Button
+            onClick={() => {
+              setSubmitted(false);
+              onClose();
+            }}
+          >
+            Close
+          </Button>
+        </Box>
+      )} */}
       <Title order={2} mb="md" ta="center" mt="0">
         {reservationType === "reservation"
           ? "Make a Reservation"
