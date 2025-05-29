@@ -3,6 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import reservationRoutes from './backend/routes/reservation.js';
 import walkInRoutes from './backend/routes/walkin.js';
+import tableRoutes from './backend/routes/table.js';
 import { initializeDatabases } from './backend/utils/dbconfig.js';
 import cors from 'cors';
 
@@ -26,6 +27,7 @@ app.use(cors());
 // REST API routes
 app.use('/reservations', reservationRoutes);
 app.use('/walkins', walkInRoutes);
+app.use('/tables', tableRoutes);
 
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static('dist'));

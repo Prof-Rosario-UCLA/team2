@@ -1,5 +1,6 @@
 import { Reservation } from '../models/Reservation.js';
 import { WalkIn } from '../models/WalkIn.js';
+import { Table } from '../models/Table.js';
 
 export async function insertReservation(reservationData) {
     try {
@@ -79,6 +80,39 @@ export async function getWalkInsByDateRange(startDate, endDate) {
         return walkIns;
     } catch (error) {
         console.error('Error fetching walk-ins by date range:', error);
+        throw error;
+    }
+}
+
+export async function insertTable(tableData) {
+    try {
+        const table = new Table(tableData);
+        const savedTable = await table.save();
+        return savedTable;
+    } catch (error) {
+        console.error('Error inserting table:', error);
+        throw error;
+    }
+}
+
+export async function getAllTables() {
+    try {
+        const tables = await Table.find()
+            .sort({ tableNumber: 1 })
+            .exec();
+        return tables;
+    } catch (error) {
+        console.error('Error fetching tables:', error);
+        throw error;
+    }
+}
+
+export async function getTableByNumber(tableNumber) {
+    try {
+        const table = await Table.findOne({ tableNumber });
+        return table;
+    } catch (error) {
+        console.error('Error fetching table by number:', error);
         throw error;
     }
 }
