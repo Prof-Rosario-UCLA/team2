@@ -5,14 +5,26 @@ import {
   insertReservation,
 } from "../utils/mongodb.js";
 import { Reservation } from "../models/Reservation.js";
+import { cacheResult, fetchFromCache } from '../utils/redis.js';
+
 
 const router = express.Router();
 
 // Get all reservations
 router.get("/", async (req, res) => {
   try {
-    console.log("Trying to GET all reservations");
+    console.log("Attempting to fetch data from cache");
+    const cachedData = await fetchFromCache('reservation');
+    if (cachedData){
+      console.log("Data found in cache");
+      return res.status(200).json(cachedData);
+    }
+    else{
+      console.log("Data not found in cache");
+    }
+
     const reservations = await getAllReservations();
+    await cacheResult('reservation', reservations, 300);
     res.json(reservations);
   } catch (error) {
     console.error("Error in GET /reservations:", error);
@@ -73,6 +85,9 @@ router.post("/create", async (req, res) => {
     };
 
     const result = await insertReservation(newReservation);
+
+    const updatedAllReservations = await getAllReservations();
+    await cacheResult('reservation', updatedAllReservations, 300);
     res.status(201).json(result);
   } catch (error) {
     console.error("Error in POST /reservations:", error);
