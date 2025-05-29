@@ -9,3 +9,16 @@ export const getReservationsAtTime = (reservations, timestamp) => {
     const targetTime = new Date(timestamp);
     return reservations.filter(reservation => isReservationActiveAtTime(reservation, targetTime));
 };
+
+const isReservationOnDay = (reservation, targetDate) => {
+    const startTime = new Date(reservation.startTime);
+    const target = new Date(targetDate);
+    
+    return startTime.getFullYear() === target.getFullYear() &&
+           startTime.getMonth() === target.getMonth() &&
+           startTime.getDate() === target.getDate();
+};
+
+export const getReservationsForDay = (reservations, date) => {
+    return reservations.filter(reservation => isReservationOnDay(reservation, date));
+};
