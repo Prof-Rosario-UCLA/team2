@@ -25,6 +25,18 @@ export async function getAllReservations() {
     }
 }
 
+
+export async function insertWalkIn(walkinData) {
+    try {
+        const walkin = new WalkIn(walkinData);
+        const savedWalkIn = await walkin.save();
+        return savedWalkIn;
+    } catch (error) {
+        console.error('Error inserting walkin:', error);
+        throw error;
+    }
+}
+
 export async function getAllWalkIns() {
     try {
         const walkIns = await WalkIn.find()
