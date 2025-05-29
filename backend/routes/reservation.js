@@ -22,7 +22,7 @@ router.get("/", async (req, res) => {
     else{
       console.log("Data not found in cache");
     }
-
+    console.log("Querying MongoDB");
     const reservations = await getAllReservations();
     await cacheResult('reservation', reservations, 300);
     res.json(reservations);
