@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Title, Button } from "@mantine/core";
 import classes from "../styles/Sidebar.module.scss";
 import ReservationForm from "./Reservation";
 import { IconPlus } from "@tabler/icons-react";
+import { WaitlistItem } from "./WaitlistItem";
 
 export function CustomAddButton(text: string, onClickFunc: () => void) {
   const iconPlusSize = 16;
@@ -20,24 +21,41 @@ export function CustomAddButton(text: string, onClickFunc: () => void) {
   );
 }
 
+interface WaitlistEntry {
+  id: string;
+  firstname: string;
+  lastname: string;
+  phone: string;
+  partySize: number;
+  time: string;
+}
+
 function Sidebar() {
   const [showReservationForm, setShowReservationForm] = useState(false);
   const [formType, setFormType] = useState("reservation");
-  // const [waitlist, setWaitlist] = useState();
+  const [waitlist, setWaitlist] = useState<WaitlistEntry[]>([]);
 
   const sidebarTitleSize = "1.5rem";
 
-  interface waitlistEntry {
-    name: string;
-    numPeople: number;
-    timeCreated: string;
-  }
+  // Fetch waitlist items when component mounts
+  useEffect(() => {
+    const fetchWaitlist = async () => {
+      try {
+        const response = await fetch('http://localhost:1919/walkins');
+        if (response.ok) {
+          const data = await response.json();
+          setWaitlist(data);
+        }
+      } catch (error) {
+        console.error('Error fetching waitlist:', error);
+      }
+    };
 
-  const waitlist: waitlistEntry[] = [
-    { name: "Bob", numPeople: 2, timeCreated: "5:55" },
-    { name: "Bab", numPeople: 2, timeCreated: "5:56" },
-    { name: "Bub", numPeople: 2, timeCreated: "5:59" },
-  ];
+    fetchWaitlist();
+    // Set up polling to refresh waitlist every 30 seconds
+    const interval = setInterval(fetchWaitlist, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className={classes.sidebarContainer}>
@@ -73,20 +91,19 @@ function Sidebar() {
         {waitlist.length === 0 ? (
           <p>No waitlist</p>
         ) : (
-          waitlist.map((entry, index) => (
-            <div key={index} className={classes.waitlistItem}>
-              <div>
-                <p className={classes.waitlistItemName}>{entry.name}</p>
-                <p className={classes.numPartyText}>
-                  Party of {entry.numPeople}
-                </p>
-              </div>
-              <div>
-                <p className={classes.waitlistItemTime}>{entry.timeCreated}</p>
-                <p className={classes.addedAtText}>Time created</p>
-              </div>
-            </div>
-          ))
+          <div className={classes.waitlistItemsContainer}>
+            {waitlist.map((entry) => (
+              <WaitlistItem
+                key={entry.id}
+                id={entry.id}
+                firstname={entry.firstname}
+                lastname={entry.lastname}
+                phone={entry.phone}
+                partySize={entry.partySize}
+                time={entry.time}
+              />
+            ))}
+          </div>
         )}
       </div>
     </div>

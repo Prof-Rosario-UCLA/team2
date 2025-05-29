@@ -60,6 +60,22 @@ function CalendarIconTrigger({
   );
 }
 
+interface Table {
+  name: string;
+  minNumber: number;
+  maxNumber: number;
+  currentReservation?: WaitlistItem;
+}
+
+interface WaitlistItem {
+  id: string;
+  firstname: string;
+  lastname: string;
+  phone: string;
+  partySize: number;
+  time: string;
+}
+
 function MainPage() {
   const [selectedTime, setSelectedTime] = useState(0);
   const [currDate, setCurrDate] = useState<Date>(() => {
@@ -88,12 +104,6 @@ function MainPage() {
     }
   })();
 
-  interface Table {
-    name: string;
-    minNumber: number;
-    maxNumber: number;
-  }
-
   const tableItemWidth = 1.58;
 
   const times = Array.from({ length: 21 }, (_, i) => {
@@ -105,7 +115,7 @@ function MainPage() {
     return `${hour12}:${minutes.toString().padStart(2, "0")}${period}`;
   });
 
-  const tables: Table[] = [
+  const [tables, setTables] = useState<Table[]>([
     { name: "Table 1", minNumber: 2, maxNumber: 4 },
     { name: "Table 2", minNumber: 4, maxNumber: 6 },
     { name: "Table 3", minNumber: 6, maxNumber: 8 },
@@ -118,7 +128,55 @@ function MainPage() {
     { name: "Table 4", minNumber: 2, maxNumber: 10 },
     { name: "Table 5", minNumber: 1, maxNumber: 2 },
     { name: "Table 6", minNumber: 4, maxNumber: 6 },
-  ];
+  ]);
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = async (e: React.DragEvent, tableIndex: number) => {
+    e.preventDefault();
+    const waitlistItem = JSON.parse(e.dataTransfer.getData('waitlistItem')) as WaitlistItem;
+    
+    // Check if party size is within table limits
+    const table = tables[tableIndex];
+    if (waitlistItem.partySize < table.minNumber || waitlistItem.partySize > table.maxNumber) {
+      alert(`Party size must be between ${table.minNumber} and ${table.maxNumber} for this table`);
+      return;
+    }
+
+    try {
+      // Update MongoDB
+      const response = await fetch('http://localhost:1919/walkins/assign-table', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          waitlistId: waitlistItem.id,
+          tableNumber: table.name,
+          date: currDate.toISOString(),
+          time: times[selectedTime]
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to assign table');
+      }
+
+      // Update local state
+      const newTables = [...tables];
+      newTables[tableIndex] = {
+        ...newTables[tableIndex],
+        currentReservation: waitlistItem
+      };
+      setTables(newTables);
+
+    } catch (error) {
+      console.error('Error assigning table:', error);
+      alert('Failed to assign table. Please try again.');
+    }
+  };
 
   return (
     <div className={classes.mainPageContainer}>
@@ -165,10 +223,20 @@ function MainPage() {
       <Grid className={classes.tableContainer}>
         {tables.map((table, index) => (
           <Grid.Col key={index} span={tableItemWidth}>
-            <div className={classes.tableItem}>
+            <div 
+              className={classes.tableItem}
+              onDragOver={handleDragOver}
+              onDrop={(e) => handleDrop(e, index)}
+            >
               <h6 className={classes.tableItemTitle}>
                 {table.name} ({table.minNumber}-{table.maxNumber})
               </h6>
+              {table.currentReservation && (
+                <div className={classes.currentReservation}>
+                  <p>{table.currentReservation.firstname} {table.currentReservation.lastname}</p>
+                  <p>Party of {table.currentReservation.partySize}</p>
+                </div>
+              )}
             </div>
           </Grid.Col>
         ))}
