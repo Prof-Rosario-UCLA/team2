@@ -147,8 +147,17 @@ function ReservationForm({ onClose, reservationType }: ReservationFormProps) {
   if (submitted) {
     return (
       <Box className={classes.submittedPopup}>
-        <Title order={2}>Reservation Submitted</Title>
-        <p>Reservation has been submitted successfully!</p>
+        <Title order={2}>
+          {reservationType === "reservation"
+            ? "Reservation Submitted"
+            : "Added to Waitlist"}
+        </Title>
+        <p>
+          {reservationType === "reservation"
+            ? "Reservation has been submitted"
+            : "Customer has been added to waitlist"}{" "}
+          successfully!
+        </p>
         <button className={classes.popupCloseButton} onClick={onClose}>
           X
         </button>
@@ -156,7 +165,9 @@ function ReservationForm({ onClose, reservationType }: ReservationFormProps) {
           onClick={() => setSubmitted(false)}
           style={{ marginTop: "60px", bottom: "-16px" }}
         >
-          Make another reservation
+          {reservationType === "reservation"
+            ? "Make another reservation"
+            : "Add to waitlist again"}
         </Button>
       </Box>
     );

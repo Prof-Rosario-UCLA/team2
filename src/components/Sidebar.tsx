@@ -106,6 +106,21 @@ function Sidebar() {
         })}
       </div>
 
+      {showReservationForm && (
+        <div>
+          <section className={classes.reservationFormContainer}>
+            <ReservationForm
+              onClose={() => {
+                setShowReservationForm(false);
+                fetchReservations(formType);
+              }}
+              reservationType={formType}
+            />
+          </section>
+          <div className={classes.grayedBackground}></div>
+        </div>
+      )}
+
       {reservations.length === 0 ? (
         <p style={{ fontStyle: "italic" }}>No new reservations</p>
       ) : (
@@ -125,7 +140,7 @@ function Sidebar() {
                 <p className={classes.waitlistItemTime}>
                   {convertDateToTime(res.startTime)}
                 </p>
-                <p className={classes.addedAtText}>Time created</p>
+                <p className={classes.addedAtText}>Time</p>
               </div>
             </div>
           ))}
@@ -133,32 +148,19 @@ function Sidebar() {
       )}
       <hr style={{ marginTop: "46px" }} />
 
-      {showReservationForm && (
-        <div>
-          <section className={classes.reservationFormContainer}>
-            <ReservationForm
-              onClose={() => {
-                setShowReservationForm(false);
-                fetchReservations(formType);
-              }}
-              reservationType={formType}
-            />
-          </section>
-          <div className={classes.grayedBackground}></div>
-        </div>
-      )}
-      <div className={classes.waitlistContainer}>
-        <div className={classes.waitlistTitleSection}>
-          <Title style={{ fontSize: sidebarTitleSize }}>Waitlist</Title>
-          {CustomAddButton("Add to waitlist", () => {
-            setShowReservationForm(true);
-            setFormType("waitlist");
-          })}
-        </div>
-        {waitlist.length === 0 ? (
-          <p style={{ fontStyle: "italic" }}>No waitlist</p>
-        ) : (
-          waitlist.map((entry, index) => (
+      <div className={classes.waitlistTitleSection}>
+        <Title style={{ fontSize: sidebarTitleSize }}>Waitlist</Title>
+        {CustomAddButton("Add to waitlist", () => {
+          setShowReservationForm(true);
+          setFormType("waitlist");
+        })}
+      </div>
+      {waitlist.length === 0 ? (
+        <p style={{ fontStyle: "italic" }}>No waitlist</p>
+      ) : (
+        <div className={classes.unassignedWaitContainer}>
+          <p style={{ fontStyle: "italic" }}>Drag and drop onto a table</p>
+          {waitlist.map((entry, index) => (
             <div key={index} className={classes.waitlistItem}>
               <div>
                 <p className={classes.waitlistItemName}>
@@ -175,9 +177,9 @@ function Sidebar() {
                 <p className={classes.addedAtText}>Time created</p>
               </div>
             </div>
-          ))
-        )}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

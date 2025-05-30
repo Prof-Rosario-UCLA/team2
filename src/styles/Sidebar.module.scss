@@ -53,15 +53,12 @@
   left: 0;
 }
 
-.waitlistContainer {
-  margin-top: 30px;
-}
-
 .waitlistTitleSection {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
+  margin-top: 30px;
 }
 
 .waitlistItem,
@@ -97,8 +94,11 @@
   padding: 1px;
 }
 
-.unassignedResContainer {
-  max-height: 40%;
+.unassignedResContainer,
+.unassignedWaitContainer {
+  max-height: 330px; // make this not percent
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .reservationItem {
