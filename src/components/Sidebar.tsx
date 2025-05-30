@@ -3,6 +3,7 @@ import { Title, Button } from "@mantine/core";
 import classes from "../styles/Sidebar.module.scss";
 import ReservationForm from "./Reservation";
 import { IconPlus } from "@tabler/icons-react";
+import { useCurrDate } from "./CurrDateProvider";
 
 type Reservation = {
   _id: string;
@@ -49,6 +50,7 @@ function Sidebar() {
   const [waitlist, setWaitlist] = useState<Walkins[]>([]);
   const [showReservationForm, setShowReservationForm] = useState(false);
   const [formType, setFormType] = useState("reservation");
+  const { currDate, setCurrDate } = useCurrDate();
 
   useEffect(() => {
     fetchReservations("reservation");
@@ -96,8 +98,33 @@ function Sidebar() {
     return `${first} ${last[0]}.`;
   };
 
+  console.log(currDate);
+
+  function getFormattedDate(inputDate: Date | string): string {
+    try {
+      let date = inputDate instanceof Date ? inputDate : new Date(inputDate);
+
+      // Adjust for timezone offset
+      const offset = date.getTimezoneOffset();
+      date = new Date(date.getTime() + offset * 60 * 1000);
+
+      return date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+    } catch (error) {
+      return new Date().toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+    }
+  }
+
   return (
     <div className={classes.sidebarContainer}>
+      {/* {getFormattedDate(new Date(currDate))} */}
       <div className={classes.reservationTitleContainer}>
         <Title style={{ fontSize: sidebarTitleSize }}>Reservations</Title>
         {CustomAddButton("New", () => {

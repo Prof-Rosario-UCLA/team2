@@ -1,8 +1,9 @@
 import classes from "../styles/MainPage.module.scss";
 import { Grid, ScrollArea, Title, Popover } from "@mantine/core";
 import { DatesProvider, DatePicker } from "@mantine/dates";
-import { useState } from "react";
+import { useState, createContext, useContext } from "react";
 import { CustomAddButton } from "./Sidebar";
+import { useCurrDate } from "./CurrDateProvider";
 import { IconCalendarWeek } from "@tabler/icons-react";
 
 interface CalendarIconTriggerProps {
@@ -62,10 +63,11 @@ function CalendarIconTrigger({
 
 function MainPage() {
   const [selectedTime, setSelectedTime] = useState(0);
-  const [currDate, setCurrDate] = useState<Date>(() => {
-    const today = new Date();
-    return new Date(today.getFullYear(), today.getMonth(), today.getDate());
-  });
+  const { currDate, setCurrDate } = useCurrDate();
+  // const [currDate, setCurrDate] = useState<Date>(() => {
+  //   const today = new Date();
+  //   return new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  // });
   const formattedDate = (() => {
     try {
       let date = currDate instanceof Date ? currDate : new Date(currDate);
