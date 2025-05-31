@@ -1,6 +1,3 @@
-import React from "react";
-import { Flex } from "@mantine/core";
-
 import "./App.css";
 import MainPage from "./components/MainPage";
 import Sidebar from "./components/Sidebar";

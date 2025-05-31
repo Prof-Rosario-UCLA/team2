@@ -4,9 +4,11 @@ services:
   app:
     build: .
     ports:
-      - "1919:1919"
+      - "1919:1919"  # Backend port
+      - "5173:5173"  # Frontend port
     environment:
       - REDIS_URL=redis://redis:6379
+      - NODE_ENV=production
     secrets:
       - mongodb_uri
     depends_on:

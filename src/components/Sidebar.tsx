@@ -3,6 +3,7 @@ import { Title, Button } from "@mantine/core";
 import classes from "../styles/Sidebar.module.scss";
 import ReservationForm from "./Reservation";
 import { IconPlus } from "@tabler/icons-react";
+import { LoadingOverlay } from "./LoadingOverlay";
 
 type Reservation = {
   _id: string;
@@ -49,6 +50,7 @@ function Sidebar() {
   const [waitlist, setWaitlist] = useState<Walkins[]>([]);
   const [showReservationForm, setShowReservationForm] = useState(false);
   const [formType, setFormType] = useState("reservation");
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     fetchReservations("reservation");
@@ -58,6 +60,7 @@ function Sidebar() {
   const sidebarTitleSize = "1.5rem";
 
   const fetchReservations = async (type: string) => {
+    setIsLoading(true);
     try {
       const res = await fetch(
         type === "reservation"
@@ -73,6 +76,8 @@ function Sidebar() {
       }
     } catch (err) {
       console.error("Fetch error:", err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -98,6 +103,7 @@ function Sidebar() {
 
   return (
     <div className={classes.sidebarContainer}>
+      {isLoading && <LoadingOverlay message="Loading reservations..." />}
       <div className={classes.reservationTitleContainer}>
         <Title style={{ fontSize: sidebarTitleSize }}>Reservations</Title>
         {CustomAddButton("New", () => {
