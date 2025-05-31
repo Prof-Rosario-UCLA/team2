@@ -12,7 +12,10 @@ export const MONGO_URI = `${ATLAS_URI}`;
 // Redis configuration
 export const REDIS_PREFIX = 'restaurant:';
 export const redisOptions = {
-  url: process.env.REDIS_URL || 'redis://localhost:6379'
+  socket: {
+    host: 'localhost',
+    port: 6379        
+  }
 };
 
 // Create Redis client
