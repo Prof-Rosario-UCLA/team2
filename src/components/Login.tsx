@@ -2,6 +2,7 @@
 import React from "react";
 import { GoogleLogin } from "@react-oauth/google";
 import axios from "axios";
+import styles from "../styles/Login.module.scss";
 
 interface LoginPageProps {
   onLoginSuccess: () => void;
@@ -23,12 +24,14 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
   };
 
   return (
-    <div className="login-page">
+    <div className={styles["login-page"]}>
       <h2>Please Sign in with Google</h2>
-      <GoogleLogin
-        onSuccess={handleLoginSuccess}
-        onError={() => console.error("Login Failed")}
-      />
+      <div className={styles["google-login-button"]}>
+        <GoogleLogin
+          onSuccess={handleLoginSuccess}
+          onError={() => console.error("Login Failed")}
+        />
+      </div>
     </div>
   );
 };
