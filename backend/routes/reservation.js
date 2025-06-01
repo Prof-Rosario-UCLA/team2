@@ -31,14 +31,14 @@ router.get("/range", async (req, res) => {
         .json({ error: "Start date and end date are required" });
     }
 
-    const start = new Date(startDate);
-    const end = new Date(endDate);
+    // const start = new Date(startDate);
+    // const end = new Date(endDate);
 
-    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-      return res.status(400).json({ error: "Invalid date format" });
-    }
+    // if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+    //   return res.status(400).json({ error: "Invalid date format" });
+    // }
 
-    const reservations = await getReservationsByDateRange(start, end);
+    const reservations = await getReservationsByDateRange(startDate, endDate);
     res.json(reservations);
   } catch (error) {
     console.error("Error in GET /reservations/range:", error);
@@ -53,25 +53,43 @@ router.post("/create", async (req, res) => {
   try {
     const reservationData = req.body;
 
+    console.log("DATA!!!!!", reservationData);
+
     const datePart = new Date(reservationData.date);
-    const timePart = new Date(reservationData.time);
+    let startTime = null;
+    let endTime = null;
 
-    // Extract date components
-    const year = datePart.getFullYear();
-    const month = datePart.getMonth();
-    const day = datePart.getDate();
+    // Normalize the date to YYYY-MM-DD format regardless of input format
+    let dateStr;
+    if (reservationData.date.includes("T")) {
+      // It's a full UTC timestamp (today's date), convert to local date
+      const utcDate = new Date(reservationData.date);
 
-    // Extract time components
-    const [hours, minutes] = reservationData.time.split(":").map(Number);
+      // Get the local date components
+      const year = utcDate.getFullYear();
+      const month = String(utcDate.getMonth() + 1).padStart(2, "0");
+      const day = String(utcDate.getDate()).padStart(2, "0");
 
-    const startTime = new Date(year, month, day, hours, minutes);
-    const endTime = new Date(startTime.getTime() + 2 * 60 * 60 * 1000);
-
-    console.log(startTime);
-
-    if (isNaN(startTime.getTime())) {
-      return res.status(400).json({ error: "Invalid date format" });
+      dateStr = `${year}-${month}-${day}`;
+    } else {
+      // It's already in YYYY-MM-DD format (future date)
+      dateStr = reservationData.date;
     }
+
+    const timeStr = reservationData.time; // e.g., "22:30"
+
+    startTime = `${dateStr}T${timeStr}:00.000Z`;
+    const startDate = new Date(startTime);
+
+    // Add 2 hours safely
+    const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000);
+
+    // If you need the result in the same string format:
+    endTime = endDate.toISOString();
+
+    console.log("Normalized date:", dateStr);
+    console.log("Start:", startTime);
+    console.log("End:", endTime);
 
     const newReservation = {
       name: `${reservationData.firstname} ${reservationData.lastname}`,

@@ -52,10 +52,30 @@ function Sidebar() {
   const [formType, setFormType] = useState("reservation");
   const { currDate, setCurrDate } = useCurrDate();
 
+  const currDateAsDate = new Date(currDate);
+  console.log(currDateAsDate.toISOString());
+
+  const tmrwDate = new Date(
+    Date.UTC(
+      currDateAsDate.getUTCFullYear(),
+      currDateAsDate.getUTCMonth(),
+      currDateAsDate.getUTCDate() + 1
+    )
+  );
+  console.log("tmrw", tmrwDate.toISOString());
+
   useEffect(() => {
-    fetchReservations("reservation");
-    fetchReservations("waitlist");
-  }, []);
+    fetchTodayReservations(
+      "reservation",
+      currDateAsDate.toISOString(),
+      tmrwDate.toISOString()
+    );
+    fetchTodayReservations(
+      "waitlist",
+      currDateAsDate.toISOString(),
+      tmrwDate.toISOString()
+    );
+  }, [currDate]);
 
   const sidebarTitleSize = "1.5rem";
 
@@ -66,6 +86,33 @@ function Sidebar() {
           ? "http://localhost:1919/reservations/"
           : "http://localhost:1919/walkins/"
       );
+      if (res.ok) {
+        const data = await res.json();
+        type === "reservation" ? setReservations(data) : setWaitlist(data);
+      } else {
+        console.error("Failed to fetch reservations");
+      }
+    } catch (err) {
+      console.error("Fetch error:", err);
+    }
+  };
+
+  const fetchTodayReservations = async (
+    type: string,
+    startDate: string,
+    endDate: string
+  ) => {
+    try {
+      const baseUrl =
+        type === "reservation"
+          ? "http://localhost:1919/reservations/range"
+          : "http://localhost:1919/walkins/range";
+
+      const url = `${baseUrl}?startDate=${encodeURIComponent(
+        startDate
+      )}&endDate=${encodeURIComponent(endDate)}`;
+      const res = await fetch(url);
+
       if (res.ok) {
         const data = await res.json();
         console.log(data);
@@ -79,14 +126,21 @@ function Sidebar() {
   };
 
   const convertDateToTime = (startTime: string | Date) => {
-    const date = new Date(startTime);
-    let hours = date.getHours();
-    const minutes = date.getMinutes();
+    console.log(startTime);
+    const isoString =
+      typeof startTime === "string" ? startTime : startTime.toISOString();
+
+    // Extract the time portion
+    const timePart = isoString.split("T")[1]; // "17:00:00.000Z"
+    const [hourStr, minuteStr] = timePart.split(":"); // ["17", "00"]
+
+    let hours = parseInt(hourStr, 10);
+    const minutes = parseInt(minuteStr, 10);
     const ampm = hours >= 12 ? "PM" : "AM";
 
-    // Convert to 12h format
+    // Convert to 12-hour format
     hours = hours % 12;
-    hours = hours === 0 ? 12 : hours; // convert 0 to 12
+    hours = hours === 0 ? 12 : hours;
 
     return `${hours}:${minutes.toString().padStart(2, "0")} ${ampm}`;
   };
@@ -97,8 +151,6 @@ function Sidebar() {
 
     return `${first} ${last[0]}.`;
   };
-
-  console.log(currDate);
 
   function getFormattedDate(inputDate: Date | string): string {
     try {
@@ -139,7 +191,11 @@ function Sidebar() {
             <ReservationForm
               onClose={() => {
                 setShowReservationForm(false);
-                fetchReservations(formType);
+                fetchTodayReservations(
+                  formType,
+                  currDateAsDate.toISOString(),
+                  tmrwDate.toISOString()
+                );
               }}
               reservationType={formType}
             />
