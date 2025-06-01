@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
-import { Title, Button } from "@mantine/core";
+import { Title, Button, Loader, Text } from "@mantine/core";
 import classes from "../styles/Sidebar.module.scss";
 import ReservationForm from "./Reservation";
 import { IconPlus } from "@tabler/icons-react";
-import { LoadingOverlay } from "./LoadingOverlay";
 
 type Reservation = {
   _id: string;
@@ -50,7 +49,8 @@ function Sidebar() {
   const [waitlist, setWaitlist] = useState<Walkins[]>([]);
   const [showReservationForm, setShowReservationForm] = useState(false);
   const [formType, setFormType] = useState("reservation");
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingReservations, setIsLoadingReservations] = useState(false);
+  const [isLoadingWaitlist, setIsLoadingWaitlist] = useState(false);
 
   useEffect(() => {
     fetchReservations("reservation");
@@ -60,7 +60,12 @@ function Sidebar() {
   const sidebarTitleSize = "1.5rem";
 
   const fetchReservations = async (type: string) => {
-    setIsLoading(true);
+    if (type === "reservation") {
+      setIsLoadingReservations(true);
+    } else {
+      setIsLoadingWaitlist(true);
+    }
+    
     try {
       const res = await fetch(
         type === "reservation"
@@ -71,13 +76,19 @@ function Sidebar() {
         const data = await res.json();
         console.log(data);
         type === "reservation" ? setReservations(data) : setWaitlist(data);
+
+        if (type === "reservation") {
+          setIsLoadingReservations(false);
+        } else {
+          setIsLoadingWaitlist(false);
+        }
       } else {
         console.error("Failed to fetch reservations");
       }
     } catch (err) {
       console.error("Fetch error:", err);
     } finally {
-      setIsLoading(false);
+      
     }
   };
 
@@ -103,7 +114,6 @@ function Sidebar() {
 
   return (
     <div className={classes.sidebarContainer}>
-      {isLoading && <LoadingOverlay message="Loading reservations..." />}
       <div className={classes.reservationTitleContainer}>
         <Title style={{ fontSize: sidebarTitleSize }}>Reservations</Title>
         {CustomAddButton("New", () => {
@@ -112,7 +122,12 @@ function Sidebar() {
         })}
       </div>
 
-      {reservations.length === 0 ? (
+      {isLoadingReservations ? (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '1rem' }}>
+          <Loader size="sm" />
+          <Text>Loading reservations...</Text>
+        </div>
+      ) : reservations.length === 0 ? (
         <p style={{ fontStyle: "italic" }}>No new reservations</p>
       ) : (
         <div className={classes.unassignedResContainer}>
@@ -161,7 +176,12 @@ function Sidebar() {
             setFormType("waitlist");
           })}
         </div>
-        {waitlist.length === 0 ? (
+        {isLoadingWaitlist ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '1rem' }}>
+            <Loader size="sm" />
+            <Text>Loading waitlist...</Text>
+          </div>
+        ) : waitlist.length === 0 ? (
           <p style={{ fontStyle: "italic" }}>No waitlist</p>
         ) : (
           waitlist.map((entry, index) => (
