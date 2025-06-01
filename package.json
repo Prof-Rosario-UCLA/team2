@@ -9,6 +9,7 @@
     "server": "nodemon api.js",
     "dev:full": "concurrently \"npm run server\" \"npm run dev\"",
     "lint": "eslint .",
+    "dist": "rm -fr node_modules",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -24,7 +25,8 @@
     "express": "^5.1.0",
     "mongoose": "^8.15.0",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react-dom": "^19.1.0",
+    "redis": "^5.1.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.0",
