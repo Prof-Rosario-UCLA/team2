@@ -29,8 +29,28 @@ type Walkins = {
   comments: string;
 };
 
-export function CustomAddButton(text: string, onClickFunc: () => void) {
+export function CustomAddButton(
+  text: string,
+  onClickFunc: () => void,
+  date?: Date
+) {
   const iconPlusSize = 16;
+
+  function isToday(date: Date) {
+    const today = new Date();
+
+    if (date.toString().includes("T")) {
+      return (
+        date.getFullYear === today.getFullYear &&
+        date.getMonth === today.getMonth &&
+        date.getDay === today.getDay
+      );
+    }
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, "0"); // months are 0-based
+    const day = String(today.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}` === date.toString();
+  }
 
   return (
     <Button
@@ -39,6 +59,7 @@ export function CustomAddButton(text: string, onClickFunc: () => void) {
       rightSection={
         <IconPlus size={iconPlusSize} className={classes.plusIcon} />
       }
+      disabled={date && !isToday(date)}
     >
       {text}
     </Button>
@@ -233,10 +254,14 @@ function Sidebar() {
 
       <div className={classes.waitlistTitleSection}>
         <Title style={{ fontSize: sidebarTitleSize }}>Waitlist</Title>
-        {CustomAddButton("Add to waitlist", () => {
-          setShowReservationForm(true);
-          setFormType("waitlist");
-        })}
+        {CustomAddButton(
+          "Add to waitlist",
+          () => {
+            setShowReservationForm(true);
+            setFormType("waitlist");
+          },
+          currDate
+        )}
       </div>
       {waitlist.length === 0 ? (
         <p style={{ fontStyle: "italic" }}>No waitlist</p>

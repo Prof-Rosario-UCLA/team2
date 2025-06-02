@@ -1,7 +1,16 @@
 import classes from "../styles/MainPage.module.scss";
-import { Grid, ScrollArea, Title, Popover } from "@mantine/core";
+import {
+  Grid,
+  ScrollArea,
+  Title,
+  Popover,
+  NumberInput,
+  Textarea,
+  Button,
+} from "@mantine/core";
 import { DatesProvider, DatePicker } from "@mantine/dates";
-import { useState, createContext, useContext } from "react";
+import { useForm } from "@mantine/form";
+import { useState, useEffect } from "react";
 import { CustomAddButton } from "./Sidebar";
 import { useCurrDate } from "./CurrDateProvider";
 import { IconCalendarWeek } from "@tabler/icons-react";
@@ -10,6 +19,12 @@ interface CalendarIconTriggerProps {
   currDate: Date;
   setCurrDate: (date: Date) => void;
 }
+
+type Table = {
+  tableNumber: Number;
+  tableCapacity: Number;
+  comments: String;
+};
 
 function CalendarIconTrigger({
   currDate,
@@ -63,7 +78,63 @@ function CalendarIconTrigger({
 
 function MainPage() {
   const [selectedTime, setSelectedTime] = useState(0);
+  const [tables, setTables] = useState<Table[]>([]);
+  const [addTableForm, setAddTableForm] = useState(false);
+  const [loading, setLoading] = useState(false);
   const { currDate, setCurrDate } = useCurrDate();
+
+  useEffect(() => {
+    fetchTables();
+  }, []);
+
+  useEffect(() => {
+    if (tables.length > 0) {
+      form.setFieldValue("tableNum", tables.length + 1);
+    }
+  }, [tables]);
+
+  const fetchTables = async () => {
+    try {
+      const res = await fetch("http://localhost:1919/tables/");
+      if (res.ok) {
+        const data = await res.json();
+        setTables(data);
+      } else {
+        console.error("Failed to fetch reservations");
+      }
+    } catch (err) {
+      console.error("Fetch error:", err);
+    }
+  };
+
+  const handleSubmit = async (values: any) => {
+    console.log(values);
+    try {
+      const response = await fetch("http://localhost:1919/tables/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(values),
+      });
+
+      if (response.ok) {
+        form.reset();
+        fetchTables();
+        // setSubmitted(true);
+      } else {
+        const error = await response.json();
+        console.error("Submission error:", error);
+        // Handle error
+      }
+    } catch (error) {
+      console.error("Submission error:", error);
+      // Handle error
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // const [currDate, setCurrDate] = useState<Date>(() => {
   //   const today = new Date();
   //   return new Date(today.getFullYear(), today.getMonth(), today.getDate());
@@ -107,20 +178,38 @@ function MainPage() {
     return `${hour12}:${minutes.toString().padStart(2, "0")}${period}`;
   });
 
-  const tables: Table[] = [
-    { name: "Table 1", minNumber: 2, maxNumber: 4 },
-    { name: "Table 2", minNumber: 4, maxNumber: 6 },
-    { name: "Table 3", minNumber: 6, maxNumber: 8 },
-    { name: "Table 4", minNumber: 2, maxNumber: 10 },
-    { name: "Table 5", minNumber: 1, maxNumber: 2 },
-    { name: "Table 6", minNumber: 4, maxNumber: 6 },
-    { name: "Table 1", minNumber: 2, maxNumber: 4 },
-    { name: "Table 2", minNumber: 4, maxNumber: 6 },
-    { name: "Table 3", minNumber: 6, maxNumber: 8 },
-    { name: "Table 4", minNumber: 2, maxNumber: 10 },
-    { name: "Table 5", minNumber: 1, maxNumber: 2 },
-    { name: "Table 6", minNumber: 4, maxNumber: 6 },
-  ];
+  const form = useForm({
+    initialValues: {
+      tableNum: 1,
+      maxCapacity: 2,
+      numberTables: 1,
+      comments: "",
+    },
+
+    validate: {
+      tableNum: (value: Number) =>
+        value.valueOf() < 1 ? "Table number must be positive" : null,
+      maxCapacity: (value: Number) =>
+        value.valueOf() < 1 ? "Table capacity must be positive" : null,
+      numberTables: (value: Number) =>
+        value.valueOf() < 1 ? "Must create a positive number of tables" : null,
+    },
+  });
+
+  // const tables: Table[] = [
+  //   { name: "Table 1", minNumber: 2, maxNumber: 4 },
+  //   { name: "Table 2", minNumber: 4, maxNumber: 6 },
+  //   { name: "Table 3", minNumber: 6, maxNumber: 8 },
+  //   { name: "Table 4", minNumber: 2, maxNumber: 10 },
+  //   { name: "Table 5", minNumber: 1, maxNumber: 2 },
+  //   { name: "Table 6", minNumber: 4, maxNumber: 6 },
+  //   { name: "Table 1", minNumber: 2, maxNumber: 4 },
+  //   { name: "Table 2", minNumber: 4, maxNumber: 6 },
+  //   { name: "Table 3", minNumber: 6, maxNumber: 8 },
+  //   { name: "Table 4", minNumber: 2, maxNumber: 10 },
+  //   { name: "Table 5", minNumber: 1, maxNumber: 2 },
+  //   { name: "Table 6", minNumber: 4, maxNumber: 6 },
+  // ];
 
   return (
     <div className={classes.mainPageContainer}>
@@ -163,18 +252,70 @@ function MainPage() {
         </ScrollArea>
       </div>
 
-      {CustomAddButton("Add a table", () => {})}
+      {CustomAddButton("Add a table", () => {
+        setAddTableForm(true);
+      })}
       <Grid className={classes.tableContainer}>
         {tables.map((table, index) => (
           <Grid.Col key={index} span={tableItemWidth}>
             <div className={classes.tableItem}>
               <h6 className={classes.tableItemTitle}>
-                {table.name} ({table.minNumber}-{table.maxNumber})
+                Table {table.tableNumber} ({table.tableCapacity})
               </h6>
             </div>
           </Grid.Col>
         ))}
       </Grid>
+      {addTableForm && (
+        <div className={classes.addTableFormContainer}>
+          <Title>Add a table</Title>
+          <button
+            className={classes.closeButton}
+            onClick={() => setAddTableForm(false)}
+          >
+            X
+          </button>
+          <form onSubmit={form.onSubmit(handleSubmit)}>
+            <NumberInput
+              label="Table Number"
+              required
+              min={1}
+              {...form.getInputProps("tableNum")}
+            />
+
+            <NumberInput
+              label="Table Capacity"
+              required
+              min={1}
+              {...form.getInputProps("maxCapacity")}
+              mt="md"
+            />
+
+            {/* <NumberInput
+              label="# of Tables to Create"
+              required
+              min={1}
+              {...form.getInputProps("numberTables")}
+              mt="md"
+            /> */}
+
+            <Textarea
+              label="Comments"
+              autosize
+              minRows={2}
+              {...form.getInputProps("comments")}
+              mt="md"
+            />
+
+            <div className={classes.submitContainer}>
+              <Button type="submit" loading={loading}>
+                Submit
+              </Button>
+            </div>
+          </form>
+        </div>
+      )}
+      {addTableForm && <div className={classes.grayedBackground}></div>}
     </div>
   );
 }

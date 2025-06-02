@@ -113,7 +113,6 @@ function ReservationForm({ onClose, reservationType }: ReservationFormProps) {
 
   const handleSubmit = async (values: any) => {
     setLoading(true);
-    console.log(values);
     try {
       const response = await fetch(
         reservationType === "reservation"
