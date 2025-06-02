@@ -15,7 +15,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
         // const res = await axios.post("http://localhost:4000/auth/google", {
         //     token: credentialResponse.credential,
         // });
-
+      console.log(credentialResponse.credential)
       localStorage.setItem("token", "test"); // save auth token
       onLoginSuccess(); // tell App we're now logged in
     } catch (error) {
