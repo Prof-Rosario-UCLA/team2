@@ -14,6 +14,7 @@ import { useState, useEffect } from "react";
 import { CustomAddButton } from "./Sidebar";
 import { useCurrDate } from "./CurrDateProvider";
 import { IconCalendarWeek } from "@tabler/icons-react";
+import { API_BASE_URL } from '../config';
 
 interface CalendarIconTriggerProps {
   currDate: Date;
@@ -95,7 +96,7 @@ function MainPage() {
 
   const fetchTables = async () => {
     try {
-      const res = await fetch("http://localhost:1919/tables/");
+      const res = await fetch(`${API_BASE_URL}/tables/`);
       if (res.ok) {
         const data = await res.json();
         setTables(data);
@@ -110,7 +111,7 @@ function MainPage() {
   const handleSubmit = async (values: any) => {
     console.log(values);
     try {
-      const response = await fetch("http://localhost:1919/tables/create", {
+      const response = await fetch(`${API_BASE_URL}/tables/create`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -4,6 +4,7 @@ import classes from "../styles/Sidebar.module.scss";
 import ReservationForm from "./Reservation";
 import { IconPlus } from "@tabler/icons-react";
 import { useCurrDate } from "./CurrDateProvider";
+import { API_BASE_URL } from '../config';
 
 type Reservation = {
   _id: string;
@@ -113,8 +114,8 @@ function Sidebar() {
     try {
       const baseUrl =
         type === "reservation"
-          ? "http://localhost:1919/reservations/range"
-          : "http://localhost:1919/walkins/range";
+          ? `${API_BASE_URL}/reservations/range`
+          : `${API_BASE_URL}/walkins/range`;
 
       const url = `${baseUrl}?startDate=${encodeURIComponent(
         startDate

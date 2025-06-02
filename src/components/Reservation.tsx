@@ -18,6 +18,7 @@ import {
 import { useForm } from "@mantine/form";
 import { IconClock } from "@tabler/icons-react";
 import classes from "../styles/Reservation.module.scss";
+import { API_BASE_URL } from '../config';
 //import dajys from "dajys";
 
 type ReservationFormProps = {
@@ -116,8 +117,8 @@ function ReservationForm({ onClose, reservationType }: ReservationFormProps) {
     try {
       const response = await fetch(
         reservationType === "reservation"
-          ? "http://localhost:1919/reservations/create"
-          : "http://localhost:1919/walkins/create",
+          ? `${API_BASE_URL}/reservations/create`
+          : `${API_BASE_URL}/walkins/create`,
         {
           method: "POST",
           headers: {

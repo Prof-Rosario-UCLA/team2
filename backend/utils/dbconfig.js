@@ -5,6 +5,7 @@ dotenv.config();
 // import { createClient } from 'redis';
 
 // Database configuration
+const isProduction = true; // Set to true for production environment
 
 const ATLAS_URI = process.env.MONGO_URI;
 export const MONGO_URI = `${ATLAS_URI}`;
@@ -17,13 +18,23 @@ console.log('Using MongoDB URI:', maskedUri);
 export const REDIS_PREFIX = 'restaurant:';
 export const redisOptions = {
   socket: {
-    host: process.env.REDIS_HOST || 'restaurantapp-redis-service',
+    host: isProduction ? 'restaurantapp-redis-service' : 'localhost',
     port: 6379
   }
 };
 
 // Create Redis client
 export const redisClient = createClient(redisOptions);
+
+// Add error handler for Redis client
+redisClient.on('error', (err) => {
+  console.error('Redis Client Error:', err);
+});
+
+// Add connection handler for Redis client
+redisClient.on('connect', () => {
+  console.log('Redis Client Connected');
+});
 
 // Connect to MongoDB
 export const connectToMongoDB = async () => {
