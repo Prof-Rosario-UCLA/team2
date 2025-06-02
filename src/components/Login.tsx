@@ -1,7 +1,6 @@
 // components/LoginPage.tsx
 import React from "react";
 import { GoogleLogin } from "@react-oauth/google";
-import axios from "axios";
 import styles from "../styles/Login.module.scss";
 
 interface LoginPageProps {

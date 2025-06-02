@@ -72,7 +72,7 @@ function Sidebar() {
   const [showReservationForm, setShowReservationForm] = useState(false);
   const [formType, setFormType] = useState("reservation");
 
-  const { currDate, setCurrDate } = useCurrDate();
+  const { currDate } = useCurrDate();
 
   const currDateAsDate = new Date(currDate);
   console.log(currDateAsDate.toISOString());
@@ -104,30 +104,6 @@ function Sidebar() {
   }, [currDate]);
 
   const sidebarTitleSize = "1.5rem";
-
-  const fetchReservations = async (type: string) => {
-    if (type === "reservation") {
-      setIsLoadingReservations(true);
-    } else {
-      setIsLoadingWaitlist(true);
-    }
-    
-    try {
-      const res = await fetch(
-        type === "reservation"
-          ? "http://localhost:1919/reservations/"
-          : "http://localhost:1919/walkins/"
-      );
-      if (res.ok) {
-        const data = await res.json();
-        type === "reservation" ? setReservations(data) : setWaitlist(data);
-      } else {
-        console.error("Failed to fetch reservations");
-      }
-    } catch (err) {
-      console.error("Fetch error:", err);
-    }
-  };
 
   const fetchTodayReservations = async (
     type: string,
@@ -191,28 +167,6 @@ function Sidebar() {
 
     return `${first} ${last[0]}.`;
   };
-
-  function getFormattedDate(inputDate: Date | string): string {
-    try {
-      let date = inputDate instanceof Date ? inputDate : new Date(inputDate);
-
-      // Adjust for timezone offset
-      const offset = date.getTimezoneOffset();
-      date = new Date(date.getTime() + offset * 60 * 1000);
-
-      return date.toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      });
-    } catch (error) {
-      return new Date().toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      });
-    }
-  }
 
   return (
     <div className={classes.sidebarContainer}>

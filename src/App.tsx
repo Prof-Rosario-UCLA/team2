@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from "react";
-import { Flex } from "@mantine/core";
+import { useEffect, useState } from "react";
 
 import "./App.css";
 import MainPage from "./components/MainPage";
