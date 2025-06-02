@@ -13,8 +13,8 @@ export const MONGO_URI = `${ATLAS_URI}`;
 export const REDIS_PREFIX = 'restaurant:';
 export const redisOptions = {
   socket: {
-    host: 'localhost',
-    port: 6379        
+    host: process.env.REDIS_HOST || 'restaurantapp-redis-service',
+    port: 6379
   }
 };
 
@@ -39,6 +39,7 @@ export const connectToMongoDB = async () => {
       name: mongoose.connection.name,
       database: mongoose.connection.db.databaseName
     });
+    console.log('Connected to MongoDB!');
     return true;
   } catch (err) {
     console.error('MongoDB Connection Error:', {
@@ -52,8 +53,9 @@ export const connectToMongoDB = async () => {
 // Connect to Redis
 export const connectToRedis = async () => {
   try {
+    console.log('Attempting to connect to Redis at:', redisOptions.socket.host, redisOptions.socket.port);
     await redisClient.connect();
-    console.log('Connected to Redis');
+    console.log('Connected to Redis successfully');
     return true;
   } catch (err) {
     console.error('Failed to connect to Redis:', err);

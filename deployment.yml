@@ -127,12 +127,13 @@ spec:
   type: ClusterIP
 ---
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: restaurantapp-redis
   labels:
     app: restaurantapp-redis
 spec:
+  serviceName: restaurantapp-redis-service
   replicas: 1
   selector:
     matchLabels:
@@ -147,6 +148,7 @@ spec:
         image: redis:7-alpine
         ports:
         - containerPort: 6379
+          name: redis
         resources:
           requests:
             cpu: "100m"
@@ -154,16 +156,37 @@ spec:
           limits:
             cpu: "500m"
             memory: "256Mi"
+        volumeMounts:
+        - name: redis-data
+          mountPath: /data
+        readinessProbe:
+          tcpSocket:
+            port: 6379
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          tcpSocket:
+            port: 6379
+          initialDelaySeconds: 15
+          periodSeconds: 20
+  volumeClaimTemplates:
+  - metadata:
+      name: redis-data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 1Gi
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: restaurantapp-redis-service
 spec:
+  type: ClusterIP
+  ports:
+  - port: 6379
+    targetPort: 6379
+    name: client
   selector:
     app: restaurantapp-redis
-  ports:
-    - protocol: TCP
-      port: 6379
-      targetPort: 6379
-  type: ClusterIP
