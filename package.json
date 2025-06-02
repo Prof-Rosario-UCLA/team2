@@ -9,13 +9,16 @@
     "server": "nodemon api.js",
     "dev:full": "concurrently \"npm run server\" \"npm run dev\"",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "dist": "rm -fr node_modules",
+    "preview": "vite preview --port 5173"
   },
   "dependencies": {
     "@mantine/core": "^8.0.1",
     "@mantine/dates": "^8.0.1",
     "@mantine/form": "^8.0.1",
+    "@react-oauth/google": "^0.12.2",
     "@tabler/icons-react": "^3.33.0",
+    "axios": "^1.9.0",
     "cors": "^2.8.5",
     "dayjs": "^1.11.13",
     "dotenv": "^16.5.0",
@@ -39,6 +42,7 @@
     "sass-embedded": "^1.89.0",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.30.1",
-    "vite": "^6.3.5"
+    "vite": "^6.3.5",
+    "vite-plugin-pwa": "^1.0.0"
   }
 }

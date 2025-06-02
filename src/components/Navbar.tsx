@@ -1,5 +1,4 @@
-import { IconChevronDown } from "@tabler/icons-react";
-import { Burger, Center, Container, Group, Menu, Title } from "@mantine/core";
+import { Burger, Group, Title } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import classes from "../styles/Navbar.module.scss";
 

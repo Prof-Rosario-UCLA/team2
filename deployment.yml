@@ -1,0 +1,149 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: restaurantapp-frontend
+  labels:
+    app: restaurantapp-frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: restaurantapp-frontend
+  template:
+    metadata:
+      labels:
+        app: restaurantapp-frontend
+    spec:
+      containers:
+      - name: restaurantapp-frontend
+        image: gcr.io/PROJECT_ID/restaurantapp-frontend:TAG
+        ports:
+        - containerPort: 5173
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 5173
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 5173
+          initialDelaySeconds: 15
+          periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: restaurantapp-frontend-service
+spec:
+  selector:
+    app: restaurantapp-frontend
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5173
+  type: LoadBalancer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: restaurantapp-backend
+  labels:
+    app: restaurantapp-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: restaurantapp-backend
+  template:
+    metadata:
+      labels:
+        app: restaurantapp-backend
+    spec:
+      containers:
+      - name: restaurantapp-backend
+        image: gcr.io/PROJECT_ID/restaurantapp-backend:TAG
+        ports:
+        - containerPort: 1919
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 1919
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 1919
+          initialDelaySeconds: 15
+          periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: restaurantapp-backend-service
+spec:
+  selector:
+    app: restaurantapp-backend
+  ports:
+    - protocol: TCP
+      port: 1919
+      targetPort: 1919
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: restaurantapp-redis
+  labels:
+    app: restaurantapp-redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: restaurantapp-redis
+  template:
+    metadata:
+      labels:
+        app: restaurantapp-redis
+    spec:
+      containers:
+      - name: restaurantapp-redis
+        image: redis:7-alpine
+        ports:
+        - containerPort: 6379
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "500m"
+            memory: "256Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: restaurantapp-redis-service
+spec:
+  selector:
+    app: restaurantapp-redis
+  ports:
+    - protocol: TCP
+      port: 6379
+      targetPort: 6379
+  type: ClusterIP

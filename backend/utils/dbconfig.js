@@ -24,11 +24,27 @@ export const redisClient = createClient(redisOptions);
 // Connect to MongoDB
 export const connectToMongoDB = async () => {
   try {
-    await mongoose.connect(MONGO_URI);
-    console.log('Connected to MongoDB');
+    console.log('Starting MongoDB connection...');
+    await mongoose.connect(MONGO_URI, {
+      dbName: 'restaurants'  // Explicitly set the database name
+    });
+    
+    // Verify collections
+    const collections = await mongoose.connection.db.listCollections().toArray();
+    console.log('Available collections:', collections.map(c => c.name));
+    
+    console.log('MongoDB Connection State:', {
+      state: mongoose.connection.readyState,
+      host: mongoose.connection.host,
+      name: mongoose.connection.name,
+      database: mongoose.connection.db.databaseName
+    });
     return true;
   } catch (err) {
-    console.error('Failed to connect to MongoDB:', err);
+    console.error('MongoDB Connection Error:', {
+      message: err.message,
+      code: err.code
+    });
     return false;
   }
 };
