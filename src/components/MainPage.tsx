@@ -20,11 +20,11 @@ interface CalendarIconTriggerProps {
   setCurrDate: (date: Date) => void;
 }
 
-type Table = {
-  tableNumber: Number;
-  tableCapacity: Number;
-  comments: String;
-};
+interface Table {
+  tableNumber: number;
+  tableCapacity: number;
+  comments: string;
+}
 
 function CalendarIconTrigger({
   currDate,
@@ -160,12 +160,6 @@ function MainPage() {
       });
     }
   })();
-
-  interface Table {
-    name: string;
-    minNumber: number;
-    maxNumber: number;
-  }
 
   const tableItemWidth = 1.58;
 
