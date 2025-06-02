@@ -9,6 +9,10 @@ dotenv.config();
 const ATLAS_URI = process.env.MONGO_URI;
 export const MONGO_URI = `${ATLAS_URI}`;
 
+// Debug: Print masked MongoDB URI
+const maskedUri = ATLAS_URI ? ATLAS_URI.replace(/(mongodb\+srv:\/\/[^:]+):([^@]+)@/, '$1:****@') : 'not set';
+console.log('Using MongoDB URI:', maskedUri);
+
 // Redis configuration
 export const REDIS_PREFIX = 'restaurant:';
 export const redisOptions = {
