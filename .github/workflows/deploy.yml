@@ -34,6 +34,8 @@ jobs:
 
     - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@v2
+      with:
+        install_components: 'gke-gcloud-auth-plugin'
 
     - name: Configure Docker to use gcloud as a credential helper
       run: |-
@@ -42,7 +44,8 @@ jobs:
     - name: Build and Push Frontend Docker image
       id: meta
       run: |-
-        IMAGE_TAG=us-west2-docker.pkg.dev/$PROJECT_ID/$REPO_NAME/$FRONTEND_IMAGE:$GITHUB_SHA
+        IMAGE_TAG="us-west2-docker.pkg.dev/$PROJECT_ID/$REPO_NAME/$FRONTEND_IMAGE:$GITHUB_SHA"
+        echo "Building image: $IMAGE_TAG"
         docker build -t $FRONTEND_IMAGE -f frontend.Dockerfile .
         docker tag $FRONTEND_IMAGE $IMAGE_TAG
         docker push $IMAGE_TAG
@@ -65,6 +68,8 @@ jobs:
 
     - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@v2
+      with:
+        install_components: 'gke-gcloud-auth-plugin'
 
     - name: Configure Docker to use gcloud as a credential helper
       run: |-
@@ -73,7 +78,8 @@ jobs:
     - name: Build and Push Backend Docker image
       id: meta
       run: |-
-        IMAGE_TAG=us-west2-docker.pkg.dev/$PROJECT_ID/$REPO_NAME/$BACKEND_IMAGE:$GITHUB_SHA
+        IMAGE_TAG="us-west2-docker.pkg.dev/$PROJECT_ID/$REPO_NAME/$BACKEND_IMAGE:$GITHUB_SHA"
+        echo "Building image: $IMAGE_TAG"
         docker build -t $BACKEND_IMAGE -f backend.Dockerfile .
         docker tag $BACKEND_IMAGE $IMAGE_TAG
         docker push $IMAGE_TAG
@@ -105,9 +111,17 @@ jobs:
 
     - name: Deploy to GKE
       run: |-
+        # Debug: Print the image tags
+        echo "Frontend image tag: ${{ needs.build-frontend.outputs.image-tag }}"
+        echo "Backend image tag: ${{ needs.build-backend.outputs.image-tag }}"
+        
+        # Replace PROJECT_ID and REPO_NAME first
+        sed -i "s|PROJECT_ID|$PROJECT_ID|g" deployment.yml
+        sed -i "s|REPO_NAME|$REPO_NAME|g" deployment.yml
+        
         # Replace the image names in the k8s template
-        sed -i "s|us-west2-docker.pkg.dev/PROJECT_ID/REPO_NAME/restaurantapp-frontend:TAG|${{ needs.build-frontend.outputs.image-tag }}|g" deployment.yml
-        sed -i "s|us-west2-docker.pkg.dev/PROJECT_ID/REPO_NAME/restaurantapp-backend:TAG|${{ needs.build-backend.outputs.image-tag }}|g" deployment.yml
+        sed -i "s|us-west2-docker.pkg.dev/$PROJECT_ID/$REPO_NAME/restaurantapp-frontend:TAG|${{ needs.build-frontend.outputs.image-tag }}|g" deployment.yml
+        sed -i "s|us-west2-docker.pkg.dev/$PROJECT_ID/$REPO_NAME/restaurantapp-backend:TAG|${{ needs.build-backend.outputs.image-tag }}|g" deployment.yml
         
         # Debug: Print the modified deployment file
         echo "Modified deployment.yml contents:"
