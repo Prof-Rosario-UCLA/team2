@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { Flex } from "@mantine/core";
 
@@ -11,10 +10,7 @@ import { CurrDateProvider } from "./components/CurrDateProvider";
 
 import LoginPage from "./components/Login";
 
-
-
 function App() {
-  
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
@@ -27,46 +23,29 @@ function App() {
   const handleLoginSuccess = () => {
     setIsLoggedIn(true);
   };
-  
+
   return (
     <div className="App">
       <nav className="navbar">
         <Navbar />
       </nav>
-
-
-      <CurrDateProvider>
-        <section
-          className="App-header"
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 4fr",
-            paddingTop: "76px",
-          }}
-        >
-          <Sidebar />
-          <MainPage />
-        </section>
-      </CurrDateProvider>
-
-      <section
-        className="App-header"
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 4fr",
-          paddingTop: "76px",
-        }}
-      >
-        {isLoggedIn ? (
-          <>
+      {isLoggedIn ? (
+        <CurrDateProvider>
+          <section
+            className="App-header"
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 4fr",
+              paddingTop: "76px",
+            }}
+          >
             <Sidebar />
             <MainPage />
-          </>
-        ) : (
-          <LoginPage onLoginSuccess={handleLoginSuccess} />
-        )}
-      </section>
-
+          </section>
+        </CurrDateProvider>
+      ) : (
+        <LoginPage onLoginSuccess={handleLoginSuccess} />
+      )}
     </div>
   );
 }
