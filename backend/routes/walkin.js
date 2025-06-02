@@ -60,24 +60,57 @@ router.get("/range", async (req, res) => {
 // Create a new walk-in
 router.post("/create", async (req, res) => {
   try {
+    // const reservationData = req.body;
+
+    // const datePart = new Date(reservationData.date);
+
+    // // Extract date components
+    // const year = datePart.getFullYear();
+    // const month = datePart.getMonth();
+    // const day = datePart.getDate();
+
+    // // Extract time components
+    // const [hours, minutes] = reservationData.time.split(":").map(Number);
+
+    // const startTime = new Date(Date.UTC(year, month, day, hours, minutes));
+    // const endTime = new Date(Date.UTC(year, month, day, hours + 2, minutes));
+
+    // console.log(startTime);
+
+    // if (isNaN(startTime.getTime())) {
+    //   return res.status(400).json({ error: "Invalid date format" });
+    // }
+
     const walkInData = req.body;
 
+    const datePart = new Date(walkInData.date);
+
+    // Extract date components
+    const year = datePart.getFullYear();
+    const month = datePart.getMonth();
+    const day = datePart.getDate();
+
+    // Extract time components
     const [hours, minutes] = walkInData.time.split(":").map(Number);
-    const now = new Date();
-    const dateWithTime = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate(),
-      hours,
-      minutes
-    );
+
+    const timeAdded = new Date(Date.UTC(year, month, day, hours, minutes));
+
+    // const [hours, minutes] = walkInData.time.split(":").map(Number);
+    // const now = new Date();
+    // const dateWithTime = new Date(
+    //   now.getFullYear(),
+    //   now.getMonth(),
+    //   now.getDate(),
+    //   hours,
+    //   minutes
+    // );
 
     const newWalkIn = {
       name: `${walkInData.firstname} ${walkInData.lastname}`,
       phoneNumber: walkInData.phone,
       tableNumber: null,
       size: walkInData.partySize,
-      timeAddedToWaitlist: dateWithTime,
+      timeAddedToWaitlist: timeAdded,
       startTime: null,
       endTime: null,
       comments: walkInData.specialRequests || "",
