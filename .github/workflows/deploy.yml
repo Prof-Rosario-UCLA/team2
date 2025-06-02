@@ -78,6 +78,18 @@ jobs:
       run: |-
         gcloud container clusters get-credentials "$GKE_CLUSTER" --zone "$GKE_ZONE"
 
+    - name: Create Kubernetes secrets
+      run: |-
+        # Create secret for MongoDB URI
+        kubectl create secret generic mongodb-uri \
+          --from-literal=uri='${{ secrets.MONGO_URI }}' \
+          --dry-run=client -o yaml | kubectl apply -f -
+        
+        # Create secret for Google Client ID
+        kubectl create secret generic app-secrets \
+          --from-literal=VITE_GOOGLE_CLIENT_ID='${{ secrets.VITE_GOOGLE_CLIENT_ID }}' \
+          --dry-run=client -o yaml | kubectl apply -f -
+
     - name: Prepare deployment file
       run: |-
         # Debug: Print the image tags

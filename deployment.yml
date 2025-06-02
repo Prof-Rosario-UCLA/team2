@@ -19,6 +19,12 @@ spec:
         image: FRONTEND_IMAGE_TAG
         ports:
         - containerPort: 5173
+        env:
+        - name: VITE_GOOGLE_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: VITE_GOOGLE_CLIENT_ID
         resources:
           requests:
             cpu: "100m"
@@ -73,6 +79,20 @@ spec:
         image: BACKEND_IMAGE_TAG
         ports:
         - containerPort: 1919
+        env:
+        - name: REDIS_HOST
+          value: "restaurantapp-redis-service"
+        - name: REDIS_PORT
+          value: "6379"
+        - name: PORT
+          value: "1919"
+        - name: NODE_ENV
+          value: "production"
+        - name: MONGO_URI
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-uri
+              key: uri
         resources:
           requests:
             cpu: "100m"
