@@ -49,7 +49,7 @@ jobs:
         docker build -t $FRONTEND_IMAGE -f frontend.Dockerfile .
         docker tag $FRONTEND_IMAGE $IMAGE_TAG
         docker push $IMAGE_TAG
-        echo "image-tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
+        echo "FRONTEND_IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
 
   build-backend:
     name: Build Backend
@@ -83,7 +83,7 @@ jobs:
         docker build -t $BACKEND_IMAGE -f backend.Dockerfile .
         docker tag $BACKEND_IMAGE $IMAGE_TAG
         docker push $IMAGE_TAG
-        echo "image-tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
+        echo "BACKEND_IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
 
   deploy:
     name: Deploy to GKE
@@ -112,12 +112,12 @@ jobs:
     - name: Deploy to GKE
       run: |-
         # Debug: Print the image tags
-        echo "Frontend image tag: ${{ needs.build-frontend.outputs.image-tag }}"
-        echo "Backend image tag: ${{ needs.build-backend.outputs.image-tag }}"
+        echo "Frontend image tag: ${{ env.FRONTEND_IMAGE_TAG }}"
+        echo "Backend image tag: ${{ env.BACKEND_IMAGE_TAG }}"
         
         # Replace the image tags in the k8s template
-        sed -i "s|FRONTEND_IMAGE_TAG|${{ needs.build-frontend.outputs.image-tag }}|g" deployment.yml
-        sed -i "s|BACKEND_IMAGE_TAG|${{ needs.build-backend.outputs.image-tag }}|g" deployment.yml
+        sed -i "s|FRONTEND_IMAGE_TAG|${{ env.FRONTEND_IMAGE_TAG }}|g" deployment.yml
+        sed -i "s|BACKEND_IMAGE_TAG|${{ env.BACKEND_IMAGE_TAG }}|g" deployment.yml
         
         # Debug: Print the modified deployment file
         echo "Modified deployment.yml contents:"
