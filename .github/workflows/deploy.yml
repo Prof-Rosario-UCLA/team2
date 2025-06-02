@@ -10,6 +10,7 @@ on:
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  REPO_NAME: ${{ secrets.ARTIFACT_REGISTRY_REPO }}
   GKE_CLUSTER: ${{ secrets.GKE_CLUSTER_NAME }}
   GKE_ZONE: ${{ secrets.GKE_CLUSTER_ZONE }}
   FRONTEND_IMAGE: restaurantapp-frontend
@@ -36,39 +37,35 @@ jobs:
 
     - name: Configure Docker to use gcloud as a credential helper
       run: |-
-        gcloud --quiet auth configure-docker
+        gcloud auth configure-docker us-west1-docker.pkg.dev
 
     - name: Get GKE credentials
       run: |-
         gcloud container clusters get-credentials "$GKE_CLUSTER" --zone "$GKE_ZONE"
 
-    - name: Build Frontend Docker image
+    - name: Build and Tag Frontend Docker image
       run: |-
-        docker build \
-          --tag "gcr.io/$PROJECT_ID/$FRONTEND_IMAGE:$GITHUB_SHA" \
-          --file frontend.Dockerfile \
-          .
+        docker build -t $FRONTEND_IMAGE -f frontend.Dockerfile .
+        docker tag $FRONTEND_IMAGE us-west1-docker.pkg.dev/$PROJECT_ID/$REPO_NAME/$FRONTEND_IMAGE:$GITHUB_SHA
 
-    - name: Build Backend Docker image
+    - name: Build and Tag Backend Docker image
       run: |-
-        docker build \
-          --tag "gcr.io/$PROJECT_ID/$BACKEND_IMAGE:$GITHUB_SHA" \
-          --file backend.Dockerfile \
-          .
+        docker build -t $BACKEND_IMAGE -f backend.Dockerfile .
+        docker tag $BACKEND_IMAGE us-west1-docker.pkg.dev/$PROJECT_ID/$REPO_NAME/$BACKEND_IMAGE:$GITHUB_SHA
 
     - name: Push Frontend Docker image
       run: |-
-        docker push "gcr.io/$PROJECT_ID/$FRONTEND_IMAGE:$GITHUB_SHA"
+        docker push us-west1-docker.pkg.dev/$PROJECT_ID/$REPO_NAME/$FRONTEND_IMAGE:$GITHUB_SHA
 
     - name: Push Backend Docker image
       run: |-
-        docker push "gcr.io/$PROJECT_ID/$BACKEND_IMAGE:$GITHUB_SHA"
+        docker push us-west1-docker.pkg.dev/$PROJECT_ID/$REPO_NAME/$BACKEND_IMAGE:$GITHUB_SHA
 
     - name: Deploy
       run: |-
         # Replace the image names in the k8s template
-        sed -i "s|gcr.io/PROJECT_ID/restaurantapp-frontend:TAG|gcr.io/$PROJECT_ID/$FRONTEND_IMAGE:$GITHUB_SHA|g" deployment.yml
-        sed -i "s|gcr.io/PROJECT_ID/restaurantapp-backend:TAG|gcr.io/$PROJECT_ID/$BACKEND_IMAGE:$GITHUB_SHA|g" deployment.yml
+        sed -i "s|gcr.io/PROJECT_ID/restaurantapp-frontend:TAG|us-west1-docker.pkg.dev/$PROJECT_ID/$REPO_NAME/$FRONTEND_IMAGE:$GITHUB_SHA|g" deployment.yml
+        sed -i "s|gcr.io/PROJECT_ID/restaurantapp-backend:TAG|us-west1-docker.pkg.dev/$PROJECT_ID/$REPO_NAME/$BACKEND_IMAGE:$GITHUB_SHA|g" deployment.yml
         
         # Apply the deployment
         kubectl apply -f deployment.yml
