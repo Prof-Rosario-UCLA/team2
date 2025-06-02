@@ -26,7 +26,7 @@ export const connectToMongoDB = async () => {
   try {
     console.log('Starting MongoDB connection...');
     await mongoose.connect(MONGO_URI, {
-      dbName: 'restaurants'  // Explicitly set the database name
+      dbName: 'restaurants' 
     });
     
     // Verify collections
