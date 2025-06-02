@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: restaurantapp-frontend
-        image: us-west2-docker.pkg.dev/PROJECT_ID/REPO_NAME/restaurantapp-frontend:TAG
+        image: FRONTEND_IMAGE_TAG
         ports:
         - containerPort: 5173
         resources:
@@ -70,7 +70,7 @@ spec:
     spec:
       containers:
       - name: restaurantapp-backend
-        image: us-west2-docker.pkg.dev/PROJECT_ID/REPO_NAME/restaurantapp-backend:TAG
+        image: BACKEND_IMAGE_TAG
         ports:
         - containerPort: 1919
         resources:

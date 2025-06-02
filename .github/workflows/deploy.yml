@@ -115,13 +115,9 @@ jobs:
         echo "Frontend image tag: ${{ needs.build-frontend.outputs.image-tag }}"
         echo "Backend image tag: ${{ needs.build-backend.outputs.image-tag }}"
         
-        # Replace PROJECT_ID and REPO_NAME first
-        sed -i "s|PROJECT_ID|$PROJECT_ID|g" deployment.yml
-        sed -i "s|REPO_NAME|$REPO_NAME|g" deployment.yml
-        
-        # Replace the image names in the k8s template
-        sed -i "s|us-west2-docker.pkg.dev/$PROJECT_ID/$REPO_NAME/restaurantapp-frontend:TAG|${{ needs.build-frontend.outputs.image-tag }}|g" deployment.yml
-        sed -i "s|us-west2-docker.pkg.dev/$PROJECT_ID/$REPO_NAME/restaurantapp-backend:TAG|${{ needs.build-backend.outputs.image-tag }}|g" deployment.yml
+        # Replace the image tags in the k8s template
+        sed -i "s|FRONTEND_IMAGE_TAG|${{ needs.build-frontend.outputs.image-tag }}|g" deployment.yml
+        sed -i "s|BACKEND_IMAGE_TAG|${{ needs.build-backend.outputs.image-tag }}|g" deployment.yml
         
         # Debug: Print the modified deployment file
         echo "Modified deployment.yml contents:"
