@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: restaurantapp-frontend
-        image: gcr.io/PROJECT_ID/restaurantapp-frontend:TAG
+        image: us-west2-docker.pkg.dev/PROJECT_ID/REPO_NAME/restaurantapp-frontend:TAG
         ports:
         - containerPort: 5173
         resources:
@@ -70,7 +70,7 @@ spec:
     spec:
       containers:
       - name: restaurantapp-backend
-        image: gcr.io/PROJECT_ID/restaurantapp-backend:TAG
+        image: us-west2-docker.pkg.dev/PROJECT_ID/REPO_NAME/restaurantapp-backend:TAG
         ports:
         - containerPort: 1919
         resources:

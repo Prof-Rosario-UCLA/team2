@@ -106,8 +106,12 @@ jobs:
     - name: Deploy to GKE
       run: |-
         # Replace the image names in the k8s template
-        sed -i "s|gcr.io/PROJECT_ID/restaurantapp-frontend:TAG|${{ needs.build-frontend.outputs.image-tag }}|g" deployment.yml
-        sed -i "s|gcr.io/PROJECT_ID/restaurantapp-backend:TAG|${{ needs.build-backend.outputs.image-tag }}|g" deployment.yml
+        sed -i "s|us-west2-docker.pkg.dev/PROJECT_ID/REPO_NAME/restaurantapp-frontend:TAG|${{ needs.build-frontend.outputs.image-tag }}|g" deployment.yml
+        sed -i "s|us-west2-docker.pkg.dev/PROJECT_ID/REPO_NAME/restaurantapp-backend:TAG|${{ needs.build-backend.outputs.image-tag }}|g" deployment.yml
+        
+        # Debug: Print the modified deployment file
+        echo "Modified deployment.yml contents:"
+        cat deployment.yml
         
         # Apply the deployment
         kubectl apply -f deployment.yml
