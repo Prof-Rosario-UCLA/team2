@@ -14,7 +14,7 @@ import { useState, useEffect } from "react";
 import { CustomAddButton } from "./Sidebar";
 import { useCurrDate } from "./CurrDateProvider";
 import { IconCalendarWeek } from "@tabler/icons-react";
-import { API_BASE_URL } from '../config';
+import { API_BASE_URL } from '../frontend-config';
 
 interface CalendarIconTriggerProps {
   currDate: Date;

@@ -6,11 +6,12 @@ import "@mantine/dates/styles.css";
 import "./index.css";
 import App from "./App.tsx";
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import { GOOGLE_CLIENT_ID } from './frontend-config.ts';
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <MantineProvider>
-      <GoogleOAuthProvider clientId="499257456410-dk3qd2oeum2rdm3adh08p04o0ft0afms.apps.googleusercontent.com">
+      <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
         <App />
       </GoogleOAuthProvider>
     </MantineProvider>
