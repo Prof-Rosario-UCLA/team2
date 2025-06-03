@@ -55,15 +55,11 @@ export const connectToMongoDB = async () => {
   try {
     console.log('Starting MongoDB connection...');
     console.log('MongoDB Connection Options:', {
-      dbName: 'restaurants',
-      useNewUrlParser: true,
-      useUnifiedTopology: true
+      dbName: 'restaurants'
     });
     
     await mongoose.connect(MONGO_URI, {
-      dbName: 'restaurants',
-      useNewUrlParser: true,
-      useUnifiedTopology: true
+      dbName: 'restaurants'
     });
     
     // Verify collections
