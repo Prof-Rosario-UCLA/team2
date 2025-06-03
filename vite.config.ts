@@ -8,6 +8,9 @@ export default defineConfig({
     host: true,
     port: 5173
   },
+  preview: {
+    allowedHosts: ['team2.cs144.org']
+  },
   plugins: [
     react(),
     VitePWA({

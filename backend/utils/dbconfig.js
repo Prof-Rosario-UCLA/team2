@@ -23,25 +23,47 @@ export const redisOptions = {
   }
 };
 
+console.log('Redis configuration:', {
+  host: redisOptions.socket.host,
+  port: redisOptions.socket.port
+});
+
 // Create Redis client
 export const redisClient = createClient(redisOptions);
 
 // Add error handler for Redis client
 redisClient.on('error', (err) => {
-  console.error('Redis Client Error:', err);
+  console.error('Redis Client Error:', {
+    message: err.message,
+    code: err.code,
+    stack: err.stack
+  });
 });
 
 // Add connection handler for Redis client
 redisClient.on('connect', () => {
-  console.log('Redis Client Connected');
+  console.log('Redis Client Connected Successfully');
+});
+
+// Add reconnecting handler
+redisClient.on('reconnecting', () => {
+  console.log('Redis Client Reconnecting...');
 });
 
 // Connect to MongoDB
 export const connectToMongoDB = async () => {
   try {
     console.log('Starting MongoDB connection...');
+    console.log('MongoDB Connection Options:', {
+      dbName: 'restaurants',
+      useNewUrlParser: true,
+      useUnifiedTopology: true
+    });
+    
     await mongoose.connect(MONGO_URI, {
-      dbName: 'restaurants' 
+      dbName: 'restaurants',
+      useNewUrlParser: true,
+      useUnifiedTopology: true
     });
     
     // Verify collections
@@ -54,12 +76,14 @@ export const connectToMongoDB = async () => {
       name: mongoose.connection.name,
       database: mongoose.connection.db.databaseName
     });
-    console.log('Connected to MongoDB!');
+    console.log('Connected to MongoDB successfully!');
     return true;
   } catch (err) {
     console.error('MongoDB Connection Error:', {
       message: err.message,
-      code: err.code
+      code: err.code,
+      stack: err.stack,
+      name: err.name
     });
     return false;
   }
@@ -68,20 +92,34 @@ export const connectToMongoDB = async () => {
 // Connect to Redis
 export const connectToRedis = async () => {
   try {
-    console.log('Attempting to connect to Redis at:', redisOptions.socket.host, redisOptions.socket.port);
+    console.log('Attempting to connect to Redis at:', {
+      host: redisOptions.socket.host,
+      port: redisOptions.socket.port
+    });
     await redisClient.connect();
     console.log('Connected to Redis successfully');
     return true;
   } catch (err) {
-    console.error('Failed to connect to Redis:', err);
+    console.error('Failed to connect to Redis:', {
+      message: err.message,
+      code: err.code,
+      stack: err.stack,
+      name: err.name
+    });
     return false;
   }
 };
 
 // Initialize database connections
 export const initializeDatabases = async () => {
+  console.log('Starting database initialization...');
   const mongoConnected = await connectToMongoDB();
   const redisConnected = await connectToRedis();
+  
+  console.log('Database initialization complete:', {
+    mongoConnected,
+    redisConnected
+  });
   
   return { mongoConnected, redisConnected };
 };
