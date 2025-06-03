@@ -43,13 +43,15 @@
 }
 
 .tableItem {
+  position: relative;
   height: 210px;
   background-color: #e3e6e7;
   border: 2px solid rgb(82, 82, 82);
   border-radius: 8px;
   display: flex;
-  align-items: flex-start;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
   padding-top: 10px;
 }
 
@@ -66,6 +68,39 @@
   font-size: 1rem;
   padding: 2px 12px;
   text-align: center;
+}
+
+.tableReservationContainer,
+.tableWalkinContainer {
+  margin-top: 10px;
+  background-color: rgb(244, 244, 244);
+  padding: 0px 14px;
+  border-left: 4px solid rgb(70, 128, 222);
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.tableReservationContainer > p,
+.tableWalkinContainer > p {
+  font-size: 1rem;
+  padding: 0px;
+}
+
+.tableWalkinContainer {
+  border-left-color: rgb(222, 95, 70);
+}
+
+.tableReservationItem,
+.tableWalkinItem {
+  font-size: 1rem;
+  color: white;
+  background-color: rgb(70, 128, 222);
+  border-radius: 8px;
+  padding-left: 8px;
+}
+
+.tableWalkinItem {
+  background-color: rgb(222, 95, 70);
 }
 
 .addTableFormContainer {

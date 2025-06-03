@@ -5,7 +5,7 @@ import {
   insertWalkIn,
 } from "../utils/mongodb.js";
 import { WalkIn } from "../models/WalkIn.js";
-import { cacheResult, fetchFromCache } from '../utils/redis.js';
+import { cacheResult, fetchFromCache } from "../utils/redis.js";
 
 const router = express.Router();
 
@@ -13,17 +13,16 @@ const router = express.Router();
 router.get("/", async (req, res) => {
   try {
     console.log("Attempting to fetch walk-in data from cache");
-    const cachedData = await fetchFromCache('walkin');
-    if (cachedData){
+    const cachedData = await fetchFromCache("walkin");
+    if (cachedData) {
       console.log("Data found in cache");
       return res.status(200).json(cachedData);
-    }
-    else{
+    } else {
       console.log("Data not found in cache");
     }
     console.log("Querying MongoDB");
     const walkIns = await getAllWalkIns();
-    await cacheResult('walkin', walkIns, 300);
+    await cacheResult("walkin", walkIns, 300);
     res.json(walkIns);
   } catch (error) {
     console.error("Error in GET /walkins:", error);
@@ -118,9 +117,9 @@ router.post("/create", async (req, res) => {
 
     const result = await insertWalkIn(newWalkIn);
 
-    const updatedAllWalkIns = await getAllReservations();
-    await cacheResult('walkin', updatedAllWalkIns, 300);
-    
+    const updatedAllWalkIns = await getAllWalkIns();
+    await cacheResult("walkin", updatedAllWalkIns, 300);
+
     res.status(201).json(result);
   } catch (error) {
     console.error("Error in POST /walkins:", error);
