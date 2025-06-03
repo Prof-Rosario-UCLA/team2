@@ -100,7 +100,7 @@ spec:
     - protocol: TCP
       port: 1919
       targetPort: 1919
-  type: ClusterIP
+  type: LoadBalancer
 ---
 apiVersion: apps/v1
 kind: StatefulSet
