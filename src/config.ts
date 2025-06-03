@@ -1,4 +1,4 @@
-const isProduction = true; 
+const isProduction = false; 
 
 export const API_BASE_URL = isProduction 
   ? 'http://restaurantapp-backend-service:1919'

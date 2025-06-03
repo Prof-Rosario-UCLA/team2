@@ -1,12 +1,18 @@
 .formContainer {
-  position: relative;
+  position: fixed; /* fixed keeps it relative to the viewport */
+  top: 55%;        /* move it a bit below 50% */
+  left: 50%;
+  transform: translate(-50%, -50%);
   color: black;
   background-color: #e3e6e7;
   box-sizing: border-box;
-  padding: 40px 100px;
+  padding: 4vh 3vw 4vw 3vw;
   border-radius: 8px;
   align-content: center;
   z-index: 10;
+  max-width: 80vw;
+  max-height: 85vh;
+  overflow-y: auto;
 }
 
 .closeButton {
