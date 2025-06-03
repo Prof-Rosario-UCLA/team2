@@ -16,7 +16,7 @@ import { CustomAddButton, convertDateToTime, formatName } from "./Sidebar";
 import type { Reservation, Walkin, DragItem } from "./Sidebar";
 import { useCurrDate } from "./CurrDateProvider";
 import { IconCalendarWeek } from "@tabler/icons-react";
-import { API_BASE_URL } from "../config";
+import { API_BASE_URL } from "../frontend-config";
 
 const tableItemWidth = 1.58;
 
@@ -35,7 +35,7 @@ interface CalendarIconTriggerProps {
 }
 
 interface Table {
-  tableNumber: number;
+  tableNumber: Number;
   tableCapacity: number;
   comments: string;
   reservation: Reservation | Walkin;
@@ -65,8 +65,9 @@ export const TableDrop: React.FC<TableDropProps> = ({ table, onDrop }) => {
         style={{ backgroundColor: isOver ? "#f0f0f0" : undefined }}
       >
         <h6 className={classes.tableItemTitle}>
-          Table {table.tableNumber} ({table.tableCapacity})
+          Table {table.tableNumber.valueOf()} ({table.tableCapacity})
         </h6>
+        {!table.reservation && <p style={{ fontSize: "1rem" }}>nothing here</p>}
         {table.reservation && (
           <div
             className={
@@ -94,22 +95,51 @@ export const TableDrop: React.FC<TableDropProps> = ({ table, onDrop }) => {
   );
 };
 
-function addItemToTable(table: Table, item: DragItem) {
-  // Make some API call here
-  if ("reservation" in item) {
-    if (!table.reservation) {
-      table.reservation = item.reservation;
-    } else {
-      console.log("Cannot add reservation to occupied table");
+const updateReservationTable = async (
+  reservationId: string,
+  tableNumber: Number
+) => {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/reservations/updateReservation`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          reservationId: reservationId, // This is the _id field
+          tableNum: tableNumber,
+        }),
+      }
+    );
+
+    if (response.ok) {
+      const updatedReservation = await response.json();
+      return updatedReservation;
     }
-  } else {
-    if (!table.reservation) {
-      table.reservation = item.walkin;
-    } else {
-      console.log("Cannot add walkin to occupied table");
-    }
+  } catch (error) {
+    console.error("Network error:", error);
   }
-}
+};
+
+// function addItemToTable(table: Table, item: DragItem): Table {
+//   if ("reservation" in item) {
+//     if (!table.reservation) {
+//       return { ...table, reservation: item.reservation };
+//     } else {
+//       console.log("Cannot add reservation to occupied table");
+//       return table;
+//     }
+//   } else {
+//     if (!table.reservation) {
+//       return { ...table, reservation: item.walkin };
+//     } else {
+//       console.log("Cannot add walkin to occupied table");
+//       return table;
+//     }
+//   }
+// }
 
 function CalendarIconTrigger({
   currDate,
@@ -192,11 +222,17 @@ function MainPage() {
       };
     });
 
-    if (!isDragging || !reservation) return null;
+    useEffect(() => {
+      if (isDragging && reservation) {
+        setSelectedTime(
+          convertDateToTime(reservation.startTime)
+            .toLowerCase()
+            .replace(/\s/g, "")
+        );
+      }
+    }, [isDragging, reservation]);
 
-    setSelectedTime(
-      convertDateToTime(reservation.startTime).toLowerCase().replace(/\s/g, "")
-    );
+    if (!isDragging || !reservation) return null;
 
     // return (
     //   <div
@@ -351,7 +387,29 @@ function MainPage() {
             key={index}
             table={table}
             onDrop={(item) => {
-              addItemToTable(table, item);
+              setTables((prevTables) => {
+                const currentTable = prevTables[index];
+
+                if (currentTable.reservation) {
+                  console.log("Cannot add to occupied table");
+                  return prevTables; // Return unchanged
+                }
+
+                const newTables = [...prevTables];
+                newTables[index] = {
+                  ...currentTable,
+                  reservation:
+                    "reservation" in item ? item.reservation : item.walkin,
+                };
+
+                if ("reservation" in item) {
+                  updateReservationTable(
+                    item.reservation._id,
+                    table.tableNumber
+                  );
+                }
+                return newTables;
+              });
             }}
           />
         ))}

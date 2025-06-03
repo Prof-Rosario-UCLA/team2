@@ -5,7 +5,7 @@ import classes from "../styles/Sidebar.module.scss";
 import ReservationForm from "./Reservation";
 import { IconPlus } from "@tabler/icons-react";
 import { useCurrDate } from "./CurrDateProvider";
-import { API_BASE_URL } from "../config";
+import { API_BASE_URL } from "../frontend-config";
 
 export type Reservation = {
   _id: string;
