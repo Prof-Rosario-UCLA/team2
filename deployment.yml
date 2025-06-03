@@ -32,18 +32,6 @@ spec:
           limits:
             cpu: "500m"
             memory: "512Mi"
-        readinessProbe:
-          httpGet:
-            path: /
-            port: 5173
-          initialDelaySeconds: 5
-          periodSeconds: 10
-        livenessProbe:
-          httpGet:
-            path: /
-            port: 5173
-          initialDelaySeconds: 15
-          periodSeconds: 20
 ---
 apiVersion: v1
 kind: Service
@@ -100,18 +88,6 @@ spec:
           limits:
             cpu: "500m"
             memory: "512Mi"
-        readinessProbe:
-          httpGet:
-            path: /health
-            port: 1919
-          initialDelaySeconds: 5
-          periodSeconds: 10
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 1919
-          initialDelaySeconds: 15
-          periodSeconds: 20
 ---
 apiVersion: v1
 kind: Service
@@ -159,16 +135,6 @@ spec:
         volumeMounts:
         - name: redis-data
           mountPath: /data
-        readinessProbe:
-          tcpSocket:
-            port: 6379
-          initialDelaySeconds: 5
-          periodSeconds: 10
-        livenessProbe:
-          tcpSocket:
-            port: 6379
-          initialDelaySeconds: 15
-          periodSeconds: 20
   volumeClaimTemplates:
   - metadata:
       name: redis-data
