@@ -225,6 +225,7 @@ function MainPage() {
   const [addTableForm, setAddTableForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const { currDate, setCurrDate } = useCurrDate();
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     fetchTables();
@@ -285,7 +286,7 @@ function MainPage() {
         const data = await res.json();
         setTables(data);
       } else {
-        console.error("Failed to fetch reservations");
+        console.error("Failed to fetch reservations");    
       }
     } catch (err) {
       console.error("Fetch error:", err);
@@ -306,14 +307,17 @@ function MainPage() {
       if (response.ok) {
         form.reset();
         fetchTables();
+        setErrorMessage("");
         // setSubmitted(true);
       } else {
         const error = await response.json();
         console.error("Submission error:", error);
+        setErrorMessage(error.message || "Something went wrong. Please try again.");
         // Handle error
       }
     } catch (error) {
       console.error("Submission error:", error);
+      setErrorMessage("Network error. Please try again.");
       // Handle error
     } finally {
       setLoading(false);
@@ -450,6 +454,11 @@ function MainPage() {
       {addTableForm && (
         <div className={classes.addTableFormContainer}>
           <Title>Add a table</Title>
+          {errorMessage && (
+              <div style={{ color: "red", marginTop: "10px" }}>
+                {errorMessage}
+              </div>
+          )}
           <button
             className={classes.closeButton}
             onClick={() => setAddTableForm(false)}
