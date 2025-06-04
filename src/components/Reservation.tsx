@@ -18,7 +18,7 @@ import {
 import { useForm } from "@mantine/form";
 import { IconClock } from "@tabler/icons-react";
 import classes from "../styles/Reservation.module.scss";
-import { API_BASE_URL } from '../config';
+import { API_BASE_URL } from '../frontend-config';
 //import dajys from "dajys";
 
 type ReservationFormProps = {

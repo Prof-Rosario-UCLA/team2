@@ -11,10 +11,23 @@ import {
 import { DatesProvider, DatePicker } from "@mantine/dates";
 import { useForm } from "@mantine/form";
 import { useState, useEffect } from "react";
-import { CustomAddButton } from "./Sidebar";
+import { useDrop, useDragLayer } from "react-dnd";
+import { CustomAddButton, convertDateToTime, formatName } from "./Sidebar";
+import type { Reservation, Walkin, DragItem } from "./Sidebar";
 import { useCurrDate } from "./CurrDateProvider";
 import { IconCalendarWeek } from "@tabler/icons-react";
-import { API_BASE_URL } from '../config';
+import { API_BASE_URL } from "../frontend-config";
+
+const tableItemWidth = 1.58;
+
+const times = Array.from({ length: 21 }, (_, i) => {
+  const totalMinutes = 17 * 60 + i * 15; // Start at 5 PM (17:00)
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  const hour12 = hours > 12 ? hours - 12 : hours;
+  const period = hours >= 12 ? "pm" : "am";
+  return `${hour12}:${minutes.toString().padStart(2, "0")}${period}`;
+});
 
 interface CalendarIconTriggerProps {
   currDate: Date;
@@ -22,10 +35,139 @@ interface CalendarIconTriggerProps {
 }
 
 interface Table {
-  tableNumber: number;
+  tableNumber: Number;
   tableCapacity: number;
   comments: string;
+  reservation: Reservation | Walkin;
 }
+
+type TableDropProps = {
+  table: Table;
+  onDrop: (item: DragItem) => void;
+};
+
+export const TableDrop: React.FC<TableDropProps> = ({ table, onDrop }) => {
+  const [{ isOver }, drop] = useDrop<DragItem, void, { isOver: boolean }>(
+    () => ({
+      accept: "BOX",
+      drop: (item) => onDrop(item),
+      collect: (monitor) => ({
+        isOver: monitor.isOver(),
+      }),
+    })
+  );
+
+  return (
+    <Grid.Col span={tableItemWidth}>
+      <div
+        ref={drop as unknown as React.Ref<HTMLDivElement>}
+        className={classes.tableItem}
+        style={{ backgroundColor: isOver ? "#f0f0f0" : undefined }}
+      >
+        <h6 className={classes.tableItemTitle}>
+          Table {table.tableNumber.valueOf()} ({table.tableCapacity})
+        </h6>
+        {!table.reservation && <p style={{ fontSize: "1rem" }}>nothing here</p>}
+        {table.reservation && (
+          <div
+            className={
+              "email" in table.reservation
+                ? classes.tableReservationContainer
+                : classes.tableWalkinContainer
+            }
+          >
+            <p
+              className={
+                "email" in table.reservation
+                  ? classes.tableReservationItem
+                  : classes.tableWalkinItem
+              }
+            >
+              {formatName(table.reservation.name)}
+            </p>
+            <p style={{ color: "#555" }}>
+              Party Size: {table.reservation.size.valueOf()}
+            </p>
+          </div>
+        )}
+      </div>
+    </Grid.Col>
+  );
+};
+
+const updateReservationTable = async (
+  reservationId: string,
+  tableNumber: Number
+) => {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/reservations/updateReservation`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          reservationId: reservationId, // This is the _id field
+          tableNum: tableNumber,
+        }),
+      }
+    );
+
+    if (response.ok) {
+      const updatedReservation = await response.json();
+      return updatedReservation;
+    }
+  } catch (error) {
+    console.error("Network error:", error);
+  }
+};
+
+const updateWalkInTable = async (
+  walkinId: string,
+  tableNumber: Number
+) => {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/walkins/updateWalkin`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          walkinId: walkinId, 
+          tableNum: tableNumber,
+        }),
+      }
+    );
+
+    if (response.ok) {
+      const updatedWalkIn = await response.json();
+      return updatedWalkIn;
+    }
+  } catch (error) {
+    console.error("Network error:", error);
+  }
+};
+
+// function addItemToTable(table: Table, item: DragItem): Table {
+//   if ("reservation" in item) {
+//     if (!table.reservation) {
+//       return { ...table, reservation: item.reservation };
+//     } else {
+//       console.log("Cannot add reservation to occupied table");
+//       return table;
+//     }
+//   } else {
+//     if (!table.reservation) {
+//       return { ...table, reservation: item.walkin };
+//     } else {
+//       console.log("Cannot add walkin to occupied table");
+//       return table;
+//     }
+//   }
+// }
 
 function CalendarIconTrigger({
   currDate,
@@ -78,7 +220,7 @@ function CalendarIconTrigger({
 }
 
 function MainPage() {
-  const [selectedTime, setSelectedTime] = useState(0);
+  const [selectedTime, setSelectedTime] = useState(times[0]);
   const [tables, setTables] = useState<Table[]>([]);
   const [addTableForm, setAddTableForm] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -94,6 +236,48 @@ function MainPage() {
       form.setFieldValue("tableNum", tables.length + 1);
     }
   }, [tables]);
+
+  useEffect(() => {
+    // update the tables and their associated reservations when selectedTime changes
+  }, [selectedTime]);
+
+  const GlobalDragMonitor = () => {
+    const { isDragging, reservation } = useDragLayer((monitor) => {
+      const item = monitor.getItem() as DragItem | null;
+      return {
+        isDragging: monitor.isDragging(),
+        reservation: item && "reservation" in item ? item.reservation : null,
+        walkin: item && "walkin" in item ? item.walkin : null,
+      };
+    });
+
+    useEffect(() => {
+      if (isDragging && reservation) {
+        setSelectedTime(
+          convertDateToTime(reservation.startTime)
+            .toLowerCase()
+            .replace(/\s/g, "")
+        );
+      }
+    }, [isDragging, reservation]);
+
+    if (!isDragging || !reservation) return null;
+
+    // return (
+    //   <div
+    //     style={{
+    //       position: "fixed",
+    //       top: 0,
+    //       right: 0,
+    //       padding: 10,
+    //       zIndex: 1000,
+    //     }}
+    //   >
+    //     <strong>Dragging:</strong> {reservation.name} (
+    //     {convertDateToTime(reservation.startTime)})
+    //   </div>
+    // );
+  };
 
   const fetchTables = async () => {
     try {
@@ -166,17 +350,6 @@ function MainPage() {
     }
   })();
 
-  const tableItemWidth = 1.58;
-
-  const times = Array.from({ length: 21 }, (_, i) => {
-    const totalMinutes = 17 * 60 + i * 15; // Start at 5 PM (17:00)
-    const hours = Math.floor(totalMinutes / 60);
-    const minutes = totalMinutes % 60;
-    const hour12 = hours > 12 ? hours - 12 : hours;
-    const period = hours >= 12 ? "pm" : "am";
-    return `${hour12}:${minutes.toString().padStart(2, "0")}${period}`;
-  });
-
   const form = useForm({
     initialValues: {
       tableNum: 1,
@@ -195,23 +368,9 @@ function MainPage() {
     },
   });
 
-  // const tables: Table[] = [
-  //   { name: "Table 1", minNumber: 2, maxNumber: 4 },
-  //   { name: "Table 2", minNumber: 4, maxNumber: 6 },
-  //   { name: "Table 3", minNumber: 6, maxNumber: 8 },
-  //   { name: "Table 4", minNumber: 2, maxNumber: 10 },
-  //   { name: "Table 5", minNumber: 1, maxNumber: 2 },
-  //   { name: "Table 6", minNumber: 4, maxNumber: 6 },
-  //   { name: "Table 1", minNumber: 2, maxNumber: 4 },
-  //   { name: "Table 2", minNumber: 4, maxNumber: 6 },
-  //   { name: "Table 3", minNumber: 6, maxNumber: 8 },
-  //   { name: "Table 4", minNumber: 2, maxNumber: 10 },
-  //   { name: "Table 5", minNumber: 1, maxNumber: 2 },
-  //   { name: "Table 6", minNumber: 4, maxNumber: 6 },
-  // ];
-
   return (
     <div className={classes.mainPageContainer}>
+      <GlobalDragMonitor />
       <div
         style={{
           width: "fit-content",
@@ -238,11 +397,11 @@ function MainPage() {
               <button
                 key={index}
                 className={
-                  index === selectedTime
+                  time === selectedTime
                     ? classes.timeItemSelected
                     : classes.timeItem
                 }
-                onClick={() => setSelectedTime(index)}
+                onClick={() => setSelectedTime(time)}
               >
                 {time}
               </button>
@@ -256,13 +415,40 @@ function MainPage() {
       })}
       <Grid className={classes.tableContainer}>
         {tables.map((table, index) => (
-          <Grid.Col key={index} span={tableItemWidth}>
-            <div className={classes.tableItem}>
-              <h6 className={classes.tableItemTitle}>
-                Table {table.tableNumber} ({table.tableCapacity})
-              </h6>
-            </div>
-          </Grid.Col>
+          <TableDrop
+            key={index}
+            table={table}
+            onDrop={(item) => {
+              setTables((prevTables) => {
+                const currentTable = prevTables[index];
+
+                if (currentTable.reservation) {
+                  console.log("Cannot add to occupied table");
+                  return prevTables; // Return unchanged
+                }
+
+                const newTables = [...prevTables];
+                newTables[index] = {
+                  ...currentTable,
+                  reservation:
+                    "reservation" in item ? item.reservation : item.walkin,
+                };
+
+                if ("reservation" in item) {
+                  updateReservationTable(
+                    item.reservation._id,
+                    table.tableNumber
+                  );
+                } else {
+                  updateWalkInTable(
+                    item.walkin._id,
+                    table.tableNumber
+                  );
+                }
+                return newTables;
+              });
+            }}
+          />
         ))}
       </Grid>
       {addTableForm && (

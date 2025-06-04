@@ -5,7 +5,7 @@ import {
   insertWalkIn,
 } from "../utils/mongodb.js";
 import { WalkIn } from "../models/WalkIn.js";
-import { cacheResult, fetchFromCache } from '../utils/redis.js';
+import { cacheResult, fetchFromCache } from "../utils/redis.js";
 
 const router = express.Router();
 
@@ -13,17 +13,16 @@ const router = express.Router();
 router.get("/", async (req, res) => {
   try {
     console.log("Attempting to fetch walk-in data from cache");
-    const cachedData = await fetchFromCache('walkin');
-    if (cachedData){
+    const cachedData = await fetchFromCache("walkin");
+    if (cachedData) {
       console.log("Data found in cache");
       return res.status(200).json(cachedData);
-    }
-    else{
+    } else {
       console.log("Data not found in cache");
     }
     console.log("Querying MongoDB");
     const walkIns = await getAllWalkIns();
-    await cacheResult('walkin', walkIns, 300);
+    await cacheResult("walkin", walkIns, 300);
     res.json(walkIns);
   } catch (error) {
     console.error("Error in GET /walkins:", error);
@@ -60,27 +59,7 @@ router.get("/range", async (req, res) => {
 // Create a new walk-in
 router.post("/create", async (req, res) => {
   try {
-    // const reservationData = req.body;
-
-    // const datePart = new Date(reservationData.date);
-
-    // // Extract date components
-    // const year = datePart.getFullYear();
-    // const month = datePart.getMonth();
-    // const day = datePart.getDate();
-
-    // // Extract time components
-    // const [hours, minutes] = reservationData.time.split(":").map(Number);
-
-    // const startTime = new Date(Date.UTC(year, month, day, hours, minutes));
-    // const endTime = new Date(Date.UTC(year, month, day, hours + 2, minutes));
-
-    // console.log(startTime);
-
-    // if (isNaN(startTime.getTime())) {
-    //   return res.status(400).json({ error: "Invalid date format" });
-    // }
-
+    console.log("HEREEE");
     const walkInData = req.body;
 
     const datePart = new Date(walkInData.date);
@@ -95,20 +74,12 @@ router.post("/create", async (req, res) => {
 
     const timeAdded = new Date(Date.UTC(year, month, day, hours, minutes));
 
-    // const [hours, minutes] = walkInData.time.split(":").map(Number);
-    // const now = new Date();
-    // const dateWithTime = new Date(
-    //   now.getFullYear(),
-    //   now.getMonth(),
-    //   now.getDate(),
-    //   hours,
-    //   minutes
-    // );
+    console.log(walkInData);
 
     const newWalkIn = {
       name: `${walkInData.firstname} ${walkInData.lastname}`,
       phoneNumber: walkInData.phone,
-      tableNumber: null,
+      tableNum: null,
       size: walkInData.partySize,
       timeAddedToWaitlist: timeAdded,
       startTime: null,
@@ -116,16 +87,65 @@ router.post("/create", async (req, res) => {
       comments: walkInData.specialRequests || "",
     };
 
+    console.log(newWalkIn);
+
     const result = await insertWalkIn(newWalkIn);
 
-    const updatedAllWalkIns = await getAllReservations();
-    await cacheResult('walkin', updatedAllWalkIns, 300);
-    
+    console.log(result);
+
+    const updatedAllWalkIns = await getAllWalkIns();
+    await cacheResult("walkin", updatedAllWalkIns, 300);
+
     res.status(201).json(result);
   } catch (error) {
     console.error("Error in POST /walkins:", error);
     res.status(500).json({ error: "Failed to create walk-in" });
   }
 });
+
+router.patch("/updateWalkin", async (req, res) => {
+  try {
+    const { walkinId, tableNum } = req.body;
+
+    // Validate required fields
+    if (!walkinId || tableNum === undefined) {
+      return res.status(400).json({
+        error: "Missing required fields: walkinId and tableNum",
+      });
+    }
+
+    // Validate tableNum is a valid number (JavaScript number type)
+    if (typeof tableNum !== "number" || tableNum < 0) {
+      return res.status(400).json({
+        error: "tableNum must be a valid non-negative number",
+      });
+    }
+
+    // Update the walk-in - Mongoose will handle the conversion to Number type
+    const updatedWalkIn = await WalkIn.findByIdAndUpdate(
+      walkinId,
+      { tableNum: tableNum },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedWalkIn) {
+      return res.status(404).json({
+        error: "Walk-in not found",
+      });
+    }
+
+    const updatedAllWalkIns = await getAllWalkIns();
+    await cacheResult("walkin", updatedAllWalkIns, 300);
+
+    res.status(200).json(updatedWalkIn);
+  } catch (error) {
+    console.error("Error updating walk-in:", error);
+    res.status(500).json({
+      error: "Failed to update walk-in",
+      details: error.message,
+    });
+  }
+});
+
 
 export default router;

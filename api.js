@@ -29,14 +29,6 @@ app.use('/reservations', reservationRoutes);
 app.use('/walkins', walkInRoutes);
 app.use('/tables', tableRoutes);
 
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static('dist'));
-} else {
-
-  app.get('/', (req, res) => {
-    res.json({ message: 'Restaurant API Server Running', port: PORT });
-  });
-}
 
 // Start the server
 app.listen(PORT, () => {

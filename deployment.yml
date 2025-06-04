@@ -32,18 +32,6 @@ spec:
           limits:
             cpu: "500m"
             memory: "512Mi"
-        readinessProbe:
-          httpGet:
-            path: /
-            port: 5173
-          initialDelaySeconds: 5
-          periodSeconds: 10
-        livenessProbe:
-          httpGet:
-            path: /
-            port: 5173
-          initialDelaySeconds: 15
-          periodSeconds: 20
 ---
 apiVersion: v1
 kind: Service
@@ -100,18 +88,6 @@ spec:
           limits:
             cpu: "500m"
             memory: "512Mi"
-        readinessProbe:
-          httpGet:
-            path: /health
-            port: 1919
-          initialDelaySeconds: 5
-          periodSeconds: 10
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 1919
-          initialDelaySeconds: 15
-          periodSeconds: 20
 ---
 apiVersion: v1
 kind: Service
@@ -124,7 +100,7 @@ spec:
     - protocol: TCP
       port: 1919
       targetPort: 1919
-  type: ClusterIP
+  type: LoadBalancer
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -159,16 +135,6 @@ spec:
         volumeMounts:
         - name: redis-data
           mountPath: /data
-        readinessProbe:
-          tcpSocket:
-            port: 6379
-          initialDelaySeconds: 5
-          periodSeconds: 10
-        livenessProbe:
-          tcpSocket:
-            port: 6379
-          initialDelaySeconds: 15
-          periodSeconds: 20
   volumeClaimTemplates:
   - metadata:
       name: redis-data
@@ -190,3 +156,24 @@ spec:
     name: client
   selector:
     app: restaurantapp-redis
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: restaurantapp-ingress
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: "restaurantapp-ip"
+    networking.gke.io/managed-certificates: "restaurantapp-cert"
+    kubernetes.io/ingress.class: "gce"
+spec:
+  rules:
+  - host: "team2.cs144.org" 
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: restaurantapp-frontend-service
+            port:
+              number: 80

@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
+import { useDrag } from "react-dnd";
 import { Title, Button, Loader, Text } from "@mantine/core";
 import classes from "../styles/Sidebar.module.scss";
 import ReservationForm from "./Reservation";
 import { IconPlus } from "@tabler/icons-react";
 import { useCurrDate } from "./CurrDateProvider";
-import { API_BASE_URL } from '../config';
+import { API_BASE_URL } from "../frontend-config";
 
-type Reservation = {
+export type Reservation = {
   _id: string;
   name: string;
   email: string;
@@ -18,7 +19,7 @@ type Reservation = {
   comments: string;
 };
 
-type Walkins = {
+export type Walkin = {
   _id: string;
   name: string;
   phoneNumber: string;
@@ -28,6 +29,109 @@ type Walkins = {
   startTime: Date;
   endTime: Date;
   comments: string;
+};
+
+export type DragItem =
+  | {
+      type: "BOX";
+      reservation: Reservation;
+    }
+  | {
+      type: "BOX";
+      walkin: Walkin;
+    };
+
+export function convertDateToTime(startTime: string | Date): string {
+  console.log(startTime);
+  const isoString =
+    typeof startTime === "string" ? startTime : startTime.toISOString();
+
+  // Extract the time portion
+  const timePart = isoString.split("T")[1]; // "17:00:00.000Z"
+  const [hourStr, minuteStr] = timePart.split(":"); // ["17", "00"]
+
+  let hours = parseInt(hourStr, 10);
+  const minutes = parseInt(minuteStr, 10);
+  const ampm = hours >= 12 ? "PM" : "AM";
+
+  // Convert to 12-hour format
+  hours = hours % 12;
+  hours = hours === 0 ? 12 : hours;
+
+  return `${hours}:${minutes.toString().padStart(2, "0")} ${ampm}`;
+}
+
+const DraggableReservation = ({
+  reservation,
+}: {
+  reservation: Reservation;
+}) => {
+  const [{ isDragging }, drag] = useDrag(() => ({
+    type: "BOX",
+    item: { type: "BOX", reservation } as DragItem,
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  }));
+
+  return (
+    <div
+      className={classes.reservationItem}
+      ref={drag as unknown as React.Ref<HTMLDivElement>}
+      style={{ opacity: isDragging ? 0.5 : 1 }}
+    >
+      <div>
+        <p className={classes.waitlistItemName}>
+          {formatName(reservation.name)}
+        </p>
+        <p className={classes.numPartyText}>
+          Party of {reservation.size.valueOf()}
+        </p>
+      </div>
+      <div>
+        <p className={classes.waitlistItemTime}>
+          {convertDateToTime(reservation.startTime)}
+        </p>
+        <p className={classes.addedAtText}>Time</p>
+      </div>
+    </div>
+  );
+};
+
+const DraggableWaitlist = ({ walkin }: { walkin: Walkin }) => {
+  const [{ isDragging }, drag] = useDrag(() => ({
+    type: "BOX",
+    item: { type: "BOX", walkin } as DragItem,
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  }));
+
+  return (
+    <div
+      className={classes.waitlistItem}
+      ref={drag as unknown as React.Ref<HTMLDivElement>}
+      style={{ opacity: isDragging ? 0.5 : 1 }}
+    >
+      <div>
+        <p className={classes.waitlistItemName}>{formatName(walkin.name)}</p>
+        <p className={classes.numPartyText}>Party of {walkin.size.valueOf()}</p>
+      </div>
+      <div>
+        <p className={classes.waitlistItemTime}>
+          {convertDateToTime(walkin.timeAddedToWaitlist)}
+        </p>
+        <p className={classes.addedAtText}>Time created</p>
+      </div>
+    </div>
+  );
+};
+
+export const formatName = (name: string) => {
+  const [first, last] = name.split(" ");
+  if (!first || !last) return name;
+
+  return `${first} ${last[0]}.`;
 };
 
 export function CustomAddButton(
@@ -69,14 +173,14 @@ export function CustomAddButton(
 
 function Sidebar() {
   const [reservations, setReservations] = useState<Reservation[]>([]);
-  const [waitlist, setWaitlist] = useState<Walkins[]>([]);
+  const [waitlist, setWaitlist] = useState<Walkin[]>([]);
   const [showReservationForm, setShowReservationForm] = useState(false);
   const [formType, setFormType] = useState("reservation");
 
   const { currDate } = useCurrDate();
 
   const currDateAsDate = new Date(currDate);
-  console.log(currDateAsDate.toISOString());
+  // console.log(currDateAsDate.toISOString());
 
   const tmrwDate = new Date(
     Date.UTC(
@@ -85,11 +189,22 @@ function Sidebar() {
       currDateAsDate.getUTCDate() + 1
     )
   );
-  console.log("tmrw", tmrwDate.toISOString());
+  // console.log("tmrw", tmrwDate.toISOString());
 
-  const [isLoadingReservations, setIsLoadingReservations] = useState(false);
-  const [isLoadingWaitlist, setIsLoadingWaitlist] = useState(false);
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
 
+  useEffect(() => {
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => setIsOffline(true);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   useEffect(() => {
     fetchTodayReservations(
@@ -124,54 +239,19 @@ function Sidebar() {
 
       if (res.ok) {
         const data = await res.json();
-        console.log(data);
+        // console.log(data);
         type === "reservation" ? setReservations(data) : setWaitlist(data);
-
-        if (type === "reservation") {
-          setIsLoadingReservations(false);
-        } else {
-          setIsLoadingWaitlist(false);
-        }
       } else {
         console.error("Failed to fetch reservations");
       }
     } catch (err) {
       console.error("Fetch error:", err);
     } finally {
-      
     }
-  };
-
-  const convertDateToTime = (startTime: string | Date) => {
-    console.log(startTime);
-    const isoString =
-      typeof startTime === "string" ? startTime : startTime.toISOString();
-
-    // Extract the time portion
-    const timePart = isoString.split("T")[1]; // "17:00:00.000Z"
-    const [hourStr, minuteStr] = timePart.split(":"); // ["17", "00"]
-
-    let hours = parseInt(hourStr, 10);
-    const minutes = parseInt(minuteStr, 10);
-    const ampm = hours >= 12 ? "PM" : "AM";
-
-    // Convert to 12-hour format
-    hours = hours % 12;
-    hours = hours === 0 ? 12 : hours;
-
-    return `${hours}:${minutes.toString().padStart(2, "0")} ${ampm}`;
-  };
-
-  const formatName = (name: string) => {
-    const [first, last] = name.split(" ");
-    if (!first || !last) return name;
-
-    return `${first} ${last[0]}.`;
   };
 
   return (
     <div className={classes.sidebarContainer}>
-      {/* {getFormattedDate(new Date(currDate))} */}
       <div className={classes.reservationTitleContainer}>
         <Title style={{ fontSize: sidebarTitleSize }}>Reservations</Title>
         {CustomAddButton("New", () => {
@@ -179,7 +259,6 @@ function Sidebar() {
           setFormType("reservation");
         })}
       </div>
-
 
       {showReservationForm && (
         <div>
@@ -200,8 +279,15 @@ function Sidebar() {
         </div>
       )}
 
-      {isLoadingReservations ? (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '1rem' }}>
+      {isOffline ? (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "0.5rem",
+            padding: "1rem",
+          }}
+        >
           <Loader size="sm" />
           <Text>Loading reservations...</Text>
         </div>
@@ -211,22 +297,7 @@ function Sidebar() {
         <div className={classes.unassignedResContainer}>
           <p style={{ fontStyle: "italic" }}>Drag and drop onto a table</p>
           {reservations.map((res) => (
-            <div key={res._id} className={classes.reservationItem}>
-              <div>
-                <p className={classes.waitlistItemName}>
-                  {formatName(res.name)}
-                </p>
-                <p className={classes.numPartyText}>
-                  Party of {res.size.valueOf()}
-                </p>
-              </div>
-              <div>
-                <p className={classes.waitlistItemTime}>
-                  {convertDateToTime(res.startTime)}
-                </p>
-                <p className={classes.addedAtText}>Time</p>
-              </div>
-            </div>
+            <DraggableReservation reservation={res} key={res._id} />
           ))}
         </div>
       )}
@@ -243,35 +314,26 @@ function Sidebar() {
           currDate
         )}
       </div>
-      
-       {isLoadingWaitlist ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '1rem' }}>
-            <Loader size="sm" />
-            <Text>Loading waitlist...</Text>
-          </div>
-        ) : waitlist.length === 0 ? (
-          <p style={{ fontStyle: "italic" }}>No waitlist</p>
-        ) : (
-         <div className={classes.unassignedWaitContainer}>
+
+      {isOffline ? (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "0.5rem",
+            padding: "1rem",
+          }}
+        >
+          <Loader size="sm" />
+          <Text>Loading waitlist...</Text>
+        </div>
+      ) : waitlist.length === 0 ? (
+        <p style={{ fontStyle: "italic" }}>No waitlist</p>
+      ) : (
+        <div className={classes.unassignedWaitContainer}>
           <p style={{ fontStyle: "italic" }}>Drag and drop onto a table</p>
-           {waitlist.map((entry, index) => (
-      
-           <div key={index} className={classes.waitlistItem}>
-              <div>
-                <p className={classes.waitlistItemName}>
-                  {formatName(entry.name)}
-                </p>
-                <p className={classes.numPartyText}>
-                  Party of {entry.size.valueOf()}
-                </p>
-              </div>
-              <div>
-                <p className={classes.waitlistItemTime}>
-                  {convertDateToTime(entry.timeAddedToWaitlist)}
-                </p>
-                <p className={classes.addedAtText}>Time created</p>
-              </div>
-            </div>
+          {waitlist.map((entry, index) => (
+            <DraggableWaitlist key={index} walkin={entry} />
           ))}
         </div>
       )}
