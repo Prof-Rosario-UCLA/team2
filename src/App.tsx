@@ -9,6 +9,7 @@ import { CurrDateProvider } from "./components/CurrDateProvider";
 
 import LoginPage from "./components/Login";
 
+
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 

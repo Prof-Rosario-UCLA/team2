@@ -193,6 +193,20 @@ function Sidebar() {
 
   const [isLoadingReservations, setIsLoadingReservations] = useState(false);
   const [isLoadingWaitlist, setIsLoadingWaitlist] = useState(false);
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => setIsOffline(true);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   useEffect(() => {
     fetchTodayReservations(
@@ -246,7 +260,6 @@ function Sidebar() {
 
   return (
     <div className={classes.sidebarContainer}>
-      {/* {getFormattedDate(new Date(currDate))} */}
       <div className={classes.reservationTitleContainer}>
         <Title style={{ fontSize: sidebarTitleSize }}>Reservations</Title>
         {CustomAddButton("New", () => {
@@ -274,7 +287,7 @@ function Sidebar() {
         </div>
       )}
 
-      {isLoadingReservations ? (
+      {isOffline ? (
         <div
           style={{
             display: "flex",
@@ -310,7 +323,7 @@ function Sidebar() {
         )}
       </div>
 
-      {isLoadingWaitlist ? (
+      {isOffline ? (
         <div
           style={{
             display: "flex",
