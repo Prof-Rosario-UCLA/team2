@@ -74,6 +74,11 @@
   padding: 6px 24px;
 }
 
+.waitlistItem:hover,
+.reservationItem:hover {
+  cursor: pointer;
+}
+
 .waitlistItemName,
 .waitlistItemTime {
   margin: 0;
