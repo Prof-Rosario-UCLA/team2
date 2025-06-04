@@ -156,3 +156,24 @@ spec:
     name: client
   selector:
     app: restaurantapp-redis
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: restaurantapp-ingress
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: "restaurantapp-ip"
+    networking.gke.io/managed-certificates: "restaurantapp-cert"
+    kubernetes.io/ingress.class: "gce"
+spec:
+  rules:
+  - host: "team2.cs144.org" 
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: restaurantapp-frontend-service
+            port:
+              number: 80
