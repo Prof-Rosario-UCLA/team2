@@ -11,19 +11,19 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "/icon-192x192.png",
+      "src": "/reserve_ease_logo_192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icon-512x512.png",
+      "src": "/reserve_ease_logo_512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icon-512x512.png",
+      "src": "/reserve_ease_logo_512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
