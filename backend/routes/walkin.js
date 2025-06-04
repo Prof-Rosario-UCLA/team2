@@ -103,4 +103,49 @@ router.post("/create", async (req, res) => {
   }
 });
 
+router.patch("/updateWalkin", async (req, res) => {
+  try {
+    const { walkinId, tableNum } = req.body;
+
+    // Validate required fields
+    if (!walkinId || tableNum === undefined) {
+      return res.status(400).json({
+        error: "Missing required fields: walkinId and tableNum",
+      });
+    }
+
+    // Validate tableNum is a valid number (JavaScript number type)
+    if (typeof tableNum !== "number" || tableNum < 0) {
+      return res.status(400).json({
+        error: "tableNum must be a valid non-negative number",
+      });
+    }
+
+    // Update the walk-in - Mongoose will handle the conversion to Number type
+    const updatedWalkIn = await WalkIn.findByIdAndUpdate(
+      walkinId,
+      { tableNum: tableNum },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedWalkIn) {
+      return res.status(404).json({
+        error: "Walk-in not found",
+      });
+    }
+
+    const updatedAllWalkIns = await getAllWalkIns();
+    await cacheResult("walkin", updatedAllWalkIns, 300);
+
+    res.status(200).json(updatedWalkIn);
+  } catch (error) {
+    console.error("Error updating walk-in:", error);
+    res.status(500).json({
+      error: "Failed to update walk-in",
+      details: error.message,
+    });
+  }
+});
+
+
 export default router;

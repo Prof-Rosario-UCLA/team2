@@ -154,6 +154,9 @@ router.patch("/updateReservation", async (req, res) => {
       });
     }
 
+    const updatedAllReservations = await getAllReservations();
+    await cacheResult("reservation", updatedAllReservations, 300);
+
     res.status(200).json(updatedReservation);
   } catch (error) {
     console.error("Error updating reservation:", error);

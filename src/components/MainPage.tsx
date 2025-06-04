@@ -123,6 +123,34 @@ const updateReservationTable = async (
   }
 };
 
+const updateWalkInTable = async (
+  walkinId: string,
+  tableNumber: Number
+) => {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/walkins/updateWalkin`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          walkinId: walkinId, 
+          tableNum: tableNumber,
+        }),
+      }
+    );
+
+    if (response.ok) {
+      const updatedWalkIn = await response.json();
+      return updatedWalkIn;
+    }
+  } catch (error) {
+    console.error("Network error:", error);
+  }
+};
+
 // function addItemToTable(table: Table, item: DragItem): Table {
 //   if ("reservation" in item) {
 //     if (!table.reservation) {
@@ -405,6 +433,11 @@ function MainPage() {
                 if ("reservation" in item) {
                   updateReservationTable(
                     item.reservation._id,
+                    table.tableNumber
+                  );
+                } else {
+                  updateWalkInTable(
+                    item.walkin._id,
                     table.tableNumber
                   );
                 }
