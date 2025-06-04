@@ -6,9 +6,6 @@
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#ffffff",
-  "lang": "en",
-  "scope": "/",
-  "orientation": "portrait",
   "icons": [
     {
       "src": "/reserve_ease_logo_192.png",
