@@ -1,0 +1,7 @@
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: restaurantapp-cert
+spec:
+  domains:
+    - team2.cs144.org
