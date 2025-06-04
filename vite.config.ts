@@ -19,7 +19,7 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: 'auto',
-      includeAssets: ['vite.svg', 'icon-192x192.png', 'icon-512x512.png'],
+      includeAssets: ['vite.svg', 'reserve_ease_logo_192.png', 'reserve_ease_logo_512.png'],
       manifest: false,
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,json}'],
