@@ -191,8 +191,6 @@ function Sidebar() {
   );
   // console.log("tmrw", tmrwDate.toISOString());
 
-  const [isLoadingReservations, setIsLoadingReservations] = useState(false);
-  const [isLoadingWaitlist, setIsLoadingWaitlist] = useState(false);
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
 
   useEffect(() => {
@@ -243,12 +241,6 @@ function Sidebar() {
         const data = await res.json();
         // console.log(data);
         type === "reservation" ? setReservations(data) : setWaitlist(data);
-
-        if (type === "reservation") {
-          setIsLoadingReservations(false);
-        } else {
-          setIsLoadingWaitlist(false);
-        }
       } else {
         console.error("Failed to fetch reservations");
       }
