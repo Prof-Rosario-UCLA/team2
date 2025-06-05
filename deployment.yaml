@@ -33,19 +33,6 @@ spec:
             cpu: "500m"
             memory: "512Mi"
 ---
-apiVersion: v1
-kind: Service
-metadata:
-  name: restaurantapp-frontend-service
-spec:
-  selector:
-    app: restaurantapp-frontend
-  ports:
-    - protocol: TCP
-      port: 80
-      targetPort: 5173
-  type: LoadBalancer
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -89,19 +76,6 @@ spec:
             cpu: "500m"
             memory: "512Mi"
 ---
-apiVersion: v1
-kind: Service
-metadata:
-  name: restaurantapp-backend-service
-spec:
-  selector:
-    app: restaurantapp-backend
-  ports:
-    - protocol: TCP
-      port: 1919
-      targetPort: 1919
-  type: LoadBalancer
----
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -143,37 +117,3 @@ spec:
       resources:
         requests:
           storage: 1Gi
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: restaurantapp-redis-service
-spec:
-  type: ClusterIP
-  ports:
-  - port: 6379
-    targetPort: 6379
-    name: client
-  selector:
-    app: restaurantapp-redis
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: restaurantapp-ingress
-  annotations:
-    kubernetes.io/ingress.global-static-ip-name: "restaurantapp-ip"
-    networking.gke.io/managed-certificates: "restaurantapp-cert"
-    kubernetes.io/ingress.class: "gce"
-spec:
-  rules:
-  - host: "team2.cs144.org" 
-    http:
-      paths:
-      - path: /
-        pathType: ImplementationSpecific
-        backend:
-          service:
-            name: restaurantapp-frontend-service
-            port:
-              number: 80
