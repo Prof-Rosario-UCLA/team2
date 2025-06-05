@@ -5,7 +5,7 @@ dotenv.config();
 // import { createClient } from 'redis';
 
 // Database configuration
-const isProduction = true; // Set to true for production environment
+const isProduction = false; // Set to true for production environment
 
 const ATLAS_URI = process.env.MONGO_URI;
 export const MONGO_URI = `${ATLAS_URI}`;
@@ -24,11 +24,11 @@ export const redisOptions = {
     port: 6379,
     reconnectStrategy: (retries) => {
       if (retries > 10) {
-        console.error('Redis max retries reached');
-        return new Error('Redis max retries reached');
+        console.error("Redis max retries reached");
+        return new Error("Redis max retries reached");
       }
       return Math.min(retries * 100, 3000);
-    }
+    },
   },
 };
 
@@ -116,7 +116,7 @@ export const connectToRedis = async () => {
       host: redisOptions.socket.host,
       port: redisOptions.socket.port,
     });
-    
+
     // Check if already connected
     if (redisClient.isOpen) {
       console.log("Redis client already connected");
@@ -126,7 +126,7 @@ export const connectToRedis = async () => {
     // Connect with timeout
     const connectPromise = redisClient.connect();
     const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('Redis connection timeout')), 5000);
+      setTimeout(() => reject(new Error("Redis connection timeout")), 5000);
     });
 
     await Promise.race([connectPromise, timeoutPromise]);

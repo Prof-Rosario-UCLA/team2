@@ -197,12 +197,12 @@ function Sidebar() {
     const handleOnline = () => setIsOffline(false);
     const handleOffline = () => setIsOffline(true);
 
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
 
     return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
     };
   }, []);
 
@@ -239,8 +239,13 @@ function Sidebar() {
 
       if (res.ok) {
         const data = await res.json();
-        // console.log(data);
-        type === "reservation" ? setReservations(data) : setWaitlist(data);
+        const unassigned = data.filter(
+          (item: Reservation | Walkin) => !item.tableNum
+        );
+        console.log("UNASSIGNED", unassigned);
+        type === "reservation"
+          ? setReservations(unassigned)
+          : setWaitlist(unassigned);
       } else {
         console.error("Failed to fetch reservations");
       }

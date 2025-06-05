@@ -11,7 +11,7 @@ import {
 import { DatesProvider, DatePicker } from "@mantine/dates";
 import { useForm } from "@mantine/form";
 import { useState, useEffect } from "react";
-import { useDrop, useDragLayer } from "react-dnd";
+import { useDrop, useDragLayer, useDrag } from "react-dnd";
 import { CustomAddButton, convertDateToTime, formatName } from "./Sidebar";
 import type { Reservation, Walkin, DragItem } from "./Sidebar";
 import { useCurrDate } from "./CurrDateProvider";
@@ -44,55 +44,6 @@ interface Table {
 type TableDropProps = {
   table: Table;
   onDrop: (item: DragItem) => void;
-};
-
-export const TableDrop: React.FC<TableDropProps> = ({ table, onDrop }) => {
-  const [{ isOver }, drop] = useDrop<DragItem, void, { isOver: boolean }>(
-    () => ({
-      accept: "BOX",
-      drop: (item) => onDrop(item),
-      collect: (monitor) => ({
-        isOver: monitor.isOver(),
-      }),
-    })
-  );
-
-  return (
-    <Grid.Col span={tableItemWidth}>
-      <div
-        ref={drop as unknown as React.Ref<HTMLDivElement>}
-        className={classes.tableItem}
-        style={{ backgroundColor: isOver ? "#f0f0f0" : undefined }}
-      >
-        <h6 className={classes.tableItemTitle}>
-          Table {table.tableNumber.valueOf()} ({table.tableCapacity})
-        </h6>
-        {!table.reservation && <p style={{ fontSize: "1rem" }}>nothing here</p>}
-        {table.reservation && (
-          <div
-            className={
-              "email" in table.reservation
-                ? classes.tableReservationContainer
-                : classes.tableWalkinContainer
-            }
-          >
-            <p
-              className={
-                "email" in table.reservation
-                  ? classes.tableReservationItem
-                  : classes.tableWalkinItem
-              }
-            >
-              {formatName(table.reservation.name)}
-            </p>
-            <p style={{ color: "#555" }}>
-              Party Size: {table.reservation.size.valueOf()}
-            </p>
-          </div>
-        )}
-      </div>
-    </Grid.Col>
-  );
 };
 
 const updateReservationTable = async (
@@ -248,6 +199,109 @@ function MainPage() {
       currDateAsDate.getUTCDate() + 1
     )
   );
+
+  const TableDrop: React.FC<TableDropProps> = ({ table, onDrop }) => {
+    const handleDropUpdate = async () => {
+      if (!table.reservation) return;
+      if ("email" in table.reservation) {
+        await updateReservationTable(table.reservation._id, table.tableNumber);
+        await fetchTodayReservations(
+          "reservation",
+          currDateAsDate.toISOString(),
+          tmrwDate.toISOString()
+        );
+      } else {
+        await updateWalkInTable(table.reservation._id, table.tableNumber);
+        await fetchTodayReservations(
+          "waitlist",
+          currDateAsDate.toISOString(),
+          tmrwDate.toISOString()
+        );
+      }
+    };
+
+    const [{ isOver }, drop] = useDrop<DragItem, void, { isOver: boolean }>(
+      () => ({
+        accept: "BOX",
+        drop: (item) => {
+          onDrop(item);
+          void handleDropUpdate(); // Call async handler without awaiting
+        },
+        collect: (monitor) => ({
+          isOver: monitor.isOver(),
+        }),
+      })
+    );
+
+    const [{ isDragging }, drag] = useDrag({
+      type: "BOX",
+      item: () => {
+        if (!table.reservation) return {} as DragItem;
+
+        if ("email" in table.reservation) {
+          return {
+            type: "BOX",
+            reservation: table.reservation,
+          };
+        } else {
+          return {
+            type: "BOX",
+            walkin: table.reservation,
+          };
+        }
+      },
+      canDrag: !!table.reservation, // only draggable if there's a reservation
+      collect: (monitor) => ({
+        isDragging: monitor.isDragging(),
+      }),
+    });
+
+    return (
+      <Grid.Col span={tableItemWidth}>
+        <div
+          ref={drop as unknown as React.Ref<HTMLDivElement>}
+          className={classes.tableItem}
+          style={{
+            backgroundColor: isOver ? "#f0f0f0" : undefined,
+            opacity: isDragging ? 0.5 : 1,
+          }}
+        >
+          <h6 className={classes.tableItemTitle}>
+            Table {table.tableNumber.valueOf()} ({table.tableCapacity})
+          </h6>
+
+          {!table.reservation && (
+            <p style={{ fontSize: "1rem" }}>nothing here</p>
+          )}
+
+          {table.reservation && (
+            <div
+              ref={drag as unknown as React.Ref<HTMLDivElement>}
+              className={
+                "email" in table.reservation
+                  ? classes.tableReservationContainer
+                  : classes.tableWalkinContainer
+              }
+              style={{ cursor: "move" }}
+            >
+              <p
+                className={
+                  "email" in table.reservation
+                    ? classes.tableReservationItem
+                    : classes.tableWalkinItem
+                }
+              >
+                {formatName(table.reservation.name)}
+              </p>
+              <p style={{ color: "#555" }}>
+                Party Size: {table.reservation.size.valueOf()}
+              </p>
+            </div>
+          )}
+        </div>
+      </Grid.Col>
+    );
+  };
 
   const fetchTodayReservations = async (
     type: string,
@@ -501,6 +555,7 @@ function MainPage() {
             table={table}
             onDrop={(item) => {
               setTables((prevTables) => {
+                console.log(item);
                 const currentTable = prevTables[index];
 
                 if (currentTable.reservation) {
