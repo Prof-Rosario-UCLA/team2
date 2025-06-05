@@ -55,6 +55,11 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Skip caching API requests
+  if (event.request.url.includes('/reservations/') || event.request.url.includes('/walkins/')) {
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request)
       .then((response) => {
