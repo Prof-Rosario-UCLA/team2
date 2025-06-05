@@ -236,6 +236,8 @@ function MainPage() {
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [waitlist, setWaitlist] = useState<Walkin[]>([]);
 
+  console.log(waitlist);
+
   const currDateAsDate = new Date(currDate);
   // console.log(currDateAsDate.toISOString());
 
