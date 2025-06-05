@@ -19,10 +19,10 @@ export default defineConfig({
   build: {
     rollupOptions: {
       input: {
-        main: resolve(__dirname, 'index.html'),
-        sw: resolve(__dirname, 'public/sw.js')
+        main: resolve(__dirname, 'index.html')
       }
     }
-  }
+  },
+  publicDir: 'public'
 })
 

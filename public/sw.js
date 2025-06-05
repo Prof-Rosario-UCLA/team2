@@ -4,7 +4,9 @@ const urlsToCache = [
   '/index.html',
   '/manifest.json',
   '/reserve_ease_logo_192.png',
-  '/reserve_ease_logo_512.png'
+  '/reserve_ease_logo_512.png',
+  '/assets/index.css',
+  '/assets/index.js'
 ];
 
 // Install event - cache static assets
@@ -19,6 +21,8 @@ self.addEventListener('install', (event) => {
         console.error('Cache installation failed:', error);
       })
   );
+  // Force the waiting service worker to become the active service worker
+  self.skipWaiting();
 });
 
 // Activate event - clean up old caches
@@ -35,12 +39,19 @@ self.addEventListener('activate', (event) => {
       );
     })
   );
+  // Claim clients so that the service worker starts controlling them immediately
+  self.clients.claim();
 });
 
 // Fetch event - serve from cache, fall back to network
 self.addEventListener('fetch', (event) => {
   // Skip cross-origin requests
   if (!event.request.url.startsWith(self.location.origin)) {
+    return;
+  }
+
+  // Skip non-GET requests
+  if (event.request.method !== 'GET') {
     return;
   }
 
@@ -77,10 +88,10 @@ self.addEventListener('fetch', (event) => {
 
             caches.open(CACHE_NAME)
               .then(cache => {
-                cache.put(event.request, responseToCache)
-                  .catch(error => {
-                    console.error('Cache update failed:', error);
-                  });
+                cache.put(event.request, responseToCache);
+              })
+              .catch(error => {
+                console.error('Cache update failed:', error);
               });
 
             // Notify client that loading is complete
