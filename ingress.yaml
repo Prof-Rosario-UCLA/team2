@@ -4,13 +4,13 @@ metadata:
   name: restaurantapp-ingress-2
   annotations:
     # Use a static IP (optional but recommended)
-    kubernetes.io/ingress.global-static-ip-name: "34.53.98.207" # Replace with your static IP name
+    kubernetes.io/ingress.global-static-ip-name: "restaurantapp-ip" # Replace with your static IP name
     # Link your Google-managed certificate
     networking.gke.io/managed-certificates: "restaurantapp-cert"
     # Use HTTP to validate domain ownership (GCP specific).
-    # kubernetes.io/ingress.class: "gce"
+    kubernetes.io/ingress.class: "gce"
     # Automatic HTTP to HTTPS redirect
-    networking.gke.io/v1.FrontendConfig: "default-redirect-config" # Once certificate is ready, uncomment and redeploy this
+    # networking.gke.io/v1.FrontendConfig: "default-redirect-config" # Once certificate is ready, uncomment and redeploy this
 spec:
   rules:
     - host: team2.cs144.org    # Replace with your actual domain
