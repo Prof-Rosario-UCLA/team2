@@ -371,7 +371,17 @@ function MainPage() {
   }, [selectedTime, reservations]);
 
   useEffect(() => {
-    // update the tables and their associated reservations when selectedTime changes
+    // Refetch reservations when time slot changes
+    fetchTodayReservations(
+      "reservation",
+      currDateAsDate.toISOString(),
+      tmrwDate.toISOString()
+    );
+    fetchTodayReservations(
+      "waitlist",
+      currDateAsDate.toISOString(),
+      tmrwDate.toISOString()
+    );
   }, [selectedTime]);
 
   const GlobalDragMonitor = () => {
@@ -563,18 +573,33 @@ function MainPage() {
                   return prevTables; // Return unchanged
                 }
 
-                const newTables = [...prevTables];
+                // Find all tables that have this reservation
+                const newTables = prevTables.map(table => {
+                  if (!table.reservation) return table;
+                  
+                  // Check if this table has the reservation we're moving
+                  const isMatchingReservation = 
+                    ("reservation" in item && "email" in table.reservation && table.reservation._id === item.reservation._id) ||
+                    ("walkin" in item && !("email" in table.reservation) && table.reservation._id === item.walkin._id);
+                  
+                  if (isMatchingReservation) {
+                    // Clear the reservation from this table
+                    return {
+                      ...table,
+                      reservation: null
+                    };
+                  }
+                  return table;
+                });
+
+                // Update the new table
                 newTables[index] = {
                   ...currentTable,
-                  reservation:
-                    "reservation" in item ? item.reservation : item.walkin,
+                  reservation: "reservation" in item ? item.reservation : item.walkin,
                 };
 
                 if ("reservation" in item) {
-                  updateReservationTable(
-                    item.reservation._id,
-                    table.tableNumber
-                  );
+                  updateReservationTable(item.reservation._id, table.tableNumber);
                 } else {
                   updateWalkInTable(item.walkin._id, table.tableNumber);
                 }
