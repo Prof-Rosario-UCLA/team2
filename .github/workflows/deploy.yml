@@ -115,10 +115,31 @@ jobs:
 
     - name: Deploy to GKE
       run: |-        
-        # Apply the deployment
+        # Apply resources in the correct order
+        echo "Applying deployment..."
         kubectl apply -f deployment.yaml
         
-        # Verify deployment
+        echo "Applying services..."
+        kubectl apply -f service.yaml
+        
+        echo "Applying certificate..."
+        kubectl apply -f certificate.yaml
+        
+        echo "Applying frontend config..."
+        kubectl apply -f frontendconfig.yaml
+        
+        echo "Applying ingress..."
+        kubectl apply -f ingress.yaml
+        
+        # Verify deployments
+        echo "Verifying deployments..."
         kubectl rollout status deployment/restaurantapp-frontend
         kubectl rollout status deployment/restaurantapp-backend
+        
+        # Verify services
+        echo "Verifying services..."
         kubectl get services -o wide
+        
+        # Verify ingress
+        echo "Verifying ingress..."
+        kubectl get ingress
