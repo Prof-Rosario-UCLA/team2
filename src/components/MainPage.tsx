@@ -38,7 +38,7 @@ interface Table {
   tableNumber: Number;
   tableCapacity: number;
   comments: string;
-  reservation: Reservation | Walkin;
+  reservation: Reservation | Walkin | null;
 }
 
 type TableDropProps = {
@@ -123,24 +123,18 @@ const updateReservationTable = async (
   }
 };
 
-const updateWalkInTable = async (
-  walkinId: string,
-  tableNumber: Number
-) => {
+const updateWalkInTable = async (walkinId: string, tableNumber: Number) => {
   try {
-    const response = await fetch(
-      `${API_BASE_URL}/walkins/updateWalkin`,
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          walkinId: walkinId, 
-          tableNum: tableNumber,
-        }),
-      }
-    );
+    const response = await fetch(`${API_BASE_URL}/walkins/updateWalkin`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        walkinId: walkinId,
+        tableNum: tableNumber,
+      }),
+    });
 
     if (response.ok) {
       const updatedWalkIn = await response.json();
@@ -150,6 +144,19 @@ const updateWalkInTable = async (
     console.error("Network error:", error);
   }
 };
+
+function formatToTime(dateInput: string | Date): string {
+  const date = typeof dateInput === "string" ? new Date(dateInput) : dateInput;
+
+  let hours = date.getUTCHours(); // ⬅️ NOTE: UTC!
+  const minutes = date.getUTCMinutes();
+  const ampm = hours >= 12 ? "pm" : "am";
+
+  hours = hours % 12;
+  hours = hours === 0 ? 12 : hours;
+
+  return `${hours}:${minutes.toString().padStart(2, "0")}${ampm}`;
+}
 
 // function addItemToTable(table: Table, item: DragItem): Table {
 //   if ("reservation" in item) {
@@ -226,9 +233,63 @@ function MainPage() {
   const [loading, setLoading] = useState(false);
   const { currDate, setCurrDate } = useCurrDate();
   const [errorMessage, setErrorMessage] = useState("");
+  const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [waitlist, setWaitlist] = useState<Walkin[]>([]);
+
+  console.log(waitlist);
+
+  const currDateAsDate = new Date(currDate);
+  // console.log(currDateAsDate.toISOString());
+
+  const tmrwDate = new Date(
+    Date.UTC(
+      currDateAsDate.getUTCFullYear(),
+      currDateAsDate.getUTCMonth(),
+      currDateAsDate.getUTCDate() + 1
+    )
+  );
+
+  const fetchTodayReservations = async (
+    type: string,
+    startDate: string,
+    endDate: string
+  ) => {
+    try {
+      const baseUrl =
+        type === "reservation"
+          ? `${API_BASE_URL}/reservations/range`
+          : `${API_BASE_URL}/walkins/range`;
+
+      const url = `${baseUrl}?startDate=${encodeURIComponent(
+        startDate
+      )}&endDate=${encodeURIComponent(endDate)}`;
+      const res = await fetch(url);
+
+      if (res.ok) {
+        const data = await res.json();
+        // console.log(data);
+        type === "reservation" ? setReservations(data) : setWaitlist(data);
+      } else {
+        console.error("Failed to fetch reservations");
+      }
+    } catch (err) {
+      console.error("Fetch error:", err);
+    } finally {
+    }
+  };
 
   useEffect(() => {
     fetchTables();
+    fetchTodayReservations(
+      "reservation",
+      currDateAsDate.toISOString(),
+      tmrwDate.toISOString()
+    );
+    fetchTodayReservations(
+      "waitlist",
+      currDateAsDate.toISOString(),
+      tmrwDate.toISOString()
+    );
   }, []);
 
   useEffect(() => {
@@ -236,6 +297,24 @@ function MainPage() {
       form.setFieldValue("tableNum", tables.length + 1);
     }
   }, [tables]);
+
+  useEffect(() => {
+    const updatedTables = tables.map((table) => {
+      const matchingRes = reservations.find(
+        (resEntry) =>
+          resEntry.tableNum === table.tableNumber &&
+          formatToTime(resEntry.startTime) <= selectedTime &&
+          formatToTime(resEntry.endTime) >= selectedTime
+      );
+
+      return {
+        ...table,
+        reservation: matchingRes ?? null,
+      };
+    });
+
+    setTables(updatedTables);
+  }, [selectedTime, reservations]);
 
   useEffect(() => {
     // update the tables and their associated reservations when selectedTime changes
@@ -286,7 +365,7 @@ function MainPage() {
         const data = await res.json();
         setTables(data);
       } else {
-        console.error("Failed to fetch reservations");    
+        console.error("Failed to fetch reservations");
       }
     } catch (err) {
       console.error("Fetch error:", err);
@@ -312,7 +391,9 @@ function MainPage() {
       } else {
         const error = await response.json();
         console.error("Submission error:", error);
-        setErrorMessage(error.message || "Something went wrong. Please try again.");
+        setErrorMessage(
+          error.message || "Something went wrong. Please try again."
+        );
         // Handle error
       }
     } catch (error) {
@@ -440,10 +521,7 @@ function MainPage() {
                     table.tableNumber
                   );
                 } else {
-                  updateWalkInTable(
-                    item.walkin._id,
-                    table.tableNumber
-                  );
+                  updateWalkInTable(item.walkin._id, table.tableNumber);
                 }
                 return newTables;
               });
@@ -455,9 +533,9 @@ function MainPage() {
         <div className={classes.addTableFormContainer}>
           <Title>Add a table</Title>
           {errorMessage && (
-              <div style={{ color: "red", marginTop: "10px" }}>
-                {errorMessage}
-              </div>
+            <div style={{ color: "red", marginTop: "10px" }}>
+              {errorMessage}
+            </div>
           )}
           <button
             className={classes.closeButton}
