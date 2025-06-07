@@ -219,8 +219,6 @@ function Sidebar() {
     );
   }, [currDate]);
 
-  const sidebarTitleSize = "1.5rem";
-
   const fetchTodayReservations = async (
     type: string,
     startDate: string,
@@ -258,7 +256,7 @@ function Sidebar() {
   return (
     <div className={classes.sidebarContainer}>
       <div className={classes.reservationTitleContainer}>
-        <Title style={{ fontSize: sidebarTitleSize }}>Reservations</Title>
+        <Title className={classes.sidebarTitle}>Reservations</Title>
         {CustomAddButton("New", () => {
           setShowReservationForm(true);
           setFormType("reservation");
@@ -309,7 +307,7 @@ function Sidebar() {
       <hr style={{ marginTop: "46px" }} />
 
       <div className={classes.waitlistTitleSection}>
-        <Title style={{ fontSize: sidebarTitleSize }}>Waitlist</Title>
+        <Title className={classes.sidebarTitle}>Waitlist</Title>
         {CustomAddButton(
           "Add to waitlist",
           () => {

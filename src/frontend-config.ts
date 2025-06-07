@@ -1,4 +1,4 @@
-const isProduction = true;
+const isProduction = false;
 
 export const API_BASE_URL = isProduction
   ? "http://34.83.14.253:1919"

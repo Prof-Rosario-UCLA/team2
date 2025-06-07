@@ -18,8 +18,6 @@ import { useCurrDate } from "./CurrDateProvider";
 import { IconCalendarWeek } from "@tabler/icons-react";
 import { API_BASE_URL } from "../frontend-config";
 
-const tableItemWidth = 1.58;
-
 const times = Array.from({ length: 21 }, (_, i) => {
   const totalMinutes = 17 * 60 + i * 15; // Start at 5 PM (17:00)
   const hours = Math.floor(totalMinutes / 60);
@@ -257,7 +255,7 @@ function MainPage() {
     });
 
     return (
-      <Grid.Col span={tableItemWidth}>
+      <Grid.Col span={{ base: 12, sm: 6, md: 4, lg: 3, xl: 2 }}>
         <div
           ref={drop as unknown as React.Ref<HTMLDivElement>}
           className={classes.tableItem}
@@ -284,7 +282,7 @@ function MainPage() {
               }
               style={{ cursor: "move" }}
             >
-              <p
+              <div
                 className={
                   "email" in table.reservation
                     ? classes.tableReservationItem
@@ -292,7 +290,7 @@ function MainPage() {
                 }
               >
                 {formatName(table.reservation.name)}
-              </p>
+              </div>
               <p style={{ color: "#555" }}>
                 Party Size: {table.reservation.size.valueOf()}
               </p>
@@ -523,7 +521,9 @@ function MainPage() {
           alignItems: "center",
         }}
       >
-        <Title>Floor Plan - {formattedDate}</Title>
+        <Title className={classes.mainTitle}>
+          Floor Plan - {formattedDate}
+        </Title>
         {/* <IconCalendarWeek className={classes.calendarIcon} /> */}
         <CalendarIconTrigger currDate={currDate} setCurrDate={setCurrDate} />
       </div>
@@ -574,19 +574,23 @@ function MainPage() {
                 }
 
                 // Find all tables that have this reservation
-                const newTables = prevTables.map(table => {
+                const newTables = prevTables.map((table) => {
                   if (!table.reservation) return table;
-                  
+
                   // Check if this table has the reservation we're moving
-                  const isMatchingReservation = 
-                    ("reservation" in item && "email" in table.reservation && table.reservation._id === item.reservation._id) ||
-                    ("walkin" in item && !("email" in table.reservation) && table.reservation._id === item.walkin._id);
-                  
+                  const isMatchingReservation =
+                    ("reservation" in item &&
+                      "email" in table.reservation &&
+                      table.reservation._id === item.reservation._id) ||
+                    ("walkin" in item &&
+                      !("email" in table.reservation) &&
+                      table.reservation._id === item.walkin._id);
+
                   if (isMatchingReservation) {
                     // Clear the reservation from this table
                     return {
                       ...table,
-                      reservation: null
+                      reservation: null,
                     };
                   }
                   return table;
@@ -595,11 +599,15 @@ function MainPage() {
                 // Update the new table
                 newTables[index] = {
                   ...currentTable,
-                  reservation: "reservation" in item ? item.reservation : item.walkin,
+                  reservation:
+                    "reservation" in item ? item.reservation : item.walkin,
                 };
 
                 if ("reservation" in item) {
-                  updateReservationTable(item.reservation._id, table.tableNumber);
+                  updateReservationTable(
+                    item.reservation._id,
+                    table.tableNumber
+                  );
                 } else {
                   updateWalkInTable(item.walkin._id, table.tableNumber);
                 }
