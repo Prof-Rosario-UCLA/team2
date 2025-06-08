@@ -26,11 +26,13 @@ spec:
             secretKeyRef:
               name: mongodb-uri
               key: uri
-        resources:  # optional, for HPA
+        resources:
           requests:
             cpu: "500m"
+            memory: "1Gi"
           limits:
-            cpu: "1000m"  # 1 full core
+            cpu: "1000m"
+            memory: "2Gi"
 ---
 apiVersion: apps/v1
 kind: StatefulSet
