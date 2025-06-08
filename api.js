@@ -4,9 +4,14 @@ import walkInRoutes from './backend/routes/walkin.js';
 import tableRoutes from './backend/routes/table.js';
 import { initializeDatabases } from './backend/utils/dbconfig.js';
 import cors from 'cors';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
-const HTTP_PORT = 1919;
+const HTTP_PORT = process.env.PORT || 1919;
 
 // Connect to databases
 const { mongoConnected, redisConnected } = await initializeDatabases();
@@ -28,7 +33,12 @@ app.get('/health', (req, res) => {
   res.json({ status: 'healthy' });
 });
 
-// Start HTTP server (for health checks and local development)
+// Serve static files from the dist directory in production
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, 'dist')));
+}
+
+// Start HTTP server
 app.listen(HTTP_PORT, () => {
-  console.log(`HTTP Server running on port: ${HTTP_PORT}`);
+  console.log(`Server running on port: ${HTTP_PORT}`);
 });

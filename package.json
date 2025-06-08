@@ -10,7 +10,9 @@
     "dev:full": "concurrently \"npm run server\" \"npm run dev\"",
     "lint": "eslint .",
     "dist": "rm -fr node_modules",
-    "preview": "vite preview --port 5173"
+    "preview": "vite preview --port 5173",
+    "start": "NODE_ENV=production node api.js",
+    "prod:build": "npm run build && npm run start"
   },
   "dependencies": {
     "@mantine/core": "8.0.1",
