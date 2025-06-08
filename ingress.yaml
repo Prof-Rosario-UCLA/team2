@@ -30,7 +30,7 @@ spec:
                 name: restaurantapp-backend-service
                 port:
                   number: 1919
-          - path: /*
+          - path: /
             pathType: ImplementationSpecific
             backend:
               service:
