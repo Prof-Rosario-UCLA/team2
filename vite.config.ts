@@ -18,6 +18,7 @@ export default defineConfig({
     react()
   ],
   build: {
+    outDir: 'dist',
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'index.html')
