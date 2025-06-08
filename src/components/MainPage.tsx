@@ -315,6 +315,10 @@ function MainPage() {
       const url = `${baseUrl}?startDate=${encodeURIComponent(
         startDate
       )}&endDate=${encodeURIComponent(endDate)}`;
+      
+      console.log('fetching all reservations with API_BASE_URL:', API_BASE_URL);
+      console.log('Full request URL:', url);
+      
       const res = await fetch(url);
 
       if (res.ok) {
