@@ -1,9 +1,11 @@
 FROM node:18-alpine
 WORKDIR /app
 
-# Copy package files and install dependencies
+# Copy package files
 COPY package*.json ./
-RUN npm install
+
+# Install dependencies with specific flags to handle optional dependencies
+RUN npm install --no-optional
 
 # Copy source files
 COPY . .
