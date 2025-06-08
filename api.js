@@ -6,6 +6,7 @@ import { initializeDatabases } from './backend/utils/dbconfig.js';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { createServer } from 'http';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -23,22 +24,23 @@ if (!mongoConnected || !redisConnected) {
 app.use(express.json());
 app.use(cors());
 
+const httpServer = createServer(app);
+
 // REST API routes
 app.use('/reservations', reservationRoutes);
 app.use('/walkins', walkInRoutes);
 app.use('/tables', tableRoutes);
 
-// Health check endpoint
-app.get('/health', (req, res) => {
-  res.json({ status: 'healthy' });
+// Serve static files from the dist directory (built React app)
+app.use(express.static(path.join(__dirname, 'dist')));
+
+// Handle React routing, return all requests to React app
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
-// Serve static files from the dist directory in production
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, 'dist')));
-}
-
+const port = 1919;
 // Start HTTP server
-app.listen(HTTP_PORT, () => {
-  console.log(`Server running on port: ${HTTP_PORT}`);
+httpServer.listen(port, () => {
+  console.log(`Server is running on http://localhost:${port}`);
 });
