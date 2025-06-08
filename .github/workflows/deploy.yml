@@ -13,8 +13,7 @@ env:
   REPO_NAME: ${{ secrets.ARTIFACT_REGISTRY_REPO }}
   GKE_CLUSTER: ${{ secrets.GKE_CLUSTER_NAME }}
   GKE_ZONE: ${{ secrets.GKE_CLUSTER_ZONE }}
-  FRONTEND_IMAGE: restaurantapp-frontend
-  BACKEND_IMAGE: restaurantapp-backend
+  APP_IMAGE: restaurantapp
 
 jobs:
   build-and-deploy:
@@ -40,39 +39,23 @@ jobs:
       run: |-
         gcloud auth configure-docker us-west2-docker.pkg.dev
 
-    - name: Build and Push Frontend Docker image
+    - name: Build and Push Docker image
       run: |-
-        FRONTEND_IMAGE_TAG="us-west2-docker.pkg.dev/$PROJECT_ID/$REPO_NAME/$FRONTEND_IMAGE:$GITHUB_SHA"
-        echo "Building frontend image: $FRONTEND_IMAGE_TAG"
-        docker build -t $FRONTEND_IMAGE -f frontend.Dockerfile .
-        docker tag $FRONTEND_IMAGE $FRONTEND_IMAGE_TAG
-        docker push $FRONTEND_IMAGE_TAG
-        echo "FRONTEND_IMAGE_TAG=$FRONTEND_IMAGE_TAG" >> $GITHUB_ENV
+        APP_IMAGE_TAG="us-west2-docker.pkg.dev/$PROJECT_ID/$REPO_NAME/$APP_IMAGE:$GITHUB_SHA"
+        echo "Building application image: $APP_IMAGE_TAG"
+        docker build -t $APP_IMAGE .
+        docker tag $APP_IMAGE $APP_IMAGE_TAG
+        docker push $APP_IMAGE_TAG
+        echo "APP_IMAGE_TAG=$APP_IMAGE_TAG" >> $GITHUB_ENV
 
-    - name: Build and Push Backend Docker image
+    - name: Verify image exists in registry
       run: |-
-        BACKEND_IMAGE_TAG="us-west2-docker.pkg.dev/$PROJECT_ID/$REPO_NAME/$BACKEND_IMAGE:$GITHUB_SHA"
-        echo "Building backend image: $BACKEND_IMAGE_TAG"
-        docker build -t $BACKEND_IMAGE -f backend.Dockerfile .
-        docker tag $BACKEND_IMAGE $BACKEND_IMAGE_TAG
-        docker push $BACKEND_IMAGE_TAG
-        echo "BACKEND_IMAGE_TAG=$BACKEND_IMAGE_TAG" >> $GITHUB_ENV
-
-    - name: Verify images exist in registry
-      run: |-
-        echo "Verifying frontend image exists..."
-        if ! gcloud container images describe ${{ env.FRONTEND_IMAGE_TAG }}; then
-          echo "Frontend image not found in registry"
+        echo "Verifying application image exists..."
+        if ! gcloud container images describe ${{ env.APP_IMAGE_TAG }}; then
+          echo "Application image not found in registry"
           exit 1
         fi
-        
-        echo "Verifying backend image exists..."
-        if ! gcloud container images describe ${{ env.BACKEND_IMAGE_TAG }}; then
-          echo "Backend image not found in registry"
-          exit 1
-        fi
-        
-        echo "Both images verified successfully"
+        echo "Image verified successfully"
 
     - name: Get GKE credentials
       run: |-
@@ -84,21 +67,14 @@ jobs:
         kubectl create secret generic mongodb-uri \
           --from-literal=uri='${{ secrets.MONGO_URI }}' \
           --dry-run=client -o yaml | kubectl apply -f -
-        
-        # Create secret for Google Client ID
-        kubectl create secret generic app-secrets \
-          --from-literal=VITE_GOOGLE_CLIENT_ID='${{ secrets.VITE_GOOGLE_CLIENT_ID }}' \
-          --dry-run=client -o yaml | kubectl apply -f -
 
     - name: Prepare deployment file
       run: |-
-        # Debug: Print the image tags
-        echo "Frontend image tag: ${{ env.FRONTEND_IMAGE_TAG }}"
-        echo "Backend image tag: ${{ env.BACKEND_IMAGE_TAG }}"
+        # Debug: Print the image tag
+        echo "Application image tag: ${{ env.APP_IMAGE_TAG }}"
         
-        # Replace the image tags in the k8s template
-        sed -i "s|FRONTEND_IMAGE_TAG|${{ env.FRONTEND_IMAGE_TAG }}|g" deployment.yaml
-        sed -i "s|BACKEND_IMAGE_TAG|${{ env.BACKEND_IMAGE_TAG }}|g" deployment.yaml
+        # Replace the image tag in the k8s template
+        sed -i "s|RESTAURANTAPP_IMAGE_TAG|${{ env.APP_IMAGE_TAG }}|g" deployment.yaml
         
         # Debug: Print the modified deployment file
         echo "Modified deployment.yaml contents:"
@@ -125,16 +101,12 @@ jobs:
         echo "Applying certificate..."
         kubectl apply -f certificate.yaml
         
-        echo "Applying frontend config..."
-        kubectl apply -f frontendconfig.yaml
-        
         echo "Applying ingress..."
         kubectl apply -f ingress.yaml
         
-        # Verify deployments
-        echo "Verifying deployments..."
-        kubectl rollout status deployment/restaurantapp-frontend
-        kubectl rollout status deployment/restaurantapp-backend
+        # Verify deployment
+        echo "Verifying deployment..."
+        kubectl rollout status deployment/restaurantapp
         
         # Verify services
         echo "Verifying services..."

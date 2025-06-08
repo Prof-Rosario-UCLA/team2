@@ -1,59 +1,26 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: restaurantapp-frontend
+  name: restaurantapp
   labels:
-    app: restaurantapp-frontend
+    app: restaurantapp
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: restaurantapp-frontend
+      app: restaurantapp
   template:
     metadata:
       labels:
-        app: restaurantapp-frontend
+        app: restaurantapp
     spec:
       containers:
-      - name: restaurantapp-frontend
-        image: FRONTEND_IMAGE_TAG
-        ports:
-        - containerPort: 5173
-        env:
-        - name: VITE_GOOGLE_CLIENT_ID
-          valueFrom:
-            secretKeyRef:
-              name: app-secrets
-              key: VITE_GOOGLE_CLIENT_ID
-        resources:
-          requests:
-            cpu: "100m"
-            memory: "128Mi"
-          limits:
-            cpu: "500m"
-            memory: "512Mi"
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: restaurantapp-backend
-  labels:
-    app: restaurantapp-backend
-spec:
-  replicas: 2
-  selector:
-    matchLabels:
-      app: restaurantapp-backend
-  template:
-    metadata:
-      labels:
-        app: restaurantapp-backend
-    spec:
-      containers:
-      - name: restaurantapp-backend
-        image: BACKEND_IMAGE_TAG
+      - name: restaurantapp
+        image: RESTAURANTAPP_IMAGE_TAG
         ports:
         - containerPort: 1919
+          name: http
+
         env:
         - name: REDIS_HOST
           value: "restaurantapp-redis-service"
@@ -61,6 +28,7 @@ spec:
           value: "6379"
         - name: PORT
           value: "1919"
+
         - name: NODE_ENV
           value: "production"
         - name: MONGO_URI
@@ -68,13 +36,26 @@ spec:
             secretKeyRef:
               name: mongodb-uri
               key: uri
+
+        - name: TLS_CERT_PATH
+          value: "/etc/certs/tls.crt"
+        - name: TLS_KEY_PATH
+          value: "/etc/certs/tls.key"
+        volumeMounts:
+        - name: tls-certs
+          mountPath: /etc/certs
+          readOnly: true
         resources:
           requests:
-            cpu: "100m"
-            memory: "128Mi"
+            cpu: "200m"
+            memory: "256Mi"
           limits:
-            cpu: "500m"
-            memory: "512Mi"
+            cpu: "1000m"
+            memory: "1Gi"
+      volumes:
+      - name: tls-certs
+        secret:
+          secretName: backend-tls-secret
 ---
 apiVersion: apps/v1
 kind: StatefulSet
