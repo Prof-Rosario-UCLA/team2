@@ -26,7 +26,7 @@ spec:
               name: app-secrets
               key: VITE_GOOGLE_CLIENT_ID
         - name: VITE_API_URL
-          value: "http://restaurantapp-backend-service:1919"
+          value: "restaurantapp-backend-service"
         resources:
           requests:
             cpu: "100m"

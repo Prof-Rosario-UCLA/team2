@@ -15,13 +15,13 @@ kind: Service
 metadata:
   name: restaurantapp-backend-service
 spec:
+  type: ClusterIP
   selector:
     app: restaurantapp-backend
   ports:
     - protocol: TCP
       port: 1919
       targetPort: 1919
-  type: ClusterIP
 ---
 apiVersion: v1
 kind: Service
