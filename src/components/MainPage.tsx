@@ -323,14 +323,23 @@ function MainPage() {
 
       if (res.ok) {
         const data = await res.json();
-        // console.log(data);
+        console.log(`Successfully fetched ${type}:`, data);
         type === "reservation" ? setReservations(data) : setWaitlist(data);
       } else {
-        console.error("Failed to fetch reservations");
+        const errorData = await res.json().catch(() => null);
+        console.error(`Failed to fetch ${type}:`, {
+          status: res.status,
+          statusText: res.statusText,
+          errorData
+        });
       }
     } catch (err) {
-      console.error("Fetch error:", err);
+      console.error(`Error fetching ${type}:`, {
+        error: err,
+        message: err instanceof Error ? err.message : 'Unknown error'
+      });
     } finally {
+      console.log(`Completed ${type} fetch operation`);
     }
   };
 
