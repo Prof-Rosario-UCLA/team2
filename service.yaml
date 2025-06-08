@@ -21,8 +21,7 @@ spec:
     - protocol: TCP
       port: 1919
       targetPort: 1919
-      name: https
-  type: LoadBalancer
+  type: ClusterIP
 ---
 apiVersion: v1
 kind: Service

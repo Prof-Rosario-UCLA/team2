@@ -1,7 +1,7 @@
 const isProduction = true;
 
 export const API_BASE_URL = isProduction
-  ? "https://team2.cs144.org/api"
+  ? import.meta.env.VITE_API_URL
   : "http://localhost:1919";
 
 // dear TAs if you see this, i know this is bad practice, but i spent a long time
