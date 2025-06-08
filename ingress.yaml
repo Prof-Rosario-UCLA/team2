@@ -16,24 +16,10 @@ spec:
     - host: team2.cs144.org    # Replace with your actual domain
       http:
         paths:
-          - path: /reservations/*
-            pathType: ImplementationSpecific
+          - path: /*
+            pathType: Prefix
             backend:
               service:
-                name: restaurantapp-backend-service
+                name: restaurantapp-frontend-service 
                 port:
-                  number: 1919
-          - path: /walkins/*
-            pathType: ImplementationSpecific
-            backend:
-              service:
-                name: restaurantapp-backend-service
-                port:
-                  number: 1919
-          - path: /
-            pathType: ImplementationSpecific
-            backend:
-              service:
-                name: restaurantapp-frontend-service # Your ClusterIP Service name
-                port:
-                  number: 80 # The port your Service listens on
+                  number: 80
