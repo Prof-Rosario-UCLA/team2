@@ -255,7 +255,7 @@ function MainPage() {
     });
 
     return (
-      <Grid.Col span={{ base: 12, sm: 6, md: 4, lg: 3, xl: 2 }}>
+      <Grid.Col span={{ base: 12, xs: 6, sm: 4, md: 3, lg: 2, xl: 2 }}>
         <div
           ref={drop as unknown as React.Ref<HTMLDivElement>}
           className={classes.tableItem}

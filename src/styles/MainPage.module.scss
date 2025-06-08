@@ -157,8 +157,20 @@
   }
 }
 
+@media (max-width: 650px) {
+  .mainTitle {
+    font-size: 26px;
+  }
+}
+
+@media (max-width: 500px) {
+  .mainTitle {
+    font-size: 22px;
+  }
+}
+
 @media (max-height: 1000px) {
   .tableContainer {
-    height: 60vh;
+    height: 70vh;
   }
 }
