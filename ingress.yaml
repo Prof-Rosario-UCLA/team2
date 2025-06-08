@@ -20,6 +20,6 @@ spec:
             pathType: ImplementationSpecific
             backend:
               service:
-                name: restaurantapp # Your ClusterIP Service name
+                name: restaurantapp-service # Updated to match actual service name
                 port:
                   number: 80 # The port your Service listens on
