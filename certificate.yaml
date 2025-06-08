@@ -4,4 +4,4 @@ metadata:
   name: restaurantapp-cert
 spec:
   domains:
-    - team2.cs144.org
+    - team2.cs144.org 
