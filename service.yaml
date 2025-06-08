@@ -9,7 +9,6 @@ spec:
     - protocol: TCP
       port: 80
       targetPort: 5173
-  type: ClusterIP
 ---
 apiVersion: v1
 kind: Service
@@ -22,8 +21,8 @@ spec:
     - protocol: TCP
       port: 1919
       targetPort: 1919
-      name: http
-  type: ClusterIP
+      name: https
+  type: LoadBalancer
 ---
 apiVersion: v1
 kind: Service

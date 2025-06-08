@@ -24,11 +24,6 @@ if (!mongoConnected || !redisConnected) {
 app.use(express.json());
 app.use(cors());
 
-// Health check endpoint
-app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'healthy' });
-});
-
 // REST API routes
 app.use('/reservations', reservationRoutes);
 app.use('/walkins', walkInRoutes);

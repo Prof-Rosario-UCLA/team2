@@ -68,18 +68,6 @@ spec:
             secretKeyRef:
               name: mongodb-uri
               key: uri
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 1919
-          initialDelaySeconds: 30
-          periodSeconds: 10
-        readinessProbe:
-          httpGet:
-            path: /health
-            port: 1919
-          initialDelaySeconds: 5
-          periodSeconds: 5
         resources:
           requests:
             cpu: "100m"
