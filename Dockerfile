@@ -10,9 +10,9 @@ RUN npm run build
 
 # Set environment variables
 ENV NODE_ENV=production
-ENV PORT=1919
+ENV PORT=5173
 
-EXPOSE 1919
+EXPOSE 5173
 
 
 CMD ["npm", "run", "dev:full"]

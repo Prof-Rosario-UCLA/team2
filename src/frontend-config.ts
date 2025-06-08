@@ -1,7 +1,7 @@
 const isProduction = true;
 
 export const API_BASE_URL = isProduction
-  ? "restaurantapp-backend-service"
+  ? "http://localhost:1919"
   : "http://localhost:1919";
 
 // dear TAs if you see this, i know this is bad practice, but i spent a long time

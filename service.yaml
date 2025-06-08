@@ -8,10 +8,7 @@ spec:
   ports:
     - name: http
       port: 80
-      targetPort: 1919
-    - name: https
-      port: 443
-      targetPort: 8443
+      targetPort: 5173
   type: ClusterIP
 ---
 apiVersion: v1
@@ -25,4 +22,3 @@ spec:
     - port: 6379
       targetPort: 6379
       name: redis
-  clusterIP: None
