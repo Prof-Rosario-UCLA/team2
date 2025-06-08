@@ -167,4 +167,41 @@ router.patch("/updateReservation", async (req, res) => {
   }
 });
 
+// Delete a reservation by ID
+router.delete("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({ error: "Reservation ID is required" });
+    }
+
+    const deletedReservation = await Reservation.findByIdAndDelete(id);
+
+    if (!deletedReservation) {
+      return res.status(404).json({ error: "Reservation not found" });
+    }
+
+    const updatedAllReservations = await getAllReservations();
+    await cacheResult("reservation", updatedAllReservations, 300);
+
+    res.status(200).json({
+      message: "Reservation deleted successfully",
+      deletedReservation
+    });
+  } catch (error) {
+    console.error("Error in DELETE /reservations/:id:", error);
+    
+    // Handle specific error cases
+    if (error.name === 'CastError') {
+      return res.status(400).json({ error: "Invalid reservation ID format" });
+    }
+    
+    res.status(500).json({ 
+      error: "Failed to delete reservation",
+      details: error.message 
+    });
+  }
+});
+
 export default router;

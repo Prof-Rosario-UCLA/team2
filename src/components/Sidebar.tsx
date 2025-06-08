@@ -4,6 +4,7 @@ import { Title, Button, Loader, Text } from "@mantine/core";
 import classes from "../styles/Sidebar.module.scss";
 import ReservationForm from "./Reservation";
 import { IconPlus } from "@tabler/icons-react";
+import { IconTrash } from "@tabler/icons-react";
 import { useCurrDate } from "./CurrDateProvider";
 import { API_BASE_URL } from "../frontend-config";
 
@@ -73,6 +74,7 @@ const DraggableReservation = ({
       isDragging: monitor.isDragging(),
     }),
   }));
+
 
   return (
     <div
@@ -252,6 +254,27 @@ function Sidebar() {
     } finally {
     }
   };
+  const IconTrashSize = 20;
+
+  const handleDeleteReservation = async (reservationId: string) => {
+    try {
+      
+      const response = await fetch(`${API_BASE_URL}/reservations/${reservationId}`, {
+        method: "DELETE",
+      });
+  
+      if (!response.ok) {
+        throw new Error("Failed to delete reservation");
+      }
+  
+      setReservations((prev) =>
+        prev.filter((res) => res._id !== reservationId)
+      );
+      
+    } catch (error) {
+      console.error("Error deleting reservation:", error);
+    }
+  };
 
   return (
     <div className={classes.sidebarContainer}>
@@ -300,7 +323,24 @@ function Sidebar() {
         <div className={classes.unassignedResContainer}>
           <p style={{ fontStyle: "italic" }}>Drag and drop onto a table</p>
           {reservations.map((res) => (
-            <DraggableReservation reservation={res} key={res._id} />
+            <div
+            style={{
+              display: "flex",
+              alignItems: "center", // optional: vertically center the items
+              gap: "8px",            // optional: space between the components
+            }}
+            >
+              <DraggableReservation reservation={res} key={res._id} />
+              <button onClick={() => handleDeleteReservation(res._id)} 
+                style={{
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  padding: 0,
+                }}>
+                <IconTrash size={IconTrashSize} className={classes.plusIcon} />
+              </button>
+            </div>
           ))}
         </div>
       )}
