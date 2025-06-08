@@ -16,6 +16,20 @@ spec:
     - host: team2.cs144.org    # Replace with your actual domain
       http:
         paths:
+          - path: /reservations/*
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: restaurantapp-backend-service
+                port:
+                  number: 1919
+          - path: /walkins/*
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: restaurantapp-backend-service
+                port:
+                  number: 1919
           - path: /*
             pathType: ImplementationSpecific
             backend:
