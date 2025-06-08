@@ -2,7 +2,6 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import { createClient } from "redis";
 dotenv.config();
-// import { createClient } from 'redis';
 
 // Database configuration
 const isProduction = true; // Set to true for production environment
@@ -22,13 +21,6 @@ export const redisOptions = {
   socket: {
     host: isProduction ? "restaurantapp-redis-service" : "localhost",
     port: 6379,
-    reconnectStrategy: (retries) => {
-      if (retries > 10) {
-        console.error("Redis max retries reached");
-        return new Error("Redis max retries reached");
-      }
-      return Math.min(retries * 100, 3000);
-    },
   },
 };
 
