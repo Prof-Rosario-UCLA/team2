@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useDrag } from "react-dnd";
 import { Title, Button, Loader, Text } from "@mantine/core";
+import { useMediaQuery } from "@mantine/hooks";
 import classes from "../styles/Sidebar.module.scss";
 import ReservationForm from "./Reservation";
 import { IconPlus } from "@tabler/icons-react";
@@ -73,7 +74,29 @@ const DraggableReservation = ({
       isDragging: monitor.isDragging(),
     }),
   }));
+  const getsSquished = useMediaQuery("(max-width: 650px)");
 
+  if (getsSquished) {
+    return (
+      <div
+        className={classes.reservationItem}
+        ref={drag as unknown as React.Ref<HTMLDivElement>}
+        style={{ opacity: isDragging ? 0.5 : 1 }}
+      >
+        <div>
+          <p className={classes.waitlistItemName}>
+            {formatName(reservation.name)}
+          </p>
+          <p className={classes.waitlistItemTime}>
+            {convertDateToTime(reservation.startTime)}
+          </p>
+        </div>
+        <div>
+          <p className={classes.addedAtText}>({reservation.size.valueOf()})</p>
+        </div>
+      </div>
+    );
+  }
   return (
     <div
       className={classes.reservationItem}
@@ -139,7 +162,8 @@ export function CustomAddButton(
   onClickFunc: () => void,
   date?: Date
 ) {
-  const iconPlusSize = 16;
+  const getsSquished = useMediaQuery("(max-width: 800px)");
+  const iconPlusSize = getsSquished ? 14 : 16;
 
   function isToday(date: Date) {
     const today = new Date();
@@ -295,13 +319,15 @@ function Sidebar() {
           <Text>Loading reservations...</Text>
         </div>
       ) : reservations.length === 0 ? (
-        <p style={{ fontStyle: "italic" }}>No new reservations</p>
+        <p className={classes.italicText}>No new reservations</p>
       ) : (
-        <div className={classes.unassignedResContainer}>
-          <p style={{ fontStyle: "italic" }}>Drag and drop onto a table</p>
-          {reservations.map((res) => (
-            <DraggableReservation reservation={res} key={res._id} />
-          ))}
+        <div>
+          <p className={classes.italicText}>Drag and drop onto a table</p>
+          <div className={classes.unassignedResContainer}>
+            {reservations.map((res) => (
+              <DraggableReservation reservation={res} key={res._id} />
+            ))}
+          </div>
         </div>
       )}
       <hr style={{ marginTop: "46px" }} />
@@ -331,13 +357,15 @@ function Sidebar() {
           <Text>Loading waitlist...</Text>
         </div>
       ) : waitlist.length === 0 ? (
-        <p style={{ fontStyle: "italic" }}>No waitlist</p>
+        <p className={classes.italicText}>No waitlist</p>
       ) : (
-        <div className={classes.unassignedWaitContainer}>
-          <p style={{ fontStyle: "italic" }}>Drag and drop onto a table</p>
-          {waitlist.map((entry, index) => (
-            <DraggableWaitlist key={index} walkin={entry} />
-          ))}
+        <div>
+          <p className={classes.italicText}>Drag and drop onto a table</p>
+          <div className={classes.unassignedWaitContainer}>
+            {waitlist.map((entry, index) => (
+              <DraggableWaitlist key={index} walkin={entry} />
+            ))}
+          </div>
         </div>
       )}
     </div>
