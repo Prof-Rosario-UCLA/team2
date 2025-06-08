@@ -24,6 +24,11 @@ if (!mongoConnected || !redisConnected) {
 app.use(express.json());
 app.use(cors());
 
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'healthy' });
+});
+
 // REST API routes
 app.use('/reservations', reservationRoutes);
 app.use('/walkins', walkInRoutes);
@@ -32,5 +37,5 @@ app.use('/tables', tableRoutes);
 
 // Start the server
 app.listen(PORT, () => {
-  console.log(`Restaurant REST API running on http://localhost:${PORT}`);
+  console.log(`Restaurant REST API running on port: ${PORT}`);
 });
