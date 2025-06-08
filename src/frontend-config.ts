@@ -1,8 +1,8 @@
 const isProduction = true;
 
 export const API_BASE_URL = isProduction
-  ? "https://34.83.14.253:1919"
-  : "https://localhost:1919";
+  ? "https://team2.cs144.org/api"
+  : "http://localhost:1919";
 
 // dear TAs if you see this, i know this is bad practice, but i spent a long time
 // debugging why the kubernetes cluster couldn't recognize the github secret correctly
