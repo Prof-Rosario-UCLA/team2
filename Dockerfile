@@ -5,4 +5,4 @@ RUN npm run dist
 COPY . .
 RUN npm install
 EXPOSE 1919
-CMD ["node", "app.js"]
+CMD ["node", "api.js"]
