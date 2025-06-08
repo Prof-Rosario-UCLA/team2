@@ -10,16 +10,16 @@ metadata:
     # Use HTTP to validate domain ownership (GCP specific).
     kubernetes.io/ingress.class: "gce"
     # Automatic HTTP to HTTPS redirect
-    networking.gke.io/v1.FrontendConfig: "default-redirect-config"
+    # networking.gke.io/v1.FrontendConfig: "default-redirect-config" # Once certificate is ready, uncomment and redeploy this
 spec:
   rules:
     - host: team2.cs144.org    # Replace with your actual domain
       http:
         paths:
           - path: /*
-            pathType: Prefix
+            pathType: ImplementationSpecific
             backend:
               service:
-                name: restaurantapp-frontend-service 
+                name: restaurantapp-frontend-service # Your ClusterIP Service name
                 port:
-                  number: 80
+                  number: 80 # The port your Service listens on
