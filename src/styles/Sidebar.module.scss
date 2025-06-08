@@ -9,11 +9,14 @@
   font-size: medium;
 }
 
+.sidebarTitle {
+  font-size: 2rem;
+}
+
 .reservationTitleContainer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  // padding: 0px 20px;
 }
 
 .createReservationButton,
@@ -24,6 +27,7 @@
   border-radius: 8px;
   background-color: #36496b;
   padding: 6px 12px;
+  margin-left: 6px;
 }
 
 .createReservationButton:hover {
@@ -110,4 +114,25 @@
 .reservationItem {
   background-color: rgb(70, 128, 222);
   border-radius: 8px;
+}
+
+@media (max-width: 800px) {
+  .sidebarTitle {
+    font-size: 1.5rem;
+  }
+  .addToWaitlistButton {
+    font-size: 0.7rem;
+    padding: 5px 10px;
+    margin: 0;
+    margin-top: 4px;
+  }
+  .reservationTitleContainer,
+  .waitlistTitleSection {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .waitlistTitleSection {
+    gap: 0;
+  }
 }

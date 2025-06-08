@@ -18,7 +18,7 @@ import {
 import { useForm } from "@mantine/form";
 import { IconClock } from "@tabler/icons-react";
 import classes from "../styles/Reservation.module.scss";
-import { API_BASE_URL } from '../frontend-config';
+import { API_BASE_URL } from "../frontend-config";
 //import dajys from "dajys";
 
 type ReservationFormProps = {
@@ -189,7 +189,7 @@ function ReservationForm({ onClose, reservationType }: ReservationFormProps) {
           </Button>
         </Box>
       )} */}
-      <Title order={2} mb="md" ta="center" mt="0">
+      <Title order={2} className={classes.formTitle}>
         {reservationType === "reservation"
           ? "Make a Reservation"
           : "Add to Waitlist"}
@@ -212,7 +212,7 @@ function ReservationForm({ onClose, reservationType }: ReservationFormProps) {
             label="First Name"
             placeholder="First name"
             required
-            mb="md"
+            // mb="md"
             labelProps={{
               style: {
                 textAlign: "flex-start",
@@ -227,7 +227,7 @@ function ReservationForm({ onClose, reservationType }: ReservationFormProps) {
             label="Last Name"
             placeholder="Last name"
             required
-            mb="md"
+            // mb="md"
             labelProps={{
               style: {
                 textAlign: "flex-start",
@@ -242,7 +242,7 @@ function ReservationForm({ onClose, reservationType }: ReservationFormProps) {
             <TextInput
               label="Email"
               placeholder="example@email.com"
-              mb="md"
+              // mb="md"
               labelProps={{
                 style: {
                   textAlign: "flex-start",
@@ -257,7 +257,7 @@ function ReservationForm({ onClose, reservationType }: ReservationFormProps) {
           <TextInput
             label="Phone"
             placeholder="Phone number"
-            mb="md"
+            // mb="md"
             required={reservationType === "waitlist"}
             labelProps={{
               style: {
@@ -340,7 +340,7 @@ function ReservationForm({ onClose, reservationType }: ReservationFormProps) {
           required
           min={1}
           max={20}
-          mb="md"
+          // mb="md"
           labelProps={{
             style: {
               textAlign: "flex-start",
@@ -354,7 +354,7 @@ function ReservationForm({ onClose, reservationType }: ReservationFormProps) {
         <Textarea
           label="Additional comments"
           placeholder="Any additional comments or notes"
-          mb="md"
+          // mb="md"
           autosize
           minRows={5}
           labelProps={{

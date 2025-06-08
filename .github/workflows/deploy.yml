@@ -97,17 +97,17 @@ jobs:
         echo "Backend image tag: ${{ env.BACKEND_IMAGE_TAG }}"
         
         # Replace the image tags in the k8s template
-        sed -i "s|FRONTEND_IMAGE_TAG|${{ env.FRONTEND_IMAGE_TAG }}|g" deployment.yml
-        sed -i "s|BACKEND_IMAGE_TAG|${{ env.BACKEND_IMAGE_TAG }}|g" deployment.yml
+        sed -i "s|FRONTEND_IMAGE_TAG|${{ env.FRONTEND_IMAGE_TAG }}|g" deployment.yaml
+        sed -i "s|BACKEND_IMAGE_TAG|${{ env.BACKEND_IMAGE_TAG }}|g" deployment.yaml
         
         # Debug: Print the modified deployment file
-        echo "Modified deployment.yml contents:"
-        cat deployment.yml
+        echo "Modified deployment.yaml contents:"
+        cat deployment.yaml
 
     - name: Validate deployment file
       run: |-
         echo "Validating deployment configuration..."
-        if ! kubectl apply --dry-run=client -f deployment.yml; then
+        if ! kubectl apply --dry-run=client -f deployment.yaml; then
           echo "Deployment file validation failed"
           exit 1
         fi
@@ -115,10 +115,31 @@ jobs:
 
     - name: Deploy to GKE
       run: |-        
-        # Apply the deployment
-        kubectl apply -f deployment.yml
+        # Apply resources in the correct order
+        echo "Applying deployment..."
+        kubectl apply -f deployment.yaml
         
-        # Verify deployment
+        echo "Applying services..."
+        kubectl apply -f service.yaml
+        
+        echo "Applying certificate..."
+        kubectl apply -f certificate.yaml
+        
+        echo "Applying frontend config..."
+        kubectl apply -f frontendconfig.yaml
+        
+        echo "Applying ingress..."
+        kubectl apply -f ingress.yaml
+        
+        # Verify deployments
+        echo "Verifying deployments..."
         kubectl rollout status deployment/restaurantapp-frontend
         kubectl rollout status deployment/restaurantapp-backend
+        
+        # Verify services
+        echo "Verifying services..."
         kubectl get services -o wide
+        
+        # Verify ingress
+        echo "Verifying ingress..."
+        kubectl get ingress

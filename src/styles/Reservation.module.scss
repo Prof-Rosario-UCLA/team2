@@ -1,6 +1,6 @@
 .formContainer {
   position: fixed; /* fixed keeps it relative to the viewport */
-  top: 55%;        /* move it a bit below 50% */
+  top: 54%; /* move it a bit below 50% */
   left: 50%;
   transform: translate(-50%, -50%);
   color: black;
@@ -65,6 +65,7 @@
 .inputStyles {
   width: 300px;
   height: 2rem;
+  margin-bottom: 10px;
 }
 
 .submitContainer {
@@ -91,4 +92,59 @@
   margin: auto;
   margin-top: auto;
   align-content: center;
+}
+
+@media (max-width: 850px) {
+  .inputStyles {
+    width: 250px;
+    height: 1.5rem;
+  }
+  .closeButton {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 700px) {
+  // .contactContainer {
+  //   display: flex;
+  //   flex-direction: column;
+  // }
+  .formContainer {
+    min-width: 85vw;
+  }
+  .closeButton {
+    font-size: 0.6rem;
+  }
+  .inputStyles {
+    width: 220px;
+  }
+}
+
+@media (max-width: 600px) {
+  .inputStyles {
+    width: 180px;
+    height: 1.2rem;
+  }
+}
+
+@media (max-width: 500px) {
+  .formContainer {
+    padding-left: 16px;
+  }
+  .contactContainer {
+    display: flex;
+    flex-direction: column;
+  }
+  .inputStyles {
+    width: 300px;
+  }
+  .formTitle {
+    margin-bottom: -30px;
+  }
+}
+
+@media (max-width: 400px) {
+  .inputStyles {
+    width: 250px;
+  }
 }

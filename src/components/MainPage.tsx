@@ -11,14 +11,12 @@ import {
 import { DatesProvider, DatePicker } from "@mantine/dates";
 import { useForm } from "@mantine/form";
 import { useState, useEffect } from "react";
-import { useDrop, useDragLayer } from "react-dnd";
+import { useDrop, useDragLayer, useDrag } from "react-dnd";
 import { CustomAddButton, convertDateToTime, formatName } from "./Sidebar";
 import type { Reservation, Walkin, DragItem } from "./Sidebar";
 import { useCurrDate } from "./CurrDateProvider";
 import { IconCalendarWeek } from "@tabler/icons-react";
 import { API_BASE_URL } from "../frontend-config";
-
-const tableItemWidth = 1.58;
 
 const times = Array.from({ length: 21 }, (_, i) => {
   const totalMinutes = 17 * 60 + i * 15; // Start at 5 PM (17:00)
@@ -38,61 +36,12 @@ interface Table {
   tableNumber: Number;
   tableCapacity: number;
   comments: string;
-  reservation: Reservation | Walkin;
+  reservation: Reservation | Walkin | null;
 }
 
 type TableDropProps = {
   table: Table;
   onDrop: (item: DragItem) => void;
-};
-
-export const TableDrop: React.FC<TableDropProps> = ({ table, onDrop }) => {
-  const [{ isOver }, drop] = useDrop<DragItem, void, { isOver: boolean }>(
-    () => ({
-      accept: "BOX",
-      drop: (item) => onDrop(item),
-      collect: (monitor) => ({
-        isOver: monitor.isOver(),
-      }),
-    })
-  );
-
-  return (
-    <Grid.Col span={tableItemWidth}>
-      <div
-        ref={drop as unknown as React.Ref<HTMLDivElement>}
-        className={classes.tableItem}
-        style={{ backgroundColor: isOver ? "#f0f0f0" : undefined }}
-      >
-        <h6 className={classes.tableItemTitle}>
-          Table {table.tableNumber.valueOf()} ({table.tableCapacity})
-        </h6>
-        {!table.reservation && <p style={{ fontSize: "1rem" }}>nothing here</p>}
-        {table.reservation && (
-          <div
-            className={
-              "email" in table.reservation
-                ? classes.tableReservationContainer
-                : classes.tableWalkinContainer
-            }
-          >
-            <p
-              className={
-                "email" in table.reservation
-                  ? classes.tableReservationItem
-                  : classes.tableWalkinItem
-              }
-            >
-              {formatName(table.reservation.name)}
-            </p>
-            <p style={{ color: "#555" }}>
-              Party Size: {table.reservation.size.valueOf()}
-            </p>
-          </div>
-        )}
-      </div>
-    </Grid.Col>
-  );
 };
 
 const updateReservationTable = async (
@@ -123,24 +72,18 @@ const updateReservationTable = async (
   }
 };
 
-const updateWalkInTable = async (
-  walkinId: string,
-  tableNumber: Number
-) => {
+const updateWalkInTable = async (walkinId: string, tableNumber: Number) => {
   try {
-    const response = await fetch(
-      `${API_BASE_URL}/walkins/updateWalkin`,
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          walkinId: walkinId, 
-          tableNum: tableNumber,
-        }),
-      }
-    );
+    const response = await fetch(`${API_BASE_URL}/walkins/updateWalkin`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        walkinId: walkinId,
+        tableNum: tableNumber,
+      }),
+    });
 
     if (response.ok) {
       const updatedWalkIn = await response.json();
@@ -150,6 +93,19 @@ const updateWalkInTable = async (
     console.error("Network error:", error);
   }
 };
+
+function formatToTime(dateInput: string | Date): string {
+  const date = typeof dateInput === "string" ? new Date(dateInput) : dateInput;
+
+  let hours = date.getUTCHours(); // ⬅️ NOTE: UTC!
+  const minutes = date.getUTCMinutes();
+  const ampm = hours >= 12 ? "pm" : "am";
+
+  hours = hours % 12;
+  hours = hours === 0 ? 12 : hours;
+
+  return `${hours}:${minutes.toString().padStart(2, "0")}${ampm}`;
+}
 
 // function addItemToTable(table: Table, item: DragItem): Table {
 //   if ("reservation" in item) {
@@ -226,9 +182,166 @@ function MainPage() {
   const [loading, setLoading] = useState(false);
   const { currDate, setCurrDate } = useCurrDate();
   const [errorMessage, setErrorMessage] = useState("");
+  const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [waitlist, setWaitlist] = useState<Walkin[]>([]);
+
+  console.log(waitlist);
+
+  const currDateAsDate = new Date(currDate);
+  // console.log(currDateAsDate.toISOString());
+
+  const tmrwDate = new Date(
+    Date.UTC(
+      currDateAsDate.getUTCFullYear(),
+      currDateAsDate.getUTCMonth(),
+      currDateAsDate.getUTCDate() + 1
+    )
+  );
+
+  const TableDrop: React.FC<TableDropProps> = ({ table, onDrop }) => {
+    const handleDropUpdate = async () => {
+      if (!table.reservation) return;
+      if ("email" in table.reservation) {
+        await updateReservationTable(table.reservation._id, table.tableNumber);
+        await fetchTodayReservations(
+          "reservation",
+          currDateAsDate.toISOString(),
+          tmrwDate.toISOString()
+        );
+      } else {
+        await updateWalkInTable(table.reservation._id, table.tableNumber);
+        await fetchTodayReservations(
+          "waitlist",
+          currDateAsDate.toISOString(),
+          tmrwDate.toISOString()
+        );
+      }
+    };
+
+    const [{ isOver }, drop] = useDrop<DragItem, void, { isOver: boolean }>(
+      () => ({
+        accept: "BOX",
+        drop: (item) => {
+          onDrop(item);
+          void handleDropUpdate(); // Call async handler without awaiting
+        },
+        collect: (monitor) => ({
+          isOver: monitor.isOver(),
+        }),
+      })
+    );
+
+    const [{ isDragging }, drag] = useDrag({
+      type: "BOX",
+      item: () => {
+        if (!table.reservation) return {} as DragItem;
+
+        if ("email" in table.reservation) {
+          return {
+            type: "BOX",
+            reservation: table.reservation,
+          };
+        } else {
+          return {
+            type: "BOX",
+            walkin: table.reservation,
+          };
+        }
+      },
+      canDrag: !!table.reservation, // only draggable if there's a reservation
+      collect: (monitor) => ({
+        isDragging: monitor.isDragging(),
+      }),
+    });
+
+    return (
+      <Grid.Col span={{ base: 12, sm: 6, md: 4, lg: 3, xl: 2 }}>
+        <div
+          ref={drop as unknown as React.Ref<HTMLDivElement>}
+          className={classes.tableItem}
+          style={{
+            backgroundColor: isOver ? "#f0f0f0" : undefined,
+            opacity: isDragging ? 0.5 : 1,
+          }}
+        >
+          <h6 className={classes.tableItemTitle}>
+            Table {table.tableNumber.valueOf()} ({table.tableCapacity})
+          </h6>
+
+          {!table.reservation && (
+            <p style={{ fontSize: "1rem" }}>nothing here</p>
+          )}
+
+          {table.reservation && (
+            <div
+              ref={drag as unknown as React.Ref<HTMLDivElement>}
+              className={
+                "email" in table.reservation
+                  ? classes.tableReservationContainer
+                  : classes.tableWalkinContainer
+              }
+              style={{ cursor: "move" }}
+            >
+              <div
+                className={
+                  "email" in table.reservation
+                    ? classes.tableReservationItem
+                    : classes.tableWalkinItem
+                }
+              >
+                {formatName(table.reservation.name)}
+              </div>
+              <p style={{ color: "#555" }}>
+                Party Size: {table.reservation.size.valueOf()}
+              </p>
+            </div>
+          )}
+        </div>
+      </Grid.Col>
+    );
+  };
+
+  const fetchTodayReservations = async (
+    type: string,
+    startDate: string,
+    endDate: string
+  ) => {
+    try {
+      const baseUrl =
+        type === "reservation"
+          ? `${API_BASE_URL}/reservations/range`
+          : `${API_BASE_URL}/walkins/range`;
+
+      const url = `${baseUrl}?startDate=${encodeURIComponent(
+        startDate
+      )}&endDate=${encodeURIComponent(endDate)}`;
+      const res = await fetch(url);
+
+      if (res.ok) {
+        const data = await res.json();
+        // console.log(data);
+        type === "reservation" ? setReservations(data) : setWaitlist(data);
+      } else {
+        console.error("Failed to fetch reservations");
+      }
+    } catch (err) {
+      console.error("Fetch error:", err);
+    } finally {
+    }
+  };
 
   useEffect(() => {
     fetchTables();
+    fetchTodayReservations(
+      "reservation",
+      currDateAsDate.toISOString(),
+      tmrwDate.toISOString()
+    );
+    fetchTodayReservations(
+      "waitlist",
+      currDateAsDate.toISOString(),
+      tmrwDate.toISOString()
+    );
   }, []);
 
   useEffect(() => {
@@ -238,7 +351,35 @@ function MainPage() {
   }, [tables]);
 
   useEffect(() => {
-    // update the tables and their associated reservations when selectedTime changes
+    const updatedTables = tables.map((table) => {
+      const matchingRes = reservations.find(
+        (resEntry) =>
+          resEntry.tableNum === table.tableNumber &&
+          formatToTime(resEntry.startTime) <= selectedTime &&
+          formatToTime(resEntry.endTime) >= selectedTime
+      );
+
+      return {
+        ...table,
+        reservation: matchingRes ?? null,
+      };
+    });
+
+    setTables(updatedTables);
+  }, [selectedTime, reservations]);
+
+  useEffect(() => {
+    // Refetch reservations when time slot changes
+    fetchTodayReservations(
+      "reservation",
+      currDateAsDate.toISOString(),
+      tmrwDate.toISOString()
+    );
+    fetchTodayReservations(
+      "waitlist",
+      currDateAsDate.toISOString(),
+      tmrwDate.toISOString()
+    );
   }, [selectedTime]);
 
   const GlobalDragMonitor = () => {
@@ -286,7 +427,7 @@ function MainPage() {
         const data = await res.json();
         setTables(data);
       } else {
-        console.error("Failed to fetch reservations");    
+        console.error("Failed to fetch reservations");
       }
     } catch (err) {
       console.error("Fetch error:", err);
@@ -312,7 +453,9 @@ function MainPage() {
       } else {
         const error = await response.json();
         console.error("Submission error:", error);
-        setErrorMessage(error.message || "Something went wrong. Please try again.");
+        setErrorMessage(
+          error.message || "Something went wrong. Please try again."
+        );
         // Handle error
       }
     } catch (error) {
@@ -378,7 +521,9 @@ function MainPage() {
           alignItems: "center",
         }}
       >
-        <Title>Floor Plan - {formattedDate}</Title>
+        <Title className={classes.mainTitle}>
+          Floor Plan - {formattedDate}
+        </Title>
         {/* <IconCalendarWeek className={classes.calendarIcon} /> */}
         <CalendarIconTrigger currDate={currDate} setCurrDate={setCurrDate} />
       </div>
@@ -420,6 +565,7 @@ function MainPage() {
             table={table}
             onDrop={(item) => {
               setTables((prevTables) => {
+                console.log(item);
                 const currentTable = prevTables[index];
 
                 if (currentTable.reservation) {
@@ -427,7 +573,30 @@ function MainPage() {
                   return prevTables; // Return unchanged
                 }
 
-                const newTables = [...prevTables];
+                // Find all tables that have this reservation
+                const newTables = prevTables.map((table) => {
+                  if (!table.reservation) return table;
+
+                  // Check if this table has the reservation we're moving
+                  const isMatchingReservation =
+                    ("reservation" in item &&
+                      "email" in table.reservation &&
+                      table.reservation._id === item.reservation._id) ||
+                    ("walkin" in item &&
+                      !("email" in table.reservation) &&
+                      table.reservation._id === item.walkin._id);
+
+                  if (isMatchingReservation) {
+                    // Clear the reservation from this table
+                    return {
+                      ...table,
+                      reservation: null,
+                    };
+                  }
+                  return table;
+                });
+
+                // Update the new table
                 newTables[index] = {
                   ...currentTable,
                   reservation:
@@ -440,10 +609,7 @@ function MainPage() {
                     table.tableNumber
                   );
                 } else {
-                  updateWalkInTable(
-                    item.walkin._id,
-                    table.tableNumber
-                  );
+                  updateWalkInTable(item.walkin._id, table.tableNumber);
                 }
                 return newTables;
               });
@@ -455,9 +621,9 @@ function MainPage() {
         <div className={classes.addTableFormContainer}>
           <Title>Add a table</Title>
           {errorMessage && (
-              <div style={{ color: "red", marginTop: "10px" }}>
-                {errorMessage}
-              </div>
+            <div style={{ color: "red", marginTop: "10px" }}>
+              {errorMessage}
+            </div>
           )}
           <button
             className={classes.closeButton}

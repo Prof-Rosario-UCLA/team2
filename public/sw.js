@@ -4,15 +4,25 @@ const urlsToCache = [
   '/index.html',
   '/manifest.json',
   '/reserve_ease_logo_192.png',
-  '/reserve_ease_logo_512.png'
+  '/reserve_ease_logo_512.png',
+  '/assets/index.css',
+  '/assets/index.js'
 ];
 
 // Install event - cache static assets
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(urlsToCache))
+      .then((cache) => {
+        console.log('Opened cache');
+        return cache.addAll(urlsToCache);
+      })
+      .catch(error => {
+        console.error('Cache installation failed:', error);
+      })
   );
+  // Force the waiting service worker to become the active service worker
+  self.skipWaiting();
 });
 
 // Activate event - clean up old caches
@@ -22,18 +32,31 @@ self.addEventListener('activate', (event) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
           if (cacheName !== CACHE_NAME) {
+            console.log('Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
         })
       );
     })
   );
+  // Claim clients so that the service worker starts controlling them immediately
+  self.clients.claim();
 });
 
 // Fetch event - serve from cache, fall back to network
 self.addEventListener('fetch', (event) => {
   // Skip cross-origin requests
   if (!event.request.url.startsWith(self.location.origin)) {
+    return;
+  }
+
+  // Skip non-GET requests
+  if (event.request.method !== 'GET') {
+    return;
+  }
+
+  // Skip caching API requests
+  if (event.request.url.includes('/reservations/') || event.request.url.includes('/walkins/')) {
     return;
   }
 
@@ -71,6 +94,9 @@ self.addEventListener('fetch', (event) => {
             caches.open(CACHE_NAME)
               .then(cache => {
                 cache.put(event.request, responseToCache);
+              })
+              .catch(error => {
+                console.error('Cache update failed:', error);
               });
 
             // Notify client that loading is complete
@@ -86,6 +112,8 @@ self.addEventListener('fetch', (event) => {
             return response;
           })
           .catch(error => {
+            console.error('Fetch failed:', error);
+            
             // Notify client that loading failed
             self.clients.matchAll().then(clients => {
               clients.forEach(client => {
