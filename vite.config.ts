@@ -3,12 +3,13 @@ import react from '@vitejs/plugin-react'
 import { resolve } from 'path'
 
 export default defineConfig({
-  define: {
-    'import.meta.env.VITE_GOOGLE_CLIENT_ID': JSON.stringify(process.env.VITE_GOOGLE_CLIENT_ID)
-  },
   server: {
     host: true,
-    port: 5173
+    port: 5173,
+    hmr: {
+      clientPort: 5173,
+      host: 'localhost'
+    }
   },
   preview: {
     allowedHosts: ['team2.cs144.org']

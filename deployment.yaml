@@ -20,42 +20,17 @@ spec:
         ports:
         - containerPort: 1919
           name: http
-
         env:
-        - name: REDIS_HOST
-          value: "restaurantapp-redis-service"
-        - name: REDIS_PORT
-          value: "6379"
-        - name: PORT
-          value: "1919"
-
-        - name: NODE_ENV
-          value: "production"
         - name: MONGO_URI
           valueFrom:
             secretKeyRef:
               name: mongodb-uri
               key: uri
-
-        - name: TLS_CERT_PATH
-          value: "/etc/certs/tls.crt"
-        - name: TLS_KEY_PATH
-          value: "/etc/certs/tls.key"
-        volumeMounts:
-        - name: tls-certs
-          mountPath: /etc/certs
-          readOnly: true
-        resources:
-          requests:
-            cpu: "200m"
-            memory: "256Mi"
-          limits:
-            cpu: "1000m"
-            memory: "1Gi"
-      volumes:
-      - name: tls-certs
-        secret:
-          secretName: backend-tls-secret
+    resources:  # optional, for HPA
+      requests:
+        cpu: "500m"
+      limits:
+        cpu: "1000m"  # 1 full core
 ---
 apiVersion: apps/v1
 kind: StatefulSet

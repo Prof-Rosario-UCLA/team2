@@ -8,10 +8,6 @@ RUN npm install
 
 RUN npm run build
 
-# Set environment variables
-ENV NODE_ENV=production
-ENV PORT=5173
-
 EXPOSE 5173
 
 
