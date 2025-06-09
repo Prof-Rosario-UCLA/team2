@@ -68,6 +68,16 @@ jobs:
           --from-literal=uri='${{ secrets.MONGO_URI }}' \
           --dry-run=client -o yaml | kubectl apply -f -
 
+        # Create secret for Google Client ID
+        kubectl create secret generic VITE_GOOGLE_CLIENT_ID \
+          --from-literal=client_id='${{ secrets.VITE_GOOGLE_CLIENT_ID }}' \
+          --dry-run=client -o yaml | kubectl apply -f -
+
+        # Create secret for Environment
+        kubectl create secret generic ENVIRONMENT \
+          --from-literal=environment='${{ secrets.ENVIRONMENT }}' \
+          --dry-run=client -o yaml | kubectl apply -f -
+
     - name: Prepare deployment file
       run: |-
         # Debug: Print the image tag

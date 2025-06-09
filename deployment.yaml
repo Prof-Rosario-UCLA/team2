@@ -26,6 +26,16 @@ spec:
             secretKeyRef:
               name: mongodb-uri
               key: uri
+        - name: VITE_GOOGLE_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: VITE_GOOGLE_CLIENT_ID
+              key: client_id
+        - name: ENVIRONMENT
+          valueFrom:
+            secretKeyRef:
+              name: ENVIRONMENT
+              key: environment
         resources:
           requests:
             cpu: "500m"
