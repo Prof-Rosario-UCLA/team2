@@ -74,7 +74,7 @@ jobs:
           --dry-run=client -o yaml | kubectl apply -f -
 
         # Create secret for Environment
-        kubectl create secret generic ENVIRONMENT \
+        kubectl create secret generic environment \
           --from-literal=environment='${{ secrets.ENVIRONMENT }}' \
           --dry-run=client -o yaml | kubectl apply -f -
 
