@@ -12,7 +12,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const HTTP_PORT = process.env.PORT || 1919;
+const HTTP_PORT = 1919;
 
 // Connect to databases
 const { mongoConnected, redisConnected } = await initializeDatabases();
