@@ -9,7 +9,6 @@ const urlsToCache = [
   '/assets/index.js'
 ];
 
-// Install event - cache static assets
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
@@ -21,11 +20,11 @@ self.addEventListener('install', (event) => {
         console.error('Cache installation failed:', error);
       })
   );
-  // Force the waiting service worker to become the active service worker
+
   self.skipWaiting();
 });
 
-// Activate event - clean up old caches
+
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -39,23 +38,22 @@ self.addEventListener('activate', (event) => {
       );
     })
   );
-  // Claim clients so that the service worker starts controlling them immediately
+
   self.clients.claim();
 });
 
-// Fetch event - serve from cache, fall back to network
+
 self.addEventListener('fetch', (event) => {
-  // Skip cross-origin requests
+
   if (!event.request.url.startsWith(self.location.origin)) {
     return;
   }
 
-  // Skip non-GET requests
+
   if (event.request.method !== 'GET') {
     return;
   }
 
-  // Skip caching API requests
   if (event.request.url.includes('/reservations/') || event.request.url.includes('/walkins/')) {
     return;
   }
@@ -63,15 +61,12 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request)
       .then((response) => {
-        // Cache hit - return response
         if (response) {
           return response;
         }
 
-        // Clone the request
         const fetchRequest = event.request.clone();
 
-        // Notify client that we're loading from network
         self.clients.matchAll().then(clients => {
           clients.forEach(client => {
             client.postMessage({
@@ -83,12 +78,10 @@ self.addEventListener('fetch', (event) => {
 
         return fetch(fetchRequest)
           .then(response => {
-            // Check if valid response
             if (!response || response.status !== 200 || response.type !== 'basic') {
               return response;
             }
 
-            // Clone the response
             const responseToCache = response.clone();
 
             caches.open(CACHE_NAME)
@@ -99,7 +92,6 @@ self.addEventListener('fetch', (event) => {
                 console.error('Cache update failed:', error);
               });
 
-            // Notify client that loading is complete
             self.clients.matchAll().then(clients => {
               clients.forEach(client => {
                 client.postMessage({
@@ -113,8 +105,7 @@ self.addEventListener('fetch', (event) => {
           })
           .catch(error => {
             console.error('Fetch failed:', error);
-            
-            // Notify client that loading failed
+          
             self.clients.matchAll().then(clients => {
               clients.forEach(client => {
                 client.postMessage({
@@ -125,7 +116,6 @@ self.addEventListener('fetch', (event) => {
               });
             });
 
-            // If offline and request is for HTML, return the offline page
             if (event.request.mode === 'navigate') {
               return caches.match('/');
             }
