@@ -69,7 +69,7 @@ jobs:
           --dry-run=client -o yaml | kubectl apply -f -
 
         # Create secret for Google Client ID
-        kubectl create secret generic VITE_GOOGLE_CLIENT_ID \
+        kubectl create secret generic vite-google-client-id \
           --from-literal=client_id='${{ secrets.VITE_GOOGLE_CLIENT_ID }}' \
           --dry-run=client -o yaml | kubectl apply -f -
 
