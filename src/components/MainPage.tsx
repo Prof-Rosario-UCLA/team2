@@ -175,21 +175,29 @@ function CalendarIconTrigger({
   );
 }
 
-function MainPage() {
+interface MainPageProps {
+  reservations: Reservation[];
+  waitlist: Walkin[];
+  onReservationsChange: (reservations: Reservation[]) => void;
+  onWaitlistChange: (waitlist: Walkin[]) => void;
+  fetchTodayReservations: (type: string, startDate: string, endDate: string) => Promise<void>;
+}
+
+function MainPage({ 
+  reservations, 
+  waitlist, 
+  onReservationsChange, 
+  onWaitlistChange,
+  fetchTodayReservations 
+}: MainPageProps) {
   const [selectedTime, setSelectedTime] = useState(times[0]);
   const [tables, setTables] = useState<Table[]>([]);
   const [addTableForm, setAddTableForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const { currDate, setCurrDate } = useCurrDate();
   const [errorMessage, setErrorMessage] = useState("");
-  const [reservations, setReservations] = useState<Reservation[]>([]);
-  const [waitlist, setWaitlist] = useState<Walkin[]>([]);
-
-  console.log(waitlist);
 
   const currDateAsDate = new Date(currDate);
-  // console.log(currDateAsDate.toISOString());
-
   const tmrwDate = new Date(
     Date.UTC(
       currDateAsDate.getUTCFullYear(),
@@ -198,163 +206,8 @@ function MainPage() {
     )
   );
 
-  const TableDrop: React.FC<TableDropProps> = ({ table, onDrop }) => {
-    const handleDropUpdate = async () => {
-      if (!table.reservation) return;
-      if ("email" in table.reservation) {
-        await updateReservationTable(table.reservation._id, table.tableNumber);
-        await fetchTodayReservations(
-          "reservation",
-          currDateAsDate.toISOString(),
-          tmrwDate.toISOString()
-        );
-      } else {
-        await updateWalkInTable(table.reservation._id, table.tableNumber);
-        await fetchTodayReservations(
-          "waitlist",
-          currDateAsDate.toISOString(),
-          tmrwDate.toISOString()
-        );
-      }
-    };
-
-    const [{ isOver }, drop] = useDrop<DragItem, void, { isOver: boolean }>(
-      () => ({
-        accept: "BOX",
-        drop: (item) => {
-          onDrop(item);
-          void handleDropUpdate(); // Call async handler without awaiting
-        },
-        collect: (monitor) => ({
-          isOver: monitor.isOver(),
-        }),
-      })
-    );
-
-    const [{ isDragging }, drag] = useDrag({
-      type: "BOX",
-      item: () => {
-        if (!table.reservation) return {} as DragItem;
-
-        if ("email" in table.reservation) {
-          return {
-            type: "BOX",
-            reservation: table.reservation,
-          };
-        } else {
-          return {
-            type: "BOX",
-            walkin: table.reservation,
-          };
-        }
-      },
-      canDrag: !!table.reservation, // only draggable if there's a reservation
-      collect: (monitor) => ({
-        isDragging: monitor.isDragging(),
-      }),
-    });
-
-    return (
-      <Grid.Col span={{ base: 12, xs: 6, sm: 4, md: 3, lg: 2, xl: 2 }}>
-        <div
-          ref={drop as unknown as React.Ref<HTMLDivElement>}
-          className={classes.tableItem}
-          style={{
-            backgroundColor: isOver ? "#f0f0f0" : undefined,
-            opacity: isDragging ? 0.5 : 1,
-          }}
-        >
-          <h6 className={classes.tableItemTitle}>
-            Table {table.tableNumber.valueOf()} ({table.tableCapacity})
-          </h6>
-
-          {!table.reservation && (
-            <p style={{ fontSize: "1rem" }}>nothing here</p>
-          )}
-
-          {table.reservation && (
-            <div
-              ref={drag as unknown as React.Ref<HTMLDivElement>}
-              className={
-                "email" in table.reservation
-                  ? classes.tableReservationContainer
-                  : classes.tableWalkinContainer
-              }
-              style={{ cursor: "move" }}
-            >
-              <div
-                className={
-                  "email" in table.reservation
-                    ? classes.tableReservationItem
-                    : classes.tableWalkinItem
-                }
-              >
-                {formatName(table.reservation.name)}
-              </div>
-              <p style={{ color: "#555" }}>
-                Party Size: {table.reservation.size.valueOf()}
-              </p>
-            </div>
-          )}
-        </div>
-      </Grid.Col>
-    );
-  };
-
-  const fetchTodayReservations = async (
-    type: string,
-    startDate: string,
-    endDate: string
-  ) => {
-    try {
-      const baseUrl =
-        type === "reservation"
-          ? `${API_BASE_URL}/reservations/range`
-          : `${API_BASE_URL}/walkins/range`;
-
-      const url = `${baseUrl}?startDate=${encodeURIComponent(
-        startDate
-      )}&endDate=${encodeURIComponent(endDate)}`;
-      
-      console.log('fetching all reservations with API_BASE_URL:', API_BASE_URL);
-      console.log('Full request URL:', url);
-      
-      const res = await fetch(url);
-
-      if (res.ok) {
-        const data = await res.json();
-        console.log(`Successfully fetched ${type}:`, data);
-        type === "reservation" ? setReservations(data) : setWaitlist(data);
-      } else {
-        const errorData = await res.json().catch(() => null);
-        console.error(`Failed to fetch ${type}:`, {
-          status: res.status,
-          statusText: res.statusText,
-          errorData
-        });
-      }
-    } catch (err) {
-      console.error(`Error fetching ${type}:`, {
-        error: err,
-        message: err instanceof Error ? err.message : 'Unknown error'
-      });
-    } finally {
-      console.log(`Completed ${type} fetch operation`);
-    }
-  };
-
   useEffect(() => {
     fetchTables();
-    fetchTodayReservations(
-      "reservation",
-      currDateAsDate.toISOString(),
-      tmrwDate.toISOString()
-    );
-    fetchTodayReservations(
-      "waitlist",
-      currDateAsDate.toISOString(),
-      tmrwDate.toISOString()
-    );
   }, []);
 
   useEffect(() => {
@@ -396,7 +249,7 @@ function MainPage() {
   }, [selectedTime]);
 
   const GlobalDragMonitor = () => {
-    const { isDragging, reservation } = useDragLayer((monitor) => {
+    const { isDragging, reservation, walkin } = useDragLayer((monitor) => {
       const item = monitor.getItem() as DragItem | null;
       return {
         isDragging: monitor.isDragging(),
@@ -404,6 +257,22 @@ function MainPage() {
         walkin: item && "walkin" in item ? item.walkin : null,
       };
     });
+
+    useEffect(() => {
+      if (isDragging) {
+        console.log('Started dragging:', {
+          isReservation: !!reservation,
+          isWalkin: !!walkin,
+          item: reservation || walkin
+        });
+      } else if (reservation || walkin) {
+        console.log('Stopped dragging:', {
+          isReservation: !!reservation,
+          isWalkin: !!walkin,
+          item: reservation || walkin
+        });
+      }
+    }, [isDragging, reservation, walkin]);
 
     useEffect(() => {
       if (isDragging && reservation) {
@@ -524,6 +393,90 @@ function MainPage() {
     },
   });
 
+  const TableDrop: React.FC<TableDropProps> = ({ table, onDrop }) => {
+    const [{ isOver }, drop] = useDrop<DragItem, void, { isOver: boolean }>(
+      () => ({
+        accept: "BOX",
+        drop: (item: DragItem) => {
+          onDrop(item);
+        },
+        collect: (monitor) => ({
+          isOver: monitor.isOver(),
+        }),
+      }),
+      [table.tableNumber, onDrop]
+    );
+
+    const [{ isDragging }, drag] = useDrag({
+      type: "BOX",
+      item: () => {
+        if (!table.reservation) return {} as DragItem;
+
+        if ("email" in table.reservation) {
+          return {
+            type: "BOX",
+            reservation: table.reservation,
+          };
+        } else {
+          return {
+            type: "BOX",
+            walkin: table.reservation,
+          };
+        }
+      },
+      canDrag: !!table.reservation,
+      collect: (monitor) => ({
+        isDragging: monitor.isDragging(),
+      }),
+    });
+
+    return (
+      <Grid.Col span={{ base: 12, xs: 6, sm: 4, md: 3, lg: 2, xl: 2 }}>
+        <div
+          ref={drop as unknown as React.Ref<HTMLDivElement>}
+          className={classes.tableItem}
+          style={{
+            backgroundColor: isOver ? "#f0f0f0" : undefined,
+            opacity: isDragging ? 0.5 : 1,
+          }}
+        >
+          <h6 className={classes.tableItemTitle}>
+            Table {table.tableNumber.valueOf()} ({table.tableCapacity})
+          </h6>
+
+          {!table.reservation && (
+            <p style={{ fontSize: "1rem" }}>nothing here</p>
+          )}
+
+          {table.reservation && (
+            <div
+              ref={drag as unknown as React.Ref<HTMLDivElement>}
+              className={
+                "email" in table.reservation
+                  ? classes.tableReservationContainer
+                  : classes.tableWalkinContainer
+              }
+              style={{ cursor: "move" }}
+            >
+              <div
+                className={
+                  "email" in table.reservation
+                    ? classes.tableReservationItem
+                    : classes.tableWalkinItem
+                }
+              >
+                {formatName(table.reservation.name)}
+              </div>
+              <p style={{ color: "#555" }}>
+                Party Size: {table.reservation.size.valueOf()}
+              </p>
+            </div>
+          )}
+        </div>
+      </Grid.Col>
+    );
+  };
+
   return (
     <div className={classes.mainPageContainer}>
       <GlobalDragMonitor />
@@ -578,13 +531,7 @@ function MainPage() {
             table={table}
             onDrop={(item) => {
               setTables((prevTables) => {
-                console.log(item);
                 const currentTable = prevTables[index];
-
-                if (currentTable.reservation) {
-                  console.log("Cannot add to occupied table");
-                  return prevTables; // Return unchanged
-                }
 
                 // Find all tables that have this reservation
                 const newTables = prevTables.map((table) => {
@@ -612,17 +559,49 @@ function MainPage() {
                 // Update the new table
                 newTables[index] = {
                   ...currentTable,
-                  reservation:
-                    "reservation" in item ? item.reservation : item.walkin,
+                  reservation: "reservation" in item ? item.reservation : item.walkin,
                 };
 
+                // Update the backend and trigger state updates
                 if ("reservation" in item) {
+                  // Update the reservations list first
+                  const updatedReservations = reservations.map(res => 
+                    res._id === item.reservation._id 
+                      ? { ...res, tableNum: table.tableNumber }
+                      : res
+                  );
+                  onReservationsChange(updatedReservations);
+                  
+                  // Then update the backend
                   updateReservationTable(
                     item.reservation._id,
                     table.tableNumber
-                  );
+                  ).then(() => {
+                    // After backend update, trigger a re-fetch
+                    fetchTodayReservations(
+                      "reservation",
+                      currDateAsDate.toISOString(),
+                      tmrwDate.toISOString()
+                    );
+                  });
                 } else {
-                  updateWalkInTable(item.walkin._id, table.tableNumber);
+                  // Update the waitlist first
+                  const updatedWaitlist = waitlist.map(walkin => 
+                    walkin._id === item.walkin._id 
+                      ? { ...walkin, tableNum: table.tableNumber }
+                      : walkin
+                  );
+                  onWaitlistChange(updatedWaitlist);
+                  
+                  // Then update the backend
+                  updateWalkInTable(item.walkin._id, table.tableNumber).then(() => {
+                    // After backend update, trigger a re-fetch
+                    fetchTodayReservations(
+                      "waitlist",
+                      currDateAsDate.toISOString(),
+                      tmrwDate.toISOString()
+                    );
+                  });
                 }
                 return newTables;
               });
