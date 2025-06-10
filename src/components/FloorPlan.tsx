@@ -24,9 +24,6 @@ function FloorPlan() {
     startDate: string,
     endDate: string
   ) => {
-    console.log(`=== FETCHING ${type.toUpperCase()} ===`);
-    console.log('Start date:', startDate);
-    console.log('End date:', endDate);
     
     try {
       const baseUrl =
@@ -44,11 +41,7 @@ function FloorPlan() {
 
       if (res.ok) {
         const data = await res.json();
-        console.log(`Successfully fetched ${type}:`, data);
-        console.log(`Number of ${type} items:`, data.length);
-        console.log(`${type} with tableNum:`, data.filter((item: Reservation | Walkin) => item.tableNum).length);
-        console.log(`${type} without tableNum:`, data.filter((item: Reservation | Walkin) => !item.tableNum).length);
-        
+
         type === "reservation" ? setReservations(data) : setWaitlist(data);
       } else {
         const errorData = await res.json().catch(() => null);
@@ -63,13 +56,11 @@ function FloorPlan() {
         error: err,
         message: err instanceof Error ? err.message : 'Unknown error'
       });
-    } finally {
-      console.log(`=== COMPLETED ${type.toUpperCase()} FETCH ===`);
-    }
+    } 
   };
 
   useEffect(() => {
-    console.log('=== INITIAL FETCH TRIGGERED ===');
+
     fetchTodayReservations(
       "reservation",
       currDateAsDate.toISOString(),
@@ -82,40 +73,11 @@ function FloorPlan() {
     );
   }, [currDate]);
 
-  // Filter out reservations that have been assigned to tables
   const unassignedReservations = reservations.filter(res => !res.tableNum);
   const unassignedWaitlist = waitlist.filter(walkin => !walkin.tableNum);
 
-  console.log('=== CURRENT STATE ===');
-  console.log('Total reservations:', reservations.length);
-  console.log('Unassigned reservations:', unassignedReservations.length);
-  console.log('Total waitlist:', waitlist.length);
-  console.log('Unassigned waitlist:', unassignedWaitlist.length);
-
   const handleReservationsChange = (newReservations: Reservation[]) => {
-    console.log('=== RESERVATIONS UPDATED ===');
-    console.log('Previous reservations:', reservations.length);
-    console.log('New reservations:', newReservations.length);
     setReservations(newReservations);
-    // Trigger a re-fetch to ensure both components are in sync
-    fetchTodayReservations(
-      "reservation",
-      currDateAsDate.toISOString(),
-      tmrwDate.toISOString()
-    );
-  };
-
-  const handleWaitlistChange = (newWaitlist: Walkin[]) => {
-    console.log('=== WAITLIST UPDATED ===');
-    console.log('Previous waitlist:', waitlist.length);
-    console.log('New waitlist:', newWaitlist.length);
-    setWaitlist(newWaitlist);
-    // Trigger a re-fetch to ensure both components are in sync
-    fetchTodayReservations(
-      "waitlist",
-      currDateAsDate.toISOString(),
-      tmrwDate.toISOString()
-    );
   };
 
   return (
@@ -129,14 +91,11 @@ function FloorPlan() {
         reservations={unassignedReservations}
         waitlist={unassignedWaitlist}
         onReservationsChange={handleReservationsChange}
-        onWaitlistChange={handleWaitlistChange}
         fetchTodayReservations={fetchTodayReservations}
       />
       <MainPage 
         reservations={reservations}
-        waitlist={waitlist}
         onReservationsChange={handleReservationsChange}
-        onWaitlistChange={handleWaitlistChange}
         fetchTodayReservations={fetchTodayReservations}
       />
     </div>

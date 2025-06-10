@@ -44,7 +44,6 @@ export type DragItem =
     };
 
 export function convertDateToTime(startTime: string | Date): string {
-  console.log(startTime);
   const isoString =
     typeof startTime === "string" ? startTime : startTime.toISOString();
 
@@ -76,11 +75,7 @@ const DraggableReservation = ({
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
-    end: (item, monitor) => {
-      alert('Drag ended for: ' + reservation.name); // Temporary debug alert
-      console.log('=== DRAG END EVENT ===');
-      console.log('Reservation drag ended for:', reservation.name);
-      console.log('Drop result:', monitor.getDropResult());
+    end: () => {
       onDragEnd();
     },
   }));
@@ -145,11 +140,7 @@ const DraggableWaitlist = ({
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
-    end: (item, monitor) => {
-      alert('Drag ended for: ' + walkin.name); // Temporary debug alert
-      console.log('=== DRAG END EVENT ===');
-      console.log('Waitlist drag ended for:', walkin.name);
-      console.log('Drop result:', monitor.getDropResult());
+    end: () => {
       onDragEnd();
     },
   }));
@@ -223,7 +214,6 @@ interface SidebarProps {
   reservations: Reservation[];
   waitlist: Walkin[];
   onReservationsChange: (reservations: Reservation[]) => void;
-  onWaitlistChange: (waitlist: Walkin[]) => void;
   fetchTodayReservations: (type: string, startDate: string, endDate: string) => Promise<void>;
 }
 
@@ -231,7 +221,6 @@ function Sidebar({
   reservations, 
   waitlist, 
   onReservationsChange, 
-  onWaitlistChange,
   fetchTodayReservations 
 }: SidebarProps) {
   const [showReservationForm, setShowReservationForm] = useState(false);
@@ -251,12 +240,6 @@ function Sidebar({
 
   // Filter out reservations that are assigned to tables
   const unassignedReservations = reservations.filter(res => !res.tableNum || res.tableNum === 0);
-
-  useEffect(() => {
-    console.log('=== SIDEBAR RESERVATIONS UPDATED ===');
-    console.log('Total reservations:', reservations.length);
-    console.log('Unassigned reservations:', unassignedReservations.length);
-  }, [reservations]);
 
   useEffect(() => {
     const handleOnline = () => setIsOffline(false);
@@ -287,6 +270,7 @@ function Sidebar({
       console.error("Error deleting reservation:", error);
     }
   };
+
 
   return (
     <div className={classes.sidebarContainer}>
@@ -330,7 +314,7 @@ function Sidebar({
           <Text>Loading reservations...</Text>
         </div>
       ) : unassignedReservations.length === 0 ? (
-        <p className={classes.italicText}>No unassigned reservations</p>
+        <p className={classes.italicText}>No reservations</p>
       ) : (
         <div>
           <p className={classes.italicText}>Drag and drop onto a table</p>
@@ -347,8 +331,6 @@ function Sidebar({
                 <DraggableReservation 
                   reservation={res} 
                   onDragEnd={() => {
-                    console.log('=== REFETCH TRIGGERED ===');
-                    console.log('Triggering reservation re-fetch after drag');
                     fetchTodayReservations(
                       "reservation",
                       currDateAsDate.toISOString(),
@@ -407,8 +389,6 @@ function Sidebar({
                 key={entry._id}
                 walkin={entry} 
                 onDragEnd={() => {
-                  console.log('=== REFETCH TRIGGERED ===');
-                  console.log('Triggering waitlist re-fetch after drag');
                   fetchTodayReservations(
                     "waitlist",
                     currDateAsDate.toISOString(),

@@ -57,7 +57,7 @@ const updateReservationTable = async (
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          reservationId: reservationId, // This is the _id field
+          reservationId: reservationId,
           tableNum: tableNumber,
         }),
       }
@@ -177,17 +177,13 @@ function CalendarIconTrigger({
 
 interface MainPageProps {
   reservations: Reservation[];
-  waitlist: Walkin[];
   onReservationsChange: (reservations: Reservation[]) => void;
-  onWaitlistChange: (waitlist: Walkin[]) => void;
   fetchTodayReservations: (type: string, startDate: string, endDate: string) => Promise<void>;
 }
 
 function MainPage({ 
   reservations, 
-  waitlist, 
   onReservationsChange, 
-  onWaitlistChange,
   fetchTodayReservations 
 }: MainPageProps) {
   const [selectedTime, setSelectedTime] = useState(times[0]);
@@ -238,11 +234,6 @@ function MainPage({
     // Refetch reservations when time slot changes
     fetchTodayReservations(
       "reservation",
-      currDateAsDate.toISOString(),
-      tmrwDate.toISOString()
-    );
-    fetchTodayReservations(
-      "waitlist",
       currDateAsDate.toISOString(),
       tmrwDate.toISOString()
     );
@@ -585,19 +576,11 @@ function MainPage({
                     );
                   });
                 } else {
-                  // Update the waitlist first
-                  const updatedWaitlist = waitlist.map(walkin => 
-                    walkin._id === item.walkin._id 
-                      ? { ...walkin, tableNum: table.tableNumber }
-                      : walkin
-                  );
-                  onWaitlistChange(updatedWaitlist);
-                  
-                  // Then update the backend
+                  // Just update the backend for walkins
                   updateWalkInTable(item.walkin._id, table.tableNumber).then(() => {
                     // After backend update, trigger a re-fetch
                     fetchTodayReservations(
-                      "waitlist",
+                      "reservation",
                       currDateAsDate.toISOString(),
                       tmrwDate.toISOString()
                     );
