@@ -1,7 +1,8 @@
 // import {Burger, Group} from "@mantine/core";
-import { Title } from "@mantine/core";
+import { Title, Text } from "@mantine/core";
 // import { useDisclosure } from "@mantine/hooks";
 import classes from "../styles/Navbar.module.scss";
+import { useEffect, useState } from "react";
 
 // const links = [
 //   { link: "/about", label: "Floor Plan" },
@@ -29,6 +30,17 @@ import classes from "../styles/Navbar.module.scss";
 // ];
 
 export function Navbar() {
+  const [firstName, setFirstName] = useState<string>("");
+
+  useEffect(() => {
+    const userName = localStorage.getItem("userName");
+    if (userName) {
+      // Get first name from full name
+      const first = userName.split(" ")[0];
+      setFirstName(first);
+    }
+  }, []);
+
   //const [opened, { toggle }] = useDisclosure(false);
 
   // const items = links.map((link) => {
@@ -77,6 +89,11 @@ export function Navbar() {
     <header className={classes.header}>
       <div className={classes.inner}>
         <Title>ReserveEase</Title>
+        {firstName && (
+          <Text size="lg" c="white">
+            Hello, {firstName}
+          </Text>
+        )}
         {/* <Group gap={5} visibleFrom="sm" className={classes.itemGroup}>
           {items}
         </Group>

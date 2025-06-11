@@ -44,7 +44,6 @@ export type DragItem =
     };
 
 export function convertDateToTime(startTime: string | Date): string {
-  console.log(startTime);
   const isoString =
     typeof startTime === "string" ? startTime : startTime.toISOString();
 
@@ -65,8 +64,10 @@ export function convertDateToTime(startTime: string | Date): string {
 
 const DraggableReservation = ({
   reservation,
+  onDragEnd,
 }: {
   reservation: Reservation;
+  onDragEnd: () => void;
 }) => {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: "BOX",
@@ -74,6 +75,9 @@ const DraggableReservation = ({
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
+    end: () => {
+      onDragEnd();
+    },
   }));
   const getsSquished = useMediaQuery("(max-width: 650px)");
 
@@ -123,13 +127,22 @@ const DraggableReservation = ({
   );
 };
 
-const DraggableWaitlist = ({ walkin }: { walkin: Walkin }) => {
+const DraggableWaitlist = ({ 
+  walkin,
+  onDragEnd,
+}: { 
+  walkin: Walkin;
+  onDragEnd: () => void;
+}) => {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: "BOX",
     item: { type: "BOX", walkin } as DragItem,
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
+    end: () => {
+      onDragEnd();
+    },
   }));
 
   return (
@@ -197,17 +210,26 @@ export function CustomAddButton(
   );
 }
 
-function Sidebar() {
-  const [reservations, setReservations] = useState<Reservation[]>([]);
-  const [waitlist, setWaitlist] = useState<Walkin[]>([]);
+interface SidebarProps {
+  reservations: Reservation[];
+  waitlist: Walkin[];
+  onReservationsChange: (reservations: Reservation[]) => void;
+  fetchTodayReservations: (type: string, startDate: string, endDate: string) => Promise<void>;
+}
+
+function Sidebar({ 
+  reservations, 
+  waitlist, 
+  onReservationsChange, 
+  fetchTodayReservations 
+}: SidebarProps) {
   const [showReservationForm, setShowReservationForm] = useState(false);
   const [formType, setFormType] = useState("reservation");
-
   const { currDate } = useCurrDate();
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
+  const IconTrashSize = 20;
 
   const currDateAsDate = new Date(currDate);
-  // console.log(currDateAsDate.toISOString());
-
   const tmrwDate = new Date(
     Date.UTC(
       currDateAsDate.getUTCFullYear(),
@@ -215,9 +237,9 @@ function Sidebar() {
       currDateAsDate.getUTCDate() + 1
     )
   );
-  // console.log("tmrw", tmrwDate.toISOString());
 
-  const [isOffline, setIsOffline] = useState(!navigator.onLine);
+  // Filter out reservations that are assigned to tables
+  const unassignedReservations = reservations.filter(res => !res.tableNum || res.tableNum === 0);
 
   useEffect(() => {
     const handleOnline = () => setIsOffline(false);
@@ -232,57 +254,8 @@ function Sidebar() {
     };
   }, []);
 
-  useEffect(() => {
-    fetchTodayReservations(
-      "reservation",
-      currDateAsDate.toISOString(),
-      tmrwDate.toISOString()
-    );
-    fetchTodayReservations(
-      "waitlist",
-      currDateAsDate.toISOString(),
-      tmrwDate.toISOString()
-    );
-  }, [currDate]);
-
-  const fetchTodayReservations = async (
-    type: string,
-    startDate: string,
-    endDate: string
-  ) => {
-    try {
-      const baseUrl =
-        type === "reservation"
-          ? `${API_BASE_URL}/reservations/range`
-          : `${API_BASE_URL}/walkins/range`;
-
-      const url = `${baseUrl}?startDate=${encodeURIComponent(
-        startDate
-      )}&endDate=${encodeURIComponent(endDate)}`;
-      const res = await fetch(url);
-
-      if (res.ok) {
-        const data = await res.json();
-        const unassigned = data.filter(
-          (item: Reservation | Walkin) => !item.tableNum
-        );
-        console.log("UNASSIGNED", unassigned);
-        type === "reservation"
-          ? setReservations(unassigned)
-          : setWaitlist(unassigned);
-      } else {
-        console.error("Failed to fetch reservations");
-      }
-    } catch (err) {
-      console.error("Fetch error:", err);
-    } finally {
-    }
-  };
-  const IconTrashSize = 20;
-
   const handleDeleteReservation = async (reservationId: string) => {
     try {
-      
       const response = await fetch(`${API_BASE_URL}/reservations/${reservationId}`, {
         method: "DELETE",
       });
@@ -291,14 +264,13 @@ function Sidebar() {
         throw new Error("Failed to delete reservation");
       }
   
-      setReservations((prev) =>
-        prev.filter((res) => res._id !== reservationId)
-      );
+      onReservationsChange(reservations.filter((res) => res._id !== reservationId));
       
     } catch (error) {
       console.error("Error deleting reservation:", error);
     }
   };
+
 
   return (
     <div className={classes.sidebarContainer}>
@@ -341,21 +313,31 @@ function Sidebar() {
           <Loader size="sm" />
           <Text>Loading reservations...</Text>
         </div>
-      ) : reservations.length === 0 ? (
-        <p className={classes.italicText}>No new reservations</p>
+      ) : unassignedReservations.length === 0 ? (
+        <p className={classes.italicText}>No reservations</p>
       ) : (
         <div>
           <p className={classes.italicText}>Drag and drop onto a table</p>
           <div className={classes.unassignedResContainer}>
-            {reservations.map((res) => (
+            {unassignedReservations.map((res) => (
               <div
-              style={{
-                display: "flex",
-                alignItems: "center", // optional: vertically center the items
-                gap: "8px",            // optional: space between the components
-              }}
+                key={res._id}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                }}
               >
-                <DraggableReservation reservation={res} key={res._id} />
+                <DraggableReservation 
+                  reservation={res} 
+                  onDragEnd={() => {
+                    fetchTodayReservations(
+                      "reservation",
+                      currDateAsDate.toISOString(),
+                      tmrwDate.toISOString()
+                    );
+                  }}
+                />
                 <button onClick={() => handleDeleteReservation(res._id)} 
                   style={{
                     background: "none",
@@ -368,7 +350,6 @@ function Sidebar() {
               </div>
             ))}
           </div>
-
         </div>
       )}
       <hr style={{ marginTop: "46px" }} />
@@ -403,8 +384,18 @@ function Sidebar() {
         <div>
           <p className={classes.italicText}>Drag and drop onto a table</p>
           <div className={classes.unassignedWaitContainer}>
-            {waitlist.map((entry, index) => (
-              <DraggableWaitlist key={index} walkin={entry} />
+            {waitlist.map((entry) => (
+              <DraggableWaitlist 
+                key={entry._id}
+                walkin={entry} 
+                onDragEnd={() => {
+                  fetchTodayReservations(
+                    "waitlist",
+                    currDateAsDate.toISOString(),
+                    tmrwDate.toISOString()
+                  );
+                }}
+              />
             ))}
           </div>
         </div>

@@ -1,14 +1,10 @@
 import { useEffect, useState } from "react";
 
 import "./App.css";
-import MainPage from "./components/MainPage";
-import Sidebar from "./components/Sidebar";
+import FloorPlan from "./components/FloorPlan";
 import Navbar from "./components/Navbar";
-
 import { CurrDateProvider } from "./components/CurrDateProvider";
-
 import LoginPage from "./components/Login";
-
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -34,13 +30,10 @@ function App() {
           <section
             className="App-header"
             style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 4fr",
               paddingTop: "76px",
             }}
           >
-            <Sidebar />
-            <MainPage />
+            <FloorPlan />
           </section>
         </CurrDateProvider>
       ) : (
