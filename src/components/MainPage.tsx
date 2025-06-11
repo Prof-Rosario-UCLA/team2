@@ -96,8 +96,6 @@ function CalendarIconTrigger({
             minDate={new Date()}
             maxDate={new Date(new Date().setMonth(new Date().getMonth() + 3))}
             defaultLevel="month"
-            // allowSingleDateInRange={false}
-            // amountOfMonths={1}
             size="sm"
             styles={{
               day: {
@@ -534,12 +532,8 @@ function MainPage({
               const tableReservations = getReservationsForTable(reservations, Number(tables[index].tableNumber));
               const tableWalkIns = getWalkInsForTable(waitlist, Number(tables[index].tableNumber));
               
-              // Check for conflicts in both reservations and walk-ins
-              console.log('Checking for conflicts:');
-              console.log('Item being moved:', item);
 
               const hasConflict = [...tableReservations, ...tableWalkIns].some(entry => {
-                console.log('\nChecking entry:', entry);
                 
                 if ('reservation' in item && entry._id === item.reservation._id) {
                   console.log('Skipping - same reservation');
@@ -553,13 +547,7 @@ function MainPage({
                 const isConflictAtSelectedTime = isReservationActiveAtTime(entry, selectedDateTime);
                 const isConflictAtTwoHours = isReservationActiveAtTime(entry, twoHoursLater);
                 const isConflict = isConflictAtSelectedTime || isConflictAtTwoHours;
-                console.log('Selected time (UTC):', selectedDateTime.toISOString());
-                console.log('Two hours later (UTC):', twoHoursLater.toISOString());
-                console.log('Entry start time (UTC):', new Date(entry.startTime).toISOString());
-                console.log('Entry end time (UTC):', new Date(entry.endTime).toISOString());
-                console.log('Conflict at selected time:', isConflictAtSelectedTime);
-                console.log('Conflict at two hours later:', isConflictAtTwoHours);
-                console.log('Final conflict result:', isConflict);
+               
                 return isConflict;
               });
 
@@ -686,13 +674,6 @@ function MainPage({
               mt="md"
             />
 
-            {/* <NumberInput
-              label="# of Tables to Create"
-              required
-              min={1}
-              {...form.getInputProps("numberTables")}
-              mt="md"
-            /> */}
 
             <Textarea
               label="Comments"

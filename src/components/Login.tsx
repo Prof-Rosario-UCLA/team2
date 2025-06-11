@@ -1,4 +1,3 @@
-// components/LoginPage.tsx
 import React from "react";
 import { GoogleLogin } from "@react-oauth/google";
 import styles from "../styles/Login.module.scss";

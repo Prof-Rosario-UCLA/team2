@@ -175,20 +175,7 @@ function ReservationForm({ onClose, reservationType }: ReservationFormProps) {
 
   return (
     <Box className={classes.formContainer} mx="auto">
-      {/* {submitted && (
-        <Box style={{ maxWidth: 500, zIndex: 500 }} mx="auto" my="xl">
-          <Title order={2}>Reservation Submitted!</Title>
-          <p>Reservation created successfully.</p>
-          <Button
-            onClick={() => {
-              setSubmitted(false);
-              onClose();
-            }}
-          >
-            Close
-          </Button>
-        </Box>
-      )} */}
+    
       <Title order={2} className={classes.formTitle}>
         {reservationType === "reservation"
           ? "Make a Reservation"
@@ -206,13 +193,14 @@ function ReservationForm({ onClose, reservationType }: ReservationFormProps) {
           alignItems: "flex-start",
         }}
         className={classes.form}
+        role="form"
+        aria-label={`${reservationType} form`}
       >
-        <div className={classes.contactContainer}>
+        <div className={classes.contactContainer} role="group" aria-labelledby="contact-info">
           <TextInput
             label="First Name"
             placeholder="First name"
             required
-            // mb="md"
             labelProps={{
               style: {
                 textAlign: "flex-start",
@@ -220,6 +208,7 @@ function ReservationForm({ onClose, reservationType }: ReservationFormProps) {
               },
             }}
             classNames={{ input: classes.inputStyles }}
+            aria-required="true"
             {...form.getInputProps("firstname")}
           />
 
@@ -227,7 +216,6 @@ function ReservationForm({ onClose, reservationType }: ReservationFormProps) {
             label="Last Name"
             placeholder="Last name"
             required
-            // mb="md"
             labelProps={{
               style: {
                 textAlign: "flex-start",
@@ -235,6 +223,7 @@ function ReservationForm({ onClose, reservationType }: ReservationFormProps) {
               },
             }}
             classNames={{ input: classes.inputStyles }}
+            aria-required="true"
             {...form.getInputProps("lastname")}
           />
 
@@ -242,7 +231,6 @@ function ReservationForm({ onClose, reservationType }: ReservationFormProps) {
             <TextInput
               label="Email"
               placeholder="example@email.com"
-              // mb="md"
               labelProps={{
                 style: {
                   textAlign: "flex-start",
@@ -250,6 +238,7 @@ function ReservationForm({ onClose, reservationType }: ReservationFormProps) {
                 },
               }}
               classNames={{ input: classes.inputStyles }}
+              aria-required="true"
               {...form.getInputProps("email")}
             />
           ) : null}
@@ -257,7 +246,6 @@ function ReservationForm({ onClose, reservationType }: ReservationFormProps) {
           <TextInput
             label="Phone"
             placeholder="Phone number"
-            // mb="md"
             required={reservationType === "waitlist"}
             labelProps={{
               style: {
@@ -266,11 +254,12 @@ function ReservationForm({ onClose, reservationType }: ReservationFormProps) {
               },
             }}
             classNames={{ input: classes.inputStyles }}
+            aria-required={reservationType === "waitlist"}
             {...form.getInputProps("phone")}
           />
         </div>
 
-        <Group>
+        <Group role="group" aria-labelledby="date-time-info">
           {reservationType === "reservation" && (
             <DatesProvider settings={{ locale: "en", firstDayOfWeek: 0 }}>
               <DatePickerInput
@@ -290,6 +279,7 @@ function ReservationForm({ onClose, reservationType }: ReservationFormProps) {
                   },
                 }}
                 classNames={{ input: classes.inputStyles }}
+                aria-required="true"
                 {...form.getInputProps("date")}
               />
             </DatesProvider>
@@ -314,6 +304,7 @@ function ReservationForm({ onClose, reservationType }: ReservationFormProps) {
                 },
               }}
               classNames={{ input: classes.inputStyles }}
+              aria-required="true"
               {...form.getInputProps("time")}
             />
           ) : (
@@ -329,6 +320,7 @@ function ReservationForm({ onClose, reservationType }: ReservationFormProps) {
                 },
               }}
               classNames={{ input: classes.inputStyles }}
+              aria-required="true"
               {...form.getInputProps("time")}
             />
           )}
@@ -340,7 +332,6 @@ function ReservationForm({ onClose, reservationType }: ReservationFormProps) {
           required
           min={1}
           max={20}
-          // mb="md"
           labelProps={{
             style: {
               textAlign: "flex-start",
@@ -348,13 +339,15 @@ function ReservationForm({ onClose, reservationType }: ReservationFormProps) {
             },
           }}
           classNames={{ input: classes.inputStyles }}
+          aria-required="true"
+          aria-valuemin={1}
+          aria-valuemax={20}
           {...form.getInputProps("partySize")}
         />
 
         <Textarea
           label="Additional comments"
           placeholder="Any additional comments or notes"
-          // mb="md"
           autosize
           minRows={5}
           labelProps={{
@@ -371,6 +364,7 @@ function ReservationForm({ onClose, reservationType }: ReservationFormProps) {
             },
           }}
           style={{ width: "100%" }}
+          aria-label="Additional comments or notes"
           {...form.getInputProps("specialRequests")}
         />
 
@@ -379,6 +373,8 @@ function ReservationForm({ onClose, reservationType }: ReservationFormProps) {
             type="submit"
             loading={loading}
             className={classes.submitButton}
+            aria-busy={loading}
+            aria-label={reservationType === "reservation" ? "Submit Reservation" : "Add to Waitlist"}
           >
             {reservationType === "reservation"
               ? "Submit Reservation"
