@@ -18,6 +18,7 @@ import { useCurrDate } from "./CurrDateProvider";
 import { IconCalendarWeek } from "@tabler/icons-react";
 import { API_BASE_URL } from "../frontend-config";
 import {updateReservationTable, updateWalkInTable} from "../utils/mainpageUtils"
+import { IconTrash } from "@tabler/icons-react";
 
 const times = Array.from({ length: 21 }, (_, i) => {
   const totalMinutes = 17 * 60 + i * 15; // Start at 5 PM (17:00)
@@ -121,6 +122,7 @@ interface MainPageProps {
   onReservationsChange: (reservations: Reservation[]) => void;
   onWaitlistChange: (waitlist: Walkin[]) => void;
   fetchTodayReservations: (type: string, startDate: string, endDate: string) => Promise<void>;
+  handleDeleteReservation: (reservationId: string) => void;
 }
 
 function MainPage({ 
@@ -128,6 +130,7 @@ function MainPage({
   waitlist,
   onReservationsChange,
   onWaitlistChange,
+  handleDeleteReservation,
   fetchTodayReservations 
 }: MainPageProps) {
   const [selectedTime, setSelectedTime] = useState(times[0]);
@@ -145,6 +148,7 @@ function MainPage({
       currDateAsDate.getUTCDate() + 1
     )
   );
+  const IconTrashSize = 20;
 
   useEffect(() => {
     fetchTables();
@@ -201,6 +205,7 @@ function MainPage({
       tmrwDate.toISOString()
     );
   }, [selectedTime]);
+
 
   const fetchTables = async () => {
     try {
@@ -363,9 +368,26 @@ function MainPage({
               >
                 {formatName(table.reservation.name)}
               </div>
-              <p style={{ color: "#555" }}>
-                Party Size: {table.reservation.size.valueOf()}
-              </p>
+              <div style={{ display: "flex", alignItems: "center" }}>
+                <p
+                  style={{
+                    color: "#555",
+                    fontSize: "14px",
+                    marginRight: "8px",
+                  }}
+                >
+                  Party Size: {table.reservation.size.valueOf()}
+                </p>
+
+                <IconTrash
+                  size={IconTrashSize}
+                  className={classes.plusIcon}
+                  onClick={() =>
+                    table.reservation &&
+                    handleDeleteReservation(table.reservation._id)
+                  }
+                />
+              </div>
             </div>
           )}
         </div>

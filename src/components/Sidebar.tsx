@@ -7,7 +7,7 @@ import ReservationForm from "./Reservation";
 import { IconPlus } from "@tabler/icons-react";
 import { IconTrash } from "@tabler/icons-react";
 import { useCurrDate } from "./CurrDateProvider";
-import { API_BASE_URL } from "../frontend-config";
+// import { API_BASE_URL } from "../frontend-config";
 
 export type Reservation = {
   _id: string;
@@ -127,10 +127,10 @@ const DraggableReservation = ({
   );
 };
 
-const DraggableWaitlist = ({ 
+const DraggableWaitlist = ({
   walkin,
   onDragEnd,
-}: { 
+}: {
   walkin: Walkin;
   onDragEnd: () => void;
 }) => {
@@ -213,9 +213,15 @@ export function CustomAddButton(
 interface SidebarProps {
   reservations: Reservation[];
   waitlist: Walkin[];
+
   onReservationsChange: (reservations: Reservation[]) => void;
   onWaitlistChange: (waitlist: Walkin[]) => void;
-  fetchTodayReservations: (type: string, startDate: string, endDate: string) => Promise<void>;
+  fetchTodayReservations: (
+    type: string,
+    startDate: string,
+    endDate: string
+  ) => Promise<void>;
+  handleDeleteReservation: (reservationID: string) => void;
 }
 
 function Sidebar({ 
@@ -223,7 +229,10 @@ function Sidebar({
   waitlist, 
   onReservationsChange,
   onWaitlistChange,
+  handleDeleteReservation,
   fetchTodayReservations 
+
+
 }: SidebarProps) {
   const [showReservationForm, setShowReservationForm] = useState(false);
   const [formType, setFormType] = useState("reservation");
@@ -241,7 +250,9 @@ function Sidebar({
   );
 
   // Filter out reservations that are assigned to tables
-  const unassignedReservations = reservations.filter(res => !res.tableNum || res.tableNum === 0);
+  const unassignedReservations = reservations.filter(
+    (res) => !res.tableNum || res.tableNum === 0
+  );
 
   useEffect(() => {
     const handleOnline = () => setIsOffline(false);
@@ -255,6 +266,7 @@ function Sidebar({
       window.removeEventListener("offline", handleOffline);
     };
   }, []);
+
 
   const handleDeleteReservation = async (reservationId: string) => {
     try {
@@ -289,6 +301,7 @@ function Sidebar({
       console.error("Error deleting waitlist item:", error);
     }
   };
+
 
   return (
     <div className={classes.sidebarContainer}>
@@ -338,16 +351,9 @@ function Sidebar({
           <p className={classes.italicText}>Drag and drop onto a table</p>
           <div className={classes.unassignedResContainer}>
             {unassignedReservations.map((res) => (
-              <div
-                key={res._id}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                }}
-              >
-                <DraggableReservation 
-                  reservation={res} 
+              <div key={res._id} className={classes.resItemContainer}>
+                <DraggableReservation
+                  reservation={res}
                   onDragEnd={() => {
                     fetchTodayReservations(
                       "reservation",
@@ -356,14 +362,19 @@ function Sidebar({
                     );
                   }}
                 />
-                <button onClick={() => handleDeleteReservation(res._id)} 
+                <button
+                  onClick={() => handleDeleteReservation(res._id)}
                   style={{
                     background: "none",
                     border: "none",
                     cursor: "pointer",
                     padding: 0,
-                  }}>
-                  <IconTrash size={IconTrashSize} className={classes.plusIcon} />
+                  }}
+                >
+                  <IconTrash
+                    size={IconTrashSize}
+                    className={classes.trashIcon}
+                  />
                 </button>
               </div>
             ))}
@@ -403,14 +414,6 @@ function Sidebar({
           <p className={classes.italicText}>Drag and drop onto a table</p>
           <div className={classes.unassignedWaitContainer}>
             {waitlist.map((entry) => (
-              <div
-                key={entry._id}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                }}
-              >
                 <DraggableWaitlist 
                   key={entry._id}
                   walkin={entry} 
@@ -422,16 +425,6 @@ function Sidebar({
                     );
                   }}
                 />
-                <button onClick={() => handleDeleteWaitlist(entry._id)} 
-                  style={{
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
-                    padding: 0,
-                  }}>
-                  <IconTrash size={IconTrashSize} className={classes.plusIcon} />
-                </button>
-              </div>
             ))}
           </div>
         </div>
