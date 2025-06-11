@@ -166,7 +166,7 @@ function MainPage({
         (resEntry) =>
           resEntry.tableNum === table.tableNumber &&
           formatToTime(resEntry.startTime) <= selectedTime &&
-          formatToTime(resEntry.endTime) >= selectedTime
+          formatToTime(resEntry.endTime) > selectedTime
       );
 
       // If no reservation, check for a waitlist item
@@ -175,7 +175,7 @@ function MainPage({
           (waitlistEntry) =>
             waitlistEntry.tableNum === table.tableNumber &&
             formatToTime(waitlistEntry.startTime) <= selectedTime &&
-            formatToTime(waitlistEntry.endTime) >= selectedTime
+            formatToTime(waitlistEntry.endTime) > selectedTime
         );
         return {
           ...table,
