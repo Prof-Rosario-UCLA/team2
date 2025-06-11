@@ -227,7 +227,7 @@ function Sidebar({
   const [formType, setFormType] = useState("reservation");
   const { currDate } = useCurrDate();
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
-  const IconTrashSize = 20;
+  const IconTrashSize = 30;
 
   const currDateAsDate = new Date(currDate);
   const tmrwDate = new Date(
@@ -338,15 +338,9 @@ function Sidebar({
                     );
                   }}
                 />
-                <button onClick={() => handleDeleteReservation(res._id)} 
-                  style={{
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
-                    padding: 0,
-                  }}>
-                  <IconTrash size={IconTrashSize} className={classes.plusIcon} />
-                </button>
+                <IconTrash size={IconTrashSize} className={classes.plusIcon}
+                  onClick={() => handleDeleteReservation(res._id)}
+                  />
               </div>
             ))}
           </div>

@@ -17,6 +17,7 @@ import type { Reservation, Walkin, DragItem } from "./Sidebar";
 import { useCurrDate } from "./CurrDateProvider";
 import { IconCalendarWeek } from "@tabler/icons-react";
 import { API_BASE_URL } from "../frontend-config";
+import { IconTrash } from "@tabler/icons-react";
 
 const times = Array.from({ length: 21 }, (_, i) => {
   const totalMinutes = 17 * 60 + i * 15; // Start at 5 PM (17:00)
@@ -228,7 +229,7 @@ function MainPage({
     });
 
     setTables(updatedTables);
-  }, [selectedTime, reservations]);
+  }, [selectedTime]);
 
   useEffect(() => {
     // Refetch reservations when time slot changes
@@ -398,6 +399,31 @@ function MainPage({
       [table.tableNumber, onDrop]
     );
 
+    const handleDeleteReserve = async (reservationId: string | undefined) => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/reservations/${reservationId}`, {
+          method: "DELETE",
+        });
+    
+        if (!response.ok) {
+          throw new Error("Failed to delete reservation");
+        }
+    
+        onReservationsChange(reservations.filter((res) => res._id !== reservationId));
+
+        setTables(prevTables =>
+          prevTables.map(table =>
+            table.reservation?._id === reservationId
+              ? { ...table, reservation: null }
+              : table
+          )
+        );
+        
+      } catch (error) {
+        console.error("Error deleting reservation:", error);
+      }
+    };
+
     const [{ isDragging }, drag] = useDrag({
       type: "BOX",
       item: () => {
@@ -420,6 +446,8 @@ function MainPage({
         isDragging: monitor.isDragging(),
       }),
     });
+
+    const IconTrashSize = 20;
 
     return (
       <Grid.Col span={{ base: 12, xs: 6, sm: 4, md: 3, lg: 2, xl: 2 }}>
@@ -458,9 +486,16 @@ function MainPage({
               >
                 {formatName(table.reservation.name)}
               </div>
-              <p style={{ color: "#555" }}>
-                Party Size: {table.reservation.size.valueOf()}
-              </p>
+              
+              <div style={{ display: 'flex', alignItems: 'center' }}> 
+                <p style={{ color: "#555", fontSize: "14px", marginRight: "8px" }}>
+                  Party Size: {table.reservation.size.valueOf()}
+                </p>
+                
+                  <IconTrash size={IconTrashSize} className={classes.plusIcon}
+                  onClick={() => handleDeleteReserve(table.reservation?._id)}
+                  />
+              </div>
             </div>
           )}
         </div>
