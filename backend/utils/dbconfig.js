@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import { createClient } from "redis";
+import { sassTrue } from "sass-embedded";
 dotenv.config();
 
 // Database configuration

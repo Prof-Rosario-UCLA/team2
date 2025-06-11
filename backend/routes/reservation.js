@@ -65,41 +65,15 @@ router.post("/create", async (req, res) => {
 
     console.log("DATA!!!!!", reservationData);
 
-    const datePart = new Date(reservationData.date);
-    let startTime = null;
-    let endTime = null;
+    const startTime = new Date(`${reservationData.date}T${reservationData.time}:00-07:00`).toISOString();
+    
+    const [hours, minutes] = reservationData.time.split(':');
+    const endHours = parseInt(hours) + 2;
+    const endTimeStr = `${endHours.toString().padStart(2, '0')}:${minutes}`;
+    const endTime = new Date(`${reservationData.date}T${endTimeStr}:00-07:00`).toISOString();
 
-    // Normalize the date to YYYY-MM-DD format regardless of input format
-    let dateStr;
-    if (reservationData.date.includes("T")) {
-      // It's a full UTC timestamp (today's date), convert to local date
-      const utcDate = new Date(reservationData.date);
-
-      // Get the local date components
-      const year = utcDate.getFullYear();
-      const month = String(utcDate.getMonth() + 1).padStart(2, "0");
-      const day = String(utcDate.getDate()).padStart(2, "0");
-
-      dateStr = `${year}-${month}-${day}`;
-    } else {
-      // It's already in YYYY-MM-DD format (future date)
-      dateStr = reservationData.date;
-    }
-
-    const timeStr = reservationData.time; // e.g., "22:30"
-
-    startTime = `${dateStr}T${timeStr}:00.000Z`;
-    const startDate = new Date(startTime);
-
-    // Add 2 hours safely
-    const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000);
-
-    // If you need the result in the same string format:
-    endTime = endDate.toISOString();
-
-    console.log("Normalized date:", dateStr);
-    console.log("Start:", startTime);
-    console.log("End:", endTime);
+    console.log("Start (ISO):", startTime);
+    console.log("End (ISO):", endTime);
 
     const newReservation = {
       name: `${reservationData.firstname} ${reservationData.lastname}`,
@@ -111,6 +85,8 @@ router.post("/create", async (req, res) => {
       endTime: endTime,
       comments: reservationData.specialRequests || "",
     };
+
+    console.log("new reservation: ", newReservation);
 
     const result = await insertReservation(newReservation);
 
