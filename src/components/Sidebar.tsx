@@ -213,6 +213,9 @@ export function CustomAddButton(
 interface SidebarProps {
   reservations: Reservation[];
   waitlist: Walkin[];
+
+  onReservationsChange: (reservations: Reservation[]) => void;
+  onWaitlistChange: (waitlist: Walkin[]) => void;
   fetchTodayReservations: (
     type: string,
     startDate: string,
@@ -221,11 +224,15 @@ interface SidebarProps {
   handleDeleteReservation: (reservationID: string) => void;
 }
 
-function Sidebar({
-  reservations,
-  waitlist,
-  fetchTodayReservations,
+function Sidebar({ 
+  reservations, 
+  waitlist, 
+  onReservationsChange,
+  onWaitlistChange,
   handleDeleteReservation,
+  fetchTodayReservations 
+
+
 }: SidebarProps) {
   const [showReservationForm, setShowReservationForm] = useState(false);
   const [formType, setFormType] = useState("reservation");
@@ -259,6 +266,42 @@ function Sidebar({
       window.removeEventListener("offline", handleOffline);
     };
   }, []);
+
+
+  const handleDeleteReservation = async (reservationId: string) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/reservations/${reservationId}`, {
+        method: "DELETE",
+      });
+  
+      if (!response.ok) {
+        throw new Error("Failed to delete reservation");
+      }
+  
+      onReservationsChange(reservations.filter((res) => res._id !== reservationId));
+      
+    } catch (error) {
+      console.error("Error deleting reservation:", error);
+    }
+  };
+
+  const handleDeleteWaitlist = async (waitlistId: string) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/walkins/${waitlistId}`, {
+        method: "DELETE",
+      });
+  
+      if (!response.ok) {
+        throw new Error("Failed to delete waitlist item");
+      }
+  
+      onWaitlistChange(waitlist.filter((w) => w._id !== waitlistId));
+      
+    } catch (error) {
+      console.error("Error deleting waitlist item:", error);
+    }
+  };
+
 
   return (
     <div className={classes.sidebarContainer}>
@@ -371,17 +414,17 @@ function Sidebar({
           <p className={classes.italicText}>Drag and drop onto a table</p>
           <div className={classes.unassignedWaitContainer}>
             {waitlist.map((entry) => (
-              <DraggableWaitlist
-                key={entry._id}
-                walkin={entry}
-                onDragEnd={() => {
-                  fetchTodayReservations(
-                    "waitlist",
-                    currDateAsDate.toISOString(),
-                    tmrwDate.toISOString()
-                  );
-                }}
-              />
+                <DraggableWaitlist 
+                  key={entry._id}
+                  walkin={entry} 
+                  onDragEnd={() => {
+                    fetchTodayReservations(
+                      "waitlist",
+                      currDateAsDate.toISOString(),
+                      tmrwDate.toISOString()
+                    );
+                  }}
+                />
             ))}
           </div>
         </div>

@@ -105,7 +105,7 @@ router.post("/create", async (req, res) => {
 
 router.patch("/updateWalkin", async (req, res) => {
   try {
-    const { walkinId, tableNum } = req.body;
+    const { walkinId, tableNum, time } = req.body;
 
     // Validate required fields
     if (!walkinId || tableNum === undefined) {
@@ -121,10 +121,42 @@ router.patch("/updateWalkin", async (req, res) => {
       });
     }
 
-    // Update the walk-in - Mongoose will handle the conversion to Number type
+    // Parse the time string and create start and end times
+    let startTime, endTime;
+    const updateData = {
+      tableNum: tableNum
+    };
+
+    if (time) {
+      // Extract hours, minutes, and period from the time string
+      const match = time.match(/(\d+):(\d+)([ap]m)/i);
+      if (!match) {
+        throw new Error('Invalid time format');
+      }
+
+      let [_, hours, minutes, period] = match;
+      hours = parseInt(hours);
+      minutes = parseInt(minutes);
+
+      // Convert to 24-hour format
+      if (period.toLowerCase() === 'pm' && hours !== 12) {
+        hours += 12;
+      } else if (period.toLowerCase() === 'am' && hours === 12) {
+        hours = 0;
+      }
+      
+      const date = new Date();
+      startTime = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), hours, minutes));
+      endTime = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), hours + 2, minutes));
+      
+      // Only add time fields if time was provided
+      updateData.startTime = startTime;
+      updateData.endTime = endTime;
+    }
+
     const updatedWalkIn = await WalkIn.findByIdAndUpdate(
       walkinId,
-      { tableNum: tableNum },
+      updateData,
       { new: true, runValidators: true }
     );
 
