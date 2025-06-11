@@ -116,7 +116,6 @@ function FloorPlan() {
         reservations={unassignedReservations}
         waitlist={unassignedWaitlist}
         onReservationsChange={handleReservationsChange}
-        onWaitlistChange={handleWaitlistChange}
         fetchTodayReservations={fetchTodayReservations}
         handleDeleteReservation={handleDeleteReservation}
       />

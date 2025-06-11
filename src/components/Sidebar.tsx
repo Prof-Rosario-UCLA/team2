@@ -7,7 +7,7 @@ import ReservationForm from "./Reservation";
 import { IconPlus } from "@tabler/icons-react";
 import { IconTrash } from "@tabler/icons-react";
 import { useCurrDate } from "./CurrDateProvider";
-// import { API_BASE_URL } from "../frontend-config";
+
 
 export type Reservation = {
   _id: string;
@@ -215,7 +215,6 @@ interface SidebarProps {
   waitlist: Walkin[];
 
   onReservationsChange: (reservations: Reservation[]) => void;
-  onWaitlistChange: (waitlist: Walkin[]) => void;
   fetchTodayReservations: (
     type: string,
     startDate: string,
@@ -227,12 +226,8 @@ interface SidebarProps {
 function Sidebar({ 
   reservations, 
   waitlist, 
-  onReservationsChange,
-  onWaitlistChange,
   handleDeleteReservation,
   fetchTodayReservations 
-
-
 }: SidebarProps) {
   const [showReservationForm, setShowReservationForm] = useState(false);
   const [formType, setFormType] = useState("reservation");
@@ -266,41 +261,6 @@ function Sidebar({
       window.removeEventListener("offline", handleOffline);
     };
   }, []);
-
-
-  const handleDeleteReservation = async (reservationId: string) => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/reservations/${reservationId}`, {
-        method: "DELETE",
-      });
-  
-      if (!response.ok) {
-        throw new Error("Failed to delete reservation");
-      }
-  
-      onReservationsChange(reservations.filter((res) => res._id !== reservationId));
-      
-    } catch (error) {
-      console.error("Error deleting reservation:", error);
-    }
-  };
-
-  const handleDeleteWaitlist = async (waitlistId: string) => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/walkins/${waitlistId}`, {
-        method: "DELETE",
-      });
-  
-      if (!response.ok) {
-        throw new Error("Failed to delete waitlist item");
-      }
-  
-      onWaitlistChange(waitlist.filter((w) => w._id !== waitlistId));
-      
-    } catch (error) {
-      console.error("Error deleting waitlist item:", error);
-    }
-  };
 
 
   return (
