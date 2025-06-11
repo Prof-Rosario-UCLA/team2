@@ -213,7 +213,6 @@ export function CustomAddButton(
 interface SidebarProps {
   reservations: Reservation[];
   waitlist: Walkin[];
-
   onReservationsChange: (reservations: Reservation[]) => void;
   fetchTodayReservations: (
     type: string,
@@ -221,12 +220,14 @@ interface SidebarProps {
     endDate: string
   ) => Promise<void>;
   handleDeleteReservation: (reservationID: string) => void;
+  handleDeleteWalkin: (walkinID: string) => void;
 }
 
 function Sidebar({ 
   reservations, 
   waitlist, 
   handleDeleteReservation,
+  handleDeleteWalkin,
   fetchTodayReservations 
 }: SidebarProps) {
   const [showReservationForm, setShowReservationForm] = useState(false);

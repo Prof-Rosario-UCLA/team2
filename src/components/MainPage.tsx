@@ -129,6 +129,7 @@ interface MainPageProps {
     endDate: string
   ) => Promise<void>;
   handleDeleteReservation: (reservationId: string) => void;
+  handleDeleteWalkin: (walkinId: string) => void;
 }
 
 function MainPage({
@@ -137,6 +138,7 @@ function MainPage({
   onReservationsChange,
   onWaitlistChange,
   handleDeleteReservation,
+  handleDeleteWalkin,
   fetchTodayReservations,
 }: MainPageProps) {
   const [selectedTime, setSelectedTime] = useState(times[0]);

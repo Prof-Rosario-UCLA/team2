@@ -168,7 +168,7 @@ router.patch("/updateReservation", async (req, res) => {
 });
 
 // Delete a reservation by ID
-router.delete("/:id", async (req, res) => {
+router.delete("/delete/:id", async (req, res) => {
   try {
     const { id } = req.params;
 

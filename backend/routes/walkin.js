@@ -107,21 +107,18 @@ router.patch("/updateWalkin", async (req, res) => {
   try {
     const { walkinId, tableNum, time } = req.body;
 
-    // Validate required fields
     if (!walkinId || tableNum === undefined) {
       return res.status(400).json({
         error: "Missing required fields: walkinId and tableNum",
       });
     }
 
-    // Validate tableNum is a valid number (JavaScript number type)
     if (typeof tableNum !== "number" || tableNum < 0) {
       return res.status(400).json({
         error: "tableNum must be a valid non-negative number",
       });
     }
 
-    // Parse the time string and create start and end times
     let startTime, endTime;
     const updateData = {
       tableNum: tableNum
@@ -179,5 +176,40 @@ router.patch("/updateWalkin", async (req, res) => {
   }
 });
 
+// Delete a walk-in by ID
+router.delete("/delete/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({ error: "Walk-in ID is required" });
+    }
+
+    const deletedWalkIn = await WalkIn.findByIdAndDelete(id);
+
+    if (!deletedWalkIn) {
+      return res.status(404).json({ error: "Walk-in not found" });
+    }
+
+    const updatedAllWalkIns = await getAllWalkIns();
+    await cacheResult("walkin", updatedAllWalkIns, 300);
+
+    res.status(200).json({
+      message: "Walk-in deleted successfully",
+      deletedWalkIn
+    });
+  } catch (error) {
+    console.error("Error in DELETE /walkins/delete/:id:", error);
+    
+    if (error.name === 'CastError') {
+      return res.status(400).json({ error: "Invalid walk-in ID format" });
+    }
+    
+    res.status(500).json({ 
+      error: "Failed to delete walk-in",
+      details: error.message 
+    });
+  }
+});
 
 export default router;

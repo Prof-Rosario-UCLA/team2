@@ -61,7 +61,7 @@ function FloorPlan() {
   const handleDeleteReservation = async (reservationId: string) => {
     try {
       const response = await fetch(
-        `${API_BASE_URL}/reservations/${reservationId}`,
+        `${API_BASE_URL}/reservations/delete/${reservationId}`,
         {
           method: "DELETE",
         }
@@ -76,6 +76,27 @@ function FloorPlan() {
       );
     } catch (error) {
       console.error("Error deleting reservation:", error);
+    }
+  };
+
+  const handleDeleteWalkin = async (walkinId: string) => {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/walkins/delete/${walkinId}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to delete walk-in");
+      }
+
+      handleWaitlistChange(
+        waitlist.filter((walk) => walk._id !== walkinId)
+      );
+    } catch (error) {
+      console.error("Error deleting walk-in:", error);
     }
   };
 
@@ -118,6 +139,7 @@ function FloorPlan() {
         onReservationsChange={handleReservationsChange}
         fetchTodayReservations={fetchTodayReservations}
         handleDeleteReservation={handleDeleteReservation}
+        handleDeleteWalkin={handleDeleteWalkin}
       />
       <MainPage
         reservations={reservations}
@@ -126,6 +148,7 @@ function FloorPlan() {
         onWaitlistChange={handleWaitlistChange}
         fetchTodayReservations={fetchTodayReservations}
         handleDeleteReservation={handleDeleteReservation}
+        handleDeleteWalkin={handleDeleteWalkin}
       />
     </div>
   );
