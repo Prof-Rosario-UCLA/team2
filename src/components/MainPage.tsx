@@ -198,7 +198,7 @@ function MainPage({
     });
 
     setTables(updatedTables);
-  }, [selectedTime, reservations, waitlist]);
+  }, [selectedTime, reservations, waitlist, tables.length]);
 
   const GlobalDragMonitor = () => {
     const { isDragging, reservation } = useDragLayer((monitor) => {
