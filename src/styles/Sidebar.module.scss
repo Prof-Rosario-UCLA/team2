@@ -93,6 +93,9 @@
   margin: 0;
   margin-bottom: -5px;
   font-size: 1.7rem;
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 100%;
 }
 
 .numPartyText,
@@ -139,7 +142,7 @@
 .reservationItem {
   background-color: rgb(70, 128, 222);
   border-radius: 8px;
-  // max-width: 230px;
+  max-width: 280px;
 }
 
 @media (max-width: 800px) {
