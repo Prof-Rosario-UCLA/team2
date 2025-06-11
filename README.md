@@ -22,10 +22,11 @@ git clone https://github.com/Prof-Rosario-UCLA/team2.git
    VITE_GOOGLE_CLIENT_ID="client-id-here"
    ```
 
-Run `npm run dev` to start the project on localhost:1919.
+Run `npm run dev` to start the application on localhost:1919.
 
 ### CI/CD Setup
 1. Configure CI/CD with the following environment variables:
+```enc
 ARTIFACT_REGISTRY_REPO
 GCP_PROJECT_ID
 GCP_SA_KEY
@@ -33,8 +34,9 @@ GKE_CLUSTER_NAME
 GKE_CLUSTER_ZONE
 MONGO_URI
 VITE_GOOGLE_CLIENT_ID
+```
 
-When pushing commits to the origin/main branch, the Github Actions pipeline in .github/workflows/deploy.yml will automatically start.
+When pushing commits to the origin/main branch, the Github Actions pipeline in `.github/workflows/deploy.yml` will automatically start.
 
 
 ## API Endpoints
