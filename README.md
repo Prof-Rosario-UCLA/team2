@@ -5,38 +5,46 @@ This application is a full-stack restaurant reservation and waitlist management 
 
 ## Deployment
 
-### Docker Compose
+### Setup
+1. **Clone the GitHub Repo**
+```bash
+git clone https://github.com/Prof-Rosario-UCLA/team2.git
+```
+
+### Local Configuration
 1. **Configure MongoDB URI**: Create a `.env` file in the root with your MongoDB connection string:
    ```env
    MONGODB_URI=mongodb+srv://<user>:<password>@<cluster-url>/<dbname>?retryWrites=true&w=majority
    ```
 
-
-### Kubernetes (GKE)
-1. **Build and push Docker images** to your container registry (e.g., GCR).
-2. **Set up secrets** for MongoDB URI and any other sensitive data.
-3. **Apply manifests**:
-   ```bash
-   kubectl apply -f deployment.yaml
-   kubectl apply -f service.yaml
-   kubectl apply -f ingress.yaml
-   kubectl apply -f certificate.yaml
-   kubectl apply -f frontendconfig.yaml
+2. **Configure Google Client ID**: For Google SSO, create a project and add your GOOGLE_CLIENT_ID:
+   ```env 
+   VITE_GOOGLE_CLIENT_ID="client-id-here"
    ```
-4. **TLS/HTTPS**: See `cert-setup.md` for internal TLS setup using cert-manager.
-5. **Domain**: Update `ingress.yaml` with your domain.
 
----
+Run `npm run dev` to start the project on localhost:1919.
 
-## Environment Variables
-- `MONGODB_URI`: MongoDB connection string
-- `REDIS_URL`: Redis connection string (default: `redis://redis:6379`)
-- `NODE_ENV`: `production` or `development`
-- `VITE_GOOGLE_CLIENT_ID`: (if using Google OAuth)
+### CI/CD Setup
+1. Configure CI/CD with the following environment variables:
+ARTIFACT_REGISTRY_REPO
+GCP_PROJECT_ID
+GCP_SA_KEY
+GKE_CLUSTER_NAME
+GKE_CLUSTER_ZONE
+MONGO_URI
+VITE_GOOGLE_CLIENT_ID
 
----
+When pushing commits to the origin/main branch, the Github Actions pipeline in .github/workflows/deploy.yml will automatically start.
+
 
 ## API Endpoints
+
+## Data Models
+- **Reservation**: name, email, phone, tableNum, size, startTime, endTime, comments
+- **WalkIn**: name, phoneNumber, tableNum, size, timeAddedToWaitlist, startTime, endTime, comments
+- **Table**: tableNumber, tableCapacity, comments
+
+---
 
 ### Reservations
 Base path: `/reservations`
@@ -62,23 +70,6 @@ Base path: `/reservations`
   "comments": "Birthday dinner"
 }
 ```
-
-#### Example: Create Reservation
-```bash
-curl -X POST http://localhost:1919/reservations/create \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "firstname": "John",
-    "lastname": "Doe",
-    "email": "john@example.com",
-    "phone": "1234567890",
-    "partySize": 4,
-    "date": "2024-06-01",
-    "time": "18:00",
-    "specialRequests": "Birthday dinner"
-  }'
-```
-
 ---
 
 ### Walk-ins
@@ -105,21 +96,6 @@ Base path: `/walkins`
 }
 ```
 
-#### Example: Add Walk-in
-```bash
-curl -X POST http://localhost:1919/walkins/create \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "firstname": "Jane",
-    "lastname": "Smith",
-    "phone": "9876543210",
-    "partySize": 2,
-    "date": "2024-06-01",
-    "time": "19:00",
-    "specialRequests": "Window seat"
-  }'
-```
-
 ---
 
 ### Tables
@@ -140,28 +116,4 @@ Base path: `/tables`
 }
 ```
 
-#### Example: Create Table
-```bash
-curl -X POST http://localhost:1919/tables/create \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "tableNum": 1,
-    "maxCapacity": 4,
-    "comments": "Near window"
-  }'
-```
-
 ---
-
-## Data Models
-- **Reservation**: name, email, phone, tableNum, size, startTime, endTime, comments
-- **WalkIn**: name, phoneNumber, tableNum, size, timeAddedToWaitlist, startTime, endTime, comments
-- **Table**: tableNumber, tableCapacity, comments
-
----
-
-## Notes
-- All endpoints return JSON.
-- For more advanced deployment (TLS, GKE, Ingress), see `cert-setup.md` and `kub-setup.md`.
-- Caching is handled via Redis for reservations and walk-ins.
-- For questions or issues, see the code comments or open an issue.
