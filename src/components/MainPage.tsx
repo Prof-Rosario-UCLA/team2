@@ -206,7 +206,6 @@ function MainPage({
     );
   }, [selectedTime]);
 
-
   const fetchTables = async () => {
     try {
       const res = await fetch(`${API_BASE_URL}/tables/`);
@@ -384,6 +383,7 @@ function MainPage({
                   className={classes.plusIcon}
                   onClick={() =>
                     table.reservation &&
+                    !isDragging &&
                     handleDeleteReservation(table.reservation._id)
                   }
                 />
@@ -450,6 +450,12 @@ function MainPage({
             onDrop={(item) => {
               // Step 1: Update the tables state to reflect the new arrangement
               // This gives immediate visual feedback to the user
+              if (table && "reservation" in item && item.reservation) {
+                if (item.reservation.size.valueOf() > table.tableCapacity) {
+                  console.log("Reservation is too big");
+                  return;
+                }
+              }
               setTables((prevTables) => {
                 const newTables = prevTables.map((table) => {
                   // If this table has the reservation/walk-in we're moving,
