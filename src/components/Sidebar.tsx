@@ -7,7 +7,7 @@ import ReservationForm from "./Reservation";
 import { IconPlus } from "@tabler/icons-react";
 import { IconTrash } from "@tabler/icons-react";
 import { useCurrDate } from "./CurrDateProvider";
-// import { API_BASE_URL } from "../frontend-config";
+
 
 export type Reservation = {
   _id: string;
@@ -213,6 +213,8 @@ export function CustomAddButton(
 interface SidebarProps {
   reservations: Reservation[];
   waitlist: Walkin[];
+
+  onReservationsChange: (reservations: Reservation[]) => void;
   fetchTodayReservations: (
     type: string,
     startDate: string,
@@ -221,11 +223,11 @@ interface SidebarProps {
   handleDeleteReservation: (reservationID: string) => void;
 }
 
-function Sidebar({
-  reservations,
-  waitlist,
-  fetchTodayReservations,
+function Sidebar({ 
+  reservations, 
+  waitlist, 
   handleDeleteReservation,
+  fetchTodayReservations 
 }: SidebarProps) {
   const [showReservationForm, setShowReservationForm] = useState(false);
   const [formType, setFormType] = useState("reservation");
@@ -259,6 +261,7 @@ function Sidebar({
       window.removeEventListener("offline", handleOffline);
     };
   }, []);
+
 
   return (
     <div className={classes.sidebarContainer}>
@@ -371,17 +374,17 @@ function Sidebar({
           <p className={classes.italicText}>Drag and drop onto a table</p>
           <div className={classes.unassignedWaitContainer}>
             {waitlist.map((entry) => (
-              <DraggableWaitlist
-                key={entry._id}
-                walkin={entry}
-                onDragEnd={() => {
-                  fetchTodayReservations(
-                    "waitlist",
-                    currDateAsDate.toISOString(),
-                    tmrwDate.toISOString()
-                  );
-                }}
-              />
+                <DraggableWaitlist 
+                  key={entry._id}
+                  walkin={entry} 
+                  onDragEnd={() => {
+                    fetchTodayReservations(
+                      "waitlist",
+                      currDateAsDate.toISOString(),
+                      tmrwDate.toISOString()
+                    );
+                  }}
+                />
             ))}
           </div>
         </div>

@@ -99,6 +99,10 @@ function FloorPlan() {
     setReservations(newReservations);
   };
 
+  const handleWaitlistChange = (newWaitlist: Walkin[]) => {
+    setWaitlist(newWaitlist);
+  };
+
   return (
     <div
       style={{
@@ -111,12 +115,15 @@ function FloorPlan() {
       <Sidebar
         reservations={unassignedReservations}
         waitlist={unassignedWaitlist}
+        onReservationsChange={handleReservationsChange}
         fetchTodayReservations={fetchTodayReservations}
         handleDeleteReservation={handleDeleteReservation}
       />
       <MainPage
         reservations={reservations}
+        waitlist={waitlist}
         onReservationsChange={handleReservationsChange}
+        onWaitlistChange={handleWaitlistChange}
         fetchTodayReservations={fetchTodayReservations}
         handleDeleteReservation={handleDeleteReservation}
       />

@@ -11,12 +11,13 @@ import {
 import { DatesProvider, DatePicker } from "@mantine/dates";
 import { useForm } from "@mantine/form";
 import { useState, useEffect } from "react";
-import { useDrop, useDragLayer, useDrag } from "react-dnd";
-import { CustomAddButton, convertDateToTime, formatName } from "./Sidebar";
+import { useDrop, useDrag } from "react-dnd";
+import { CustomAddButton, formatName } from "./Sidebar";
 import type { Reservation, Walkin, DragItem } from "./Sidebar";
 import { useCurrDate } from "./CurrDateProvider";
 import { IconCalendarWeek } from "@tabler/icons-react";
 import { API_BASE_URL } from "../frontend-config";
+import {updateReservationTable, updateWalkInTable} from "../utils/mainpageUtils"
 import { IconTrash } from "@tabler/icons-react";
 
 const times = Array.from({ length: 21 }, (_, i) => {
@@ -45,60 +46,16 @@ type TableDropProps = {
   onDrop: (item: DragItem) => void;
 };
 
-const updateReservationTable = async (
-  reservationId: string,
-  tableNumber: Number
-) => {
-  try {
-    const response = await fetch(
-      `${API_BASE_URL}/reservations/updateReservation`,
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          reservationId: reservationId,
-          tableNum: tableNumber,
-        }),
-      }
-    );
 
-    if (response.ok) {
-      const updatedReservation = await response.json();
-      return updatedReservation;
-    }
-  } catch (error) {
-    console.error("Network error:", error);
-  }
-};
-
-const updateWalkInTable = async (walkinId: string, tableNumber: Number) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/walkins/updateWalkin`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        walkinId: walkinId,
-        tableNum: tableNumber,
-      }),
-    });
-
-    if (response.ok) {
-      const updatedWalkIn = await response.json();
-      return updatedWalkIn;
-    }
-  } catch (error) {
-    console.error("Network error:", error);
-  }
-};
-
-function formatToTime(dateInput: string | Date): string {
+function formatToTime(dateInput: string | Date | null): string {
+  if (!dateInput) return "";
+  
   const date = typeof dateInput === "string" ? new Date(dateInput) : dateInput;
+  
+  // Check if date is valid
+  if (isNaN(date.getTime())) return "";
 
-  let hours = date.getUTCHours(); // ⬅️ NOTE: UTC!
+  let hours = date.getUTCHours();
   const minutes = date.getUTCMinutes();
   const ampm = hours >= 12 ? "pm" : "am";
 
@@ -108,23 +65,6 @@ function formatToTime(dateInput: string | Date): string {
   return `${hours}:${minutes.toString().padStart(2, "0")}${ampm}`;
 }
 
-// function addItemToTable(table: Table, item: DragItem): Table {
-//   if ("reservation" in item) {
-//     if (!table.reservation) {
-//       return { ...table, reservation: item.reservation };
-//     } else {
-//       console.log("Cannot add reservation to occupied table");
-//       return table;
-//     }
-//   } else {
-//     if (!table.reservation) {
-//       return { ...table, reservation: item.walkin };
-//     } else {
-//       console.log("Cannot add walkin to occupied table");
-//       return table;
-//     }
-//   }
-// }
 
 function CalendarIconTrigger({
   currDate,
@@ -178,20 +118,20 @@ function CalendarIconTrigger({
 
 interface MainPageProps {
   reservations: Reservation[];
+  waitlist: Walkin[];
   onReservationsChange: (reservations: Reservation[]) => void;
-  fetchTodayReservations: (
-    type: string,
-    startDate: string,
-    endDate: string
-  ) => Promise<void>;
+  onWaitlistChange: (waitlist: Walkin[]) => void;
+  fetchTodayReservations: (type: string, startDate: string, endDate: string) => Promise<void>;
   handleDeleteReservation: (reservationId: string) => void;
 }
 
-function MainPage({
+function MainPage({ 
   reservations,
+  waitlist,
   onReservationsChange,
-  fetchTodayReservations,
+  onWaitlistChange,
   handleDeleteReservation,
+  fetchTodayReservations 
 }: MainPageProps) {
   const [selectedTime, setSelectedTime] = useState(times[0]);
   const [tables, setTables] = useState<Table[]>([]);
@@ -226,17 +166,31 @@ function MainPage({
         (resEntry) =>
           resEntry.tableNum === table.tableNumber &&
           formatToTime(resEntry.startTime) <= selectedTime &&
-          formatToTime(resEntry.endTime) >= selectedTime
+          formatToTime(resEntry.endTime) > selectedTime
       );
+
+      // If no reservation, check for a waitlist item
+      if (!matchingRes) {
+        const matchingWaitlist = waitlist.find(
+          (waitlistEntry) =>
+            waitlistEntry.tableNum === table.tableNumber &&
+            formatToTime(waitlistEntry.startTime) <= selectedTime &&
+            formatToTime(waitlistEntry.endTime) > selectedTime
+        );
+        return {
+          ...table,
+          reservation: matchingWaitlist ?? null,
+        };
+      }
 
       return {
         ...table,
-        reservation: matchingRes ?? null,
+        reservation: matchingRes,
       };
     });
 
     setTables(updatedTables);
-  }, [selectedTime, reservations]);
+  }, [selectedTime, reservations, waitlist]);
 
   useEffect(() => {
     // Refetch reservations when time slot changes
@@ -245,46 +199,12 @@ function MainPage({
       currDateAsDate.toISOString(),
       tmrwDate.toISOString()
     );
+    fetchTodayReservations(
+      "waitlist",
+      currDateAsDate.toISOString(),
+      tmrwDate.toISOString()
+    );
   }, [selectedTime]);
-
-  const GlobalDragMonitor = () => {
-    const { isDragging, reservation, walkin } = useDragLayer((monitor) => {
-      const item = monitor.getItem() as DragItem | null;
-      return {
-        isDragging: monitor.isDragging(),
-        reservation: item && "reservation" in item ? item.reservation : null,
-        walkin: item && "walkin" in item ? item.walkin : null,
-      };
-    });
-
-    useEffect(() => {
-      if (isDragging) {
-        console.log("Started dragging:", {
-          isReservation: !!reservation,
-          isWalkin: !!walkin,
-          item: reservation || walkin,
-        });
-      } else if (reservation || walkin) {
-        console.log("Stopped dragging:", {
-          isReservation: !!reservation,
-          isWalkin: !!walkin,
-          item: reservation || walkin,
-        });
-      }
-    }, [isDragging, reservation, walkin]);
-
-    useEffect(() => {
-      if (isDragging && reservation) {
-        setSelectedTime(
-          convertDateToTime(reservation.startTime)
-            .toLowerCase()
-            .replace(/\s/g, "")
-        );
-      }
-    }, [isDragging, reservation]);
-
-    if (!isDragging || !reservation) return null;
-  };
 
   const fetchTables = async () => {
     try {
@@ -333,10 +253,6 @@ function MainPage({
     }
   };
 
-  // const [currDate, setCurrDate] = useState<Date>(() => {
-  //   const today = new Date();
-  //   return new Date(today.getFullYear(), today.getMonth(), today.getDate());
-  // });
   const formattedDate = (() => {
     try {
       let date = currDate instanceof Date ? currDate : new Date(currDate);
@@ -481,7 +397,7 @@ function MainPage({
 
   return (
     <div className={classes.mainPageContainer}>
-      <GlobalDragMonitor />
+
       <div
         style={{
           width: "fit-content",
@@ -532,6 +448,8 @@ function MainPage({
             key={index}
             table={table}
             onDrop={(item) => {
+              // Step 1: Update the tables state to reflect the new arrangement
+              // This gives immediate visual feedback to the user
               if (table && "reservation" in item && item.reservation) {
                 if (item.reservation.size.valueOf() > table.tableCapacity) {
                   console.log("Reservation is too big");
@@ -539,75 +457,75 @@ function MainPage({
                 }
               }
               setTables((prevTables) => {
-                const currentTable = prevTables[index];
-
-                // Find all tables that have this reservation
                 const newTables = prevTables.map((table) => {
-                  if (!table.reservation) return table;
-
-                  // Check if this table has the reservation we're moving
-                  const isMatchingReservation =
-                    ("reservation" in item &&
-                      "email" in table.reservation &&
-                      table.reservation._id === item.reservation._id) ||
-                    ("walkin" in item &&
-                      !("email" in table.reservation) &&
-                      table.reservation._id === item.walkin._id);
-
-                  if (isMatchingReservation) {
-                    // Clear the reservation from this table
+                  // If this table has the reservation/walk-in we're moving,
+                  // clear it from this table
+                  if (table.reservation && (
+                    ("reservation" in item && "email" in table.reservation && table.reservation._id === item.reservation._id) ||
+                    ("walkin" in item && !("email" in table.reservation) && table.reservation._id === item.walkin._id)
+                  )) {
+                    return { ...table, reservation: null };
+                  }
+                  // If this is the target table, add the reservation/walk-in to it
+                  if (table.tableNumber === prevTables[index].tableNumber) {
                     return {
                       ...table,
-                      reservation: null,
+                      reservation: "reservation" in item ? item.reservation : item.walkin
                     };
                   }
                   return table;
                 });
-
-                // Update the new table
-                newTables[index] = {
-                  ...currentTable,
-                  reservation:
-                    "reservation" in item ? item.reservation : item.walkin,
-                };
-
-                // Update the backend and trigger state updates
-                if ("reservation" in item) {
-                  // Update the reservations list first
-                  const updatedReservations = reservations.map((res) =>
-                    res._id === item.reservation._id
-                      ? { ...res, tableNum: table.tableNumber }
-                      : res
-                  );
-                  onReservationsChange(updatedReservations);
-
-                  // Then update the backend
-                  updateReservationTable(
-                    item.reservation._id,
-                    table.tableNumber
-                  ).then(() => {
-                    // After backend update, trigger a re-fetch
-                    fetchTodayReservations(
-                      "reservation",
-                      currDateAsDate.toISOString(),
-                      tmrwDate.toISOString()
-                    );
-                  });
-                } else {
-                  // Just update the backend for walkins
-                  updateWalkInTable(item.walkin._id, table.tableNumber).then(
-                    () => {
-                      // After backend update, trigger a re-fetch
-                      fetchTodayReservations(
-                        "reservation",
-                        currDateAsDate.toISOString(),
-                        tmrwDate.toISOString()
-                      );
-                    }
-                  );
-                }
                 return newTables;
               });
+
+              // Step 2: Update the reservation/walk-in data to reflect the new table assignment
+              if ("reservation" in item) {
+                // For reservations: Update the reservation's table number in our local state
+                const updatedReservations = reservations.map(res => 
+                  res._id === item.reservation._id 
+                    ? { ...res, tableNum: tables[index].tableNumber }
+                    : res
+                );
+                onReservationsChange(updatedReservations);
+                
+                // Step 3: Persist the change to the backend
+                // After successful backend update, re-fetch to ensure data consistency
+                updateReservationTable(
+                  item.reservation._id,
+                  tables[index].tableNumber
+                ).then(() => {
+                  fetchTodayReservations(
+                    "reservation",
+                    currDateAsDate.toISOString(),
+                    tmrwDate.toISOString()
+                  );
+                });
+              } else {
+                // For walk-ins: Update the walk-in's table number in our local state
+                const updatedWaitlist = waitlist.map(w => 
+                  w._id === item.walkin._id 
+                    ? { ...w, tableNum: tables[index].tableNumber }
+                    : w
+                );
+                onWaitlistChange(updatedWaitlist);
+                
+                // Step 3: Persist the change to the backend
+                // Only update start time if it's not already set
+                const walkinToUpdate = waitlist.find(w => w._id === item.walkin._id);
+                const shouldUpdateTime = !walkinToUpdate?.startTime;
+                
+                updateWalkInTable(
+                  item.walkin._id, 
+                  tables[index].tableNumber, 
+                  shouldUpdateTime ? selectedTime : ""
+                ).then(() => {
+                  fetchTodayReservations(
+                    "waitlist",
+                    currDateAsDate.toISOString(),
+                    tmrwDate.toISOString()
+                  );
+                });
+              }
             }}
           />
         ))}
