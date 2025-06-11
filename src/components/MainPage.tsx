@@ -284,21 +284,6 @@ function MainPage({
     }, [isDragging, reservation]);
 
     if (!isDragging || !reservation) return null;
-
-    // return (
-    //   <div
-    //     style={{
-    //       position: "fixed",
-    //       top: 0,
-    //       right: 0,
-    //       padding: 10,
-    //       zIndex: 1000,
-    //     }}
-    //   >
-    //     <strong>Dragging:</strong> {reservation.name} (
-    //     {convertDateToTime(reservation.startTime)})
-    //   </div>
-    // );
   };
 
   const fetchTables = async () => {
@@ -482,6 +467,7 @@ function MainPage({
                   className={classes.plusIcon}
                   onClick={() =>
                     table.reservation &&
+                    !isDragging &&
                     handleDeleteReservation(table.reservation._id)
                   }
                 />
@@ -546,6 +532,12 @@ function MainPage({
             key={index}
             table={table}
             onDrop={(item) => {
+              if (table && "reservation" in item && item.reservation) {
+                if (item.reservation.size.valueOf() > table.tableCapacity) {
+                  console.log("Reservation is too big");
+                  return;
+                }
+              }
               setTables((prevTables) => {
                 const currentTable = prevTables[index];
 
