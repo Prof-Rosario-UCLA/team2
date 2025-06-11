@@ -27,14 +27,14 @@ function App() {
       </nav>
       {isLoggedIn ? (
         <CurrDateProvider>
-          <section
+          <main
             className="App-header"
             style={{
               paddingTop: "76px",
             }}
           >
             <FloorPlan />
-          </section>
+          </main>
         </CurrDateProvider>
       ) : (
         <LoginPage onLoginSuccess={handleLoginSuccess} />
