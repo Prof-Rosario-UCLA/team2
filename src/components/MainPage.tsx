@@ -434,9 +434,11 @@ function MainPage({
           alignItems: "center",
         }}
       >
-        <Title className={classes.mainTitle}>
-          Floor Plan - {formattedDate}
-        </Title>
+        <header>
+          <Title className={classes.mainTitle}>
+            Floor Plan - {formattedDate}
+          </Title>
+        </header>
         {/* <IconCalendarWeek className={classes.calendarIcon} /> */}
         <CalendarIconTrigger currDate={currDate} setCurrDate={setCurrDate} />
       </div>
