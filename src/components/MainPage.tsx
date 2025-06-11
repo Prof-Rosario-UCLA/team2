@@ -17,6 +17,7 @@ import type { Reservation, Walkin, DragItem } from "./Sidebar";
 import { useCurrDate } from "./CurrDateProvider";
 import { IconCalendarWeek } from "@tabler/icons-react";
 import { API_BASE_URL } from "../frontend-config";
+import { IconTrash } from "@tabler/icons-react";
 
 const times = Array.from({ length: 21 }, (_, i) => {
   const totalMinutes = 17 * 60 + i * 15; // Start at 5 PM (17:00)
@@ -178,13 +179,19 @@ function CalendarIconTrigger({
 interface MainPageProps {
   reservations: Reservation[];
   onReservationsChange: (reservations: Reservation[]) => void;
-  fetchTodayReservations: (type: string, startDate: string, endDate: string) => Promise<void>;
+  fetchTodayReservations: (
+    type: string,
+    startDate: string,
+    endDate: string
+  ) => Promise<void>;
+  handleDeleteReservation: (reservationId: string) => void;
 }
 
-function MainPage({ 
-  reservations, 
-  onReservationsChange, 
-  fetchTodayReservations 
+function MainPage({
+  reservations,
+  onReservationsChange,
+  fetchTodayReservations,
+  handleDeleteReservation,
 }: MainPageProps) {
   const [selectedTime, setSelectedTime] = useState(times[0]);
   const [tables, setTables] = useState<Table[]>([]);
@@ -201,6 +208,7 @@ function MainPage({
       currDateAsDate.getUTCDate() + 1
     )
   );
+  const IconTrashSize = 20;
 
   useEffect(() => {
     fetchTables();
@@ -251,16 +259,16 @@ function MainPage({
 
     useEffect(() => {
       if (isDragging) {
-        console.log('Started dragging:', {
+        console.log("Started dragging:", {
           isReservation: !!reservation,
           isWalkin: !!walkin,
-          item: reservation || walkin
+          item: reservation || walkin,
         });
       } else if (reservation || walkin) {
-        console.log('Stopped dragging:', {
+        console.log("Stopped dragging:", {
           isReservation: !!reservation,
           isWalkin: !!walkin,
-          item: reservation || walkin
+          item: reservation || walkin,
         });
       }
     }, [isDragging, reservation, walkin]);
@@ -458,9 +466,26 @@ function MainPage({
               >
                 {formatName(table.reservation.name)}
               </div>
-              <p style={{ color: "#555" }}>
-                Party Size: {table.reservation.size.valueOf()}
-              </p>
+              <div style={{ display: "flex", alignItems: "center" }}>
+                <p
+                  style={{
+                    color: "#555",
+                    fontSize: "14px",
+                    marginRight: "8px",
+                  }}
+                >
+                  Party Size: {table.reservation.size.valueOf()}
+                </p>
+
+                <IconTrash
+                  size={IconTrashSize}
+                  className={classes.plusIcon}
+                  onClick={() =>
+                    table.reservation &&
+                    handleDeleteReservation(table.reservation._id)
+                  }
+                />
+              </div>
             </div>
           )}
         </div>
@@ -550,19 +575,20 @@ function MainPage({
                 // Update the new table
                 newTables[index] = {
                   ...currentTable,
-                  reservation: "reservation" in item ? item.reservation : item.walkin,
+                  reservation:
+                    "reservation" in item ? item.reservation : item.walkin,
                 };
 
                 // Update the backend and trigger state updates
                 if ("reservation" in item) {
                   // Update the reservations list first
-                  const updatedReservations = reservations.map(res => 
-                    res._id === item.reservation._id 
+                  const updatedReservations = reservations.map((res) =>
+                    res._id === item.reservation._id
                       ? { ...res, tableNum: table.tableNumber }
                       : res
                   );
                   onReservationsChange(updatedReservations);
-                  
+
                   // Then update the backend
                   updateReservationTable(
                     item.reservation._id,
@@ -577,14 +603,16 @@ function MainPage({
                   });
                 } else {
                   // Just update the backend for walkins
-                  updateWalkInTable(item.walkin._id, table.tableNumber).then(() => {
-                    // After backend update, trigger a re-fetch
-                    fetchTodayReservations(
-                      "reservation",
-                      currDateAsDate.toISOString(),
-                      tmrwDate.toISOString()
-                    );
-                  });
+                  updateWalkInTable(item.walkin._id, table.tableNumber).then(
+                    () => {
+                      // After backend update, trigger a re-fetch
+                      fetchTodayReservations(
+                        "reservation",
+                        currDateAsDate.toISOString(),
+                        tmrwDate.toISOString()
+                      );
+                    }
+                  );
                 }
                 return newTables;
               });

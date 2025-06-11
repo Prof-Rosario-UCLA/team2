@@ -102,11 +102,16 @@
   font-size: 1rem;
 }
 
-.plusIcon {
+.plusIcon,
+.trashIcon {
   border: 1px solid rgba(255, 255, 255, 0.8);
   border-radius: 25px;
   padding: 1px;
   width: 15px;
+}
+
+.trashIcon {
+  width: 21px;
 }
 
 .unassignedResContainer,
@@ -114,6 +119,13 @@
   max-height: 330px; // make this not percent
   overflow-y: auto;
   overflow-x: hidden;
+}
+
+.resItemContainer {
+  display: grid;
+  grid-template-columns: 10fr 1fr;
+  width: 100%;
+  padding: 0;
 }
 
 .reservationItem {
