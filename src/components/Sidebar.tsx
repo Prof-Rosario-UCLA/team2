@@ -162,7 +162,7 @@ const DraggableWaitlist = ({
         <div>
           <p className={classes.waitlistItemName}>{formatName(walkin.name)}</p>
           <p className={classes.waitlistItemTime}>
-            {convertDateToTime(walkin.startTime)}
+            {convertDateToTime(walkin.timeAddedToWaitlist)}
           </p>
         </div>
         <div>
