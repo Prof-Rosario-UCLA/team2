@@ -8,7 +8,6 @@ import { IconPlus } from "@tabler/icons-react";
 import { IconTrash } from "@tabler/icons-react";
 import { useCurrDate } from "./CurrDateProvider";
 
-
 export type Reservation = {
   _id: string;
   name: string;
@@ -61,6 +60,13 @@ export function convertDateToTime(startTime: string | Date): string {
 
   return `${hours}:${minutes.toString().padStart(2, "0")} ${ampm}`;
 }
+
+export const formatName = (name: string) => {
+  const [first, last] = name.split(" ");
+  if (!first || !last) return name;
+
+  return `${first} ${last[0]}.`;
+};
 
 const DraggableReservation = ({
   reservation,
@@ -144,6 +150,27 @@ const DraggableWaitlist = ({
       onDragEnd();
     },
   }));
+  const getsSquished = useMediaQuery("(max-width: 650px)");
+
+  if (getsSquished) {
+    return (
+      <div
+        className={classes.waitlistItem}
+        ref={drag as unknown as React.Ref<HTMLDivElement>}
+        style={{ opacity: isDragging ? 0.5 : 1 }}
+      >
+        <div>
+          <p className={classes.waitlistItemName}>{formatName(walkin.name)}</p>
+          <p className={classes.waitlistItemTime}>
+            {convertDateToTime(walkin.startTime)}
+          </p>
+        </div>
+        <div>
+          <p className={classes.addedAtText}>({walkin.size.valueOf()})</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -163,13 +190,6 @@ const DraggableWaitlist = ({
       </div>
     </div>
   );
-};
-
-export const formatName = (name: string) => {
-  const [first, last] = name.split(" ");
-  if (!first || !last) return name;
-
-  return `${first} ${last[0]}.`;
 };
 
 export function CustomAddButton(
@@ -223,11 +243,11 @@ interface SidebarProps {
   handleDeleteReservation: (reservationID: string) => void;
 }
 
-function Sidebar({ 
-  reservations, 
-  waitlist, 
+function Sidebar({
+  reservations,
+  waitlist,
   handleDeleteReservation,
-  fetchTodayReservations 
+  fetchTodayReservations,
 }: SidebarProps) {
   const [showReservationForm, setShowReservationForm] = useState(false);
   const [formType, setFormType] = useState("reservation");
@@ -262,133 +282,134 @@ function Sidebar({
     };
   }, []);
 
-
   return (
     <div className={classes.sidebarContainer}>
-      <div className={classes.reservationTitleContainer}>
-        <Title className={classes.sidebarTitle}>Reservations</Title>
-        {CustomAddButton("New", () => {
-          setShowReservationForm(true);
-          setFormType("reservation");
-        })}
-      </div>
+      <section>
+        <header className={classes.reservationTitleContainer}>
+          <Title className={classes.sidebarTitle}>Reservations</Title>
+          {CustomAddButton("New", () => {
+            setShowReservationForm(true);
+            setFormType("reservation");
+          })}
+        </header>
 
-      {showReservationForm && (
-        <div>
-          <section className={classes.reservationFormContainer}>
-            <ReservationForm
-              onClose={() => {
-                setShowReservationForm(false);
-                fetchTodayReservations(
-                  formType,
-                  currDateAsDate.toISOString(),
-                  tmrwDate.toISOString()
-                );
-              }}
-              reservationType={formType}
-            />
-          </section>
-          <div className={classes.grayedBackground}></div>
-        </div>
-      )}
+        {showReservationForm && (
+          <div>
+            <section className={classes.reservationFormContainer}>
+              <ReservationForm
+                onClose={() => {
+                  setShowReservationForm(false);
+                  fetchTodayReservations(
+                    formType,
+                    currDateAsDate.toISOString(),
+                    tmrwDate.toISOString()
+                  );
+                }}
+                reservationType={formType}
+              />
+            </section>
+            <div className={classes.grayedBackground}></div>
+          </div>
+        )}
 
-      {isOffline ? (
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "0.5rem",
-            padding: "1rem",
-          }}
-        >
-          <Loader size="sm" />
-          <Text>Loading reservations...</Text>
-        </div>
-      ) : unassignedReservations.length === 0 ? (
-        <p className={classes.italicText}>No reservations</p>
-      ) : (
-        <div>
-          <p className={classes.italicText}>Drag and drop onto a table</p>
-          <div className={classes.unassignedResContainer}>
-            {unassignedReservations.map((res) => (
-              <div key={res._id} className={classes.resItemContainer}>
-                <DraggableReservation
-                  reservation={res}
-                  onDragEnd={() => {
-                    fetchTodayReservations(
-                      "reservation",
-                      currDateAsDate.toISOString(),
-                      tmrwDate.toISOString()
-                    );
-                  }}
-                />
-                <button
-                  onClick={() => handleDeleteReservation(res._id)}
-                  style={{
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
-                    padding: 0,
-                  }}
-                >
+        {isOffline ? (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "0.5rem",
+              padding: "1rem",
+            }}
+          >
+            <Loader size="sm" />
+            <Text>Loading reservations...</Text>
+          </div>
+        ) : unassignedReservations.length === 0 ? (
+          <p className={classes.italicText}>No reservations</p>
+        ) : (
+          <div>
+            <p className={classes.italicText}>Drag and drop onto a table</p>
+            <div className={classes.unassignedResContainer}>
+              {unassignedReservations.map((res) => (
+                <div key={res._id} className={classes.resItemContainer}>
+                  <DraggableReservation
+                    reservation={res}
+                    onDragEnd={() => {
+                      fetchTodayReservations(
+                        "reservation",
+                        currDateAsDate.toISOString(),
+                        tmrwDate.toISOString()
+                      );
+                    }}
+                  />
                   <IconTrash
                     size={IconTrashSize}
                     className={classes.trashIcon}
+                    onClick={() => handleDeleteReservation(res._id)}
                   />
-                </button>
-              </div>
-            ))}
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      )}
-      <hr style={{ marginTop: "46px" }} />
-
-      <div className={classes.waitlistTitleSection}>
-        <Title className={classes.sidebarTitle}>Waitlist</Title>
-        {CustomAddButton(
-          "Add to waitlist",
-          () => {
-            setShowReservationForm(true);
-            setFormType("waitlist");
-          },
-          currDate
         )}
-      </div>
+        <hr style={{ marginTop: "46px" }} />
+      </section>
 
-      {isOffline ? (
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "0.5rem",
-            padding: "1rem",
-          }}
-        >
-          <Loader size="sm" />
-          <Text>Loading waitlist...</Text>
-        </div>
-      ) : waitlist.length === 0 ? (
-        <p className={classes.italicText}>No waitlist</p>
-      ) : (
-        <div>
-          <p className={classes.italicText}>Drag and drop onto a table</p>
-          <div className={classes.unassignedWaitContainer}>
-            {waitlist.map((entry) => (
-                <DraggableWaitlist 
-                  key={entry._id}
-                  walkin={entry} 
-                  onDragEnd={() => {
-                    fetchTodayReservations(
-                      "waitlist",
-                      currDateAsDate.toISOString(),
-                      tmrwDate.toISOString()
-                    );
-                  }}
-                />
-            ))}
+      <section>
+        <header className={classes.waitlistTitleSection}>
+          <Title className={classes.sidebarTitle}>Waitlist</Title>
+          {CustomAddButton(
+            "Add to waitlist",
+            () => {
+              setShowReservationForm(true);
+              setFormType("waitlist");
+            },
+            currDate
+          )}
+        </header>
+
+        {isOffline ? (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "0.5rem",
+              padding: "1rem",
+            }}
+          >
+            <Loader size="sm" />
+            <Text>Loading waitlist...</Text>
           </div>
-        </div>
-      )}
+        ) : waitlist.length === 0 ? (
+          <p className={classes.italicText}>No waitlist</p>
+        ) : (
+          <div>
+            <p className={classes.italicText}>Drag and drop onto a table</p>
+            <div className={classes.unassignedWaitContainer}>
+              {waitlist.map((entry) => (
+                <div key={entry._id} className={classes.waitlistItemContainer}>
+                  <DraggableWaitlist
+                    walkin={entry}
+                    onDragEnd={() => {
+                      fetchTodayReservations(
+                        "waitlist",
+                        currDateAsDate.toISOString(),
+                        tmrwDate.toISOString()
+                      );
+                    }}
+                  />
+
+                  <IconTrash
+                    size={IconTrashSize}
+                    className={classes.trashIcon}
+                    onClick={() => handleDeleteReservation(entry._id)}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </section>
     </div>
   );
 }

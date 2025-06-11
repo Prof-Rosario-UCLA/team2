@@ -115,6 +115,10 @@
   border: none;
 }
 
+.trashIcon:hover {
+  cursor: pointer;
+}
+
 .unassignedResContainer,
 .unassignedWaitContainer {
   max-height: 330px; // make this not percent
@@ -122,16 +126,20 @@
   overflow-x: hidden;
 }
 
-.resItemContainer {
+.resItemContainer,
+.waitlistItemContainer {
   display: grid;
   grid-template-columns: 10fr 1fr;
   width: 100%;
   padding: 0;
+  justify-content: center;
+  align-items: center;
 }
 
 .reservationItem {
   background-color: rgb(70, 128, 222);
   border-radius: 8px;
+  // max-width: 230px;
 }
 
 @media (max-width: 800px) {
