@@ -1,8 +1,6 @@
-const isProduction = false;
+const isProduction = true;
 
-export const API_BASE_URL = isProduction
-  ? ""
-  : "http://localhost:1919";
+export const API_BASE_URL = isProduction ? "" : "http://localhost:1919";
 
 // dear TAs if you see this, i know this is bad practice, but i spent a long time
 // debugging why the kubernetes cluster couldn't recognize the github secret correctly

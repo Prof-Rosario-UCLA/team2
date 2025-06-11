@@ -4,7 +4,7 @@ import { createClient } from "redis";
 dotenv.config();
 
 // Database configuration
-const isProduction = false; 
+const isProduction = true;
 
 const ATLAS_URI = process.env.MONGO_URI;
 export const MONGO_URI = `${ATLAS_URI}`;
