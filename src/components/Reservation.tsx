@@ -16,6 +16,7 @@ import {
   TimeInput,
 } from "@mantine/dates";
 import { useForm } from "@mantine/form";
+import { useMediaQuery } from "@mantine/hooks";
 import { IconClock } from "@tabler/icons-react";
 import classes from "../styles/Reservation.module.scss";
 import { API_BASE_URL } from "../frontend-config";
@@ -31,7 +32,9 @@ function ReservationForm({ onClose, reservationType }: ReservationFormProps) {
   const [submitted, setSubmitted] = useState(false);
   const [dropdownOpened, setDropdownOpened] = useState(false);
 
-  const formLabelFontSize = "1.3rem";
+  const smallText = useMediaQuery("(max-width: 650px)");
+
+  let formLabelFontSize = !smallText ? "1.3rem" : "1rem";
 
   const ref = useRef<HTMLInputElement>(null);
 
@@ -175,7 +178,6 @@ function ReservationForm({ onClose, reservationType }: ReservationFormProps) {
 
   return (
     <Box className={classes.formContainer} mx="auto">
-    
       <Title order={2} className={classes.formTitle}>
         {reservationType === "reservation"
           ? "Make a Reservation"
@@ -196,7 +198,11 @@ function ReservationForm({ onClose, reservationType }: ReservationFormProps) {
         role="form"
         aria-label={`${reservationType} form`}
       >
-        <div className={classes.contactContainer} role="group" aria-labelledby="contact-info">
+        <div
+          className={classes.contactContainer}
+          role="group"
+          aria-labelledby="contact-info"
+        >
           <TextInput
             label="First Name"
             placeholder="First name"
@@ -374,7 +380,11 @@ function ReservationForm({ onClose, reservationType }: ReservationFormProps) {
             loading={loading}
             className={classes.submitButton}
             aria-busy={loading}
-            aria-label={reservationType === "reservation" ? "Submit Reservation" : "Add to Waitlist"}
+            aria-label={
+              reservationType === "reservation"
+                ? "Submit Reservation"
+                : "Add to Waitlist"
+            }
           >
             {reservationType === "reservation"
               ? "Submit Reservation"

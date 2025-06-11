@@ -74,7 +74,7 @@
 .reservationItem {
   background-color: rgb(222, 95, 70);
   color: white;
-  margin: 14px 12px;
+  margin: 5px;
   border-radius: 8px;
   display: flex;
   flex-direction: row;
@@ -170,12 +170,14 @@
   .italicText {
     font-size: 12px;
   }
-  .reservationItem {
+  .reservationItem,
+  .waitlistItem {
     width: 100%;
     margin-left: 0px;
     padding: 4px 10px;
   }
-  .reservationItem p {
+  .reservationItem p,
+  .waitlistItem p {
     font-size: 14px;
   }
   .unassignedResContainer {
@@ -193,7 +195,11 @@
   .addToWaitlistButton {
     padding: 3px 6px;
   }
-  .reservationItem p {
+  .reservationItem p,
+  .waitlistItem p {
     font-size: 12px;
+  }
+  .italicText {
+    font-size: 10px;
   }
 }

@@ -1,7 +1,15 @@
-import { Grid, Title, NumberInput, Textarea, Button, ScrollArea, Popover } from '@mantine/core';
-import { DatesProvider, DatePicker } from '@mantine/dates';
-import { useForm } from '@mantine/form';
-import { useState, useEffect } from 'react';
+import {
+  Grid,
+  Title,
+  NumberInput,
+  Textarea,
+  Button,
+  ScrollArea,
+  Popover,
+} from "@mantine/core";
+import { DatesProvider, DatePicker } from "@mantine/dates";
+import { useForm } from "@mantine/form";
+import { useState, useEffect } from "react";
 import classes from "../styles/MainPage.module.scss";
 import { useDrop, useDrag, useDragLayer } from "react-dnd";
 import { CustomAddButton, convertDateToTime, formatName } from "./Sidebar";
@@ -14,8 +22,11 @@ import {
   updateWalkInTable,
 } from "../utils/mainpageUtils";
 import { IconTrash } from "@tabler/icons-react";
-import { getReservationsForTable, getWalkInsForTable } from '../utils/reservationUtils';
-import { isReservationActiveAtTime } from '../utils/reservationUtils';
+import {
+  getReservationsForTable,
+  getWalkInsForTable,
+} from "../utils/reservationUtils";
+import { isReservationActiveAtTime } from "../utils/reservationUtils";
 
 const times = Array.from({ length: 21 }, (_, i) => {
   const totalMinutes = 17 * 60 + i * 15; // Start at 5 PM (17:00)
@@ -423,17 +434,17 @@ function MainPage({
 
   function convertTo24Hour(time12h: string): string {
     const [time, modifier] = time12h.split(/(?=[ap]m)/);
-    let [hours, minutes] = time.split(':');
-    
-    if (hours === '12') {
-      hours = '00';
+    let [hours, minutes] = time.split(":");
+
+    if (hours === "12") {
+      hours = "00";
     }
-    
-    if (modifier.toLowerCase() === 'pm') {
+
+    if (modifier.toLowerCase() === "pm") {
       hours = String(parseInt(hours, 10) + 12);
     }
-    
-    return `${hours.padStart(2, '0')}:${minutes}`;
+
+    return `${hours.padStart(2, "0")}:${minutes}`;
   }
 
   return (
@@ -492,21 +503,23 @@ function MainPage({
             table={table}
             onDrop={(item) => {
               // Check for conflicting reservations within 2 hours
-              console.log('Creating date with:', {
+              console.log("Creating date with:", {
                 currDate: currDate,
-                selectedTime: selectedTime
+                selectedTime: selectedTime,
               });
-              
+
               if (!currDate) {
-                console.error('Current date is null');
+                console.error("Current date is null");
                 return;
               }
 
               const time24h = convertTo24Hour(selectedTime);
-              const selectedDateTime = new Date(`${currDate.toISOString().split('T')[0]}T${time24h}:00.000Z`);
-              
+              const selectedDateTime = new Date(
+                `${currDate.toISOString().split("T")[0]}T${time24h}:00.000Z`
+              );
+
               if (isNaN(selectedDateTime.getTime())) {
-                console.error('Invalid selectedDateTime created');
+                console.error("Invalid selectedDateTime created");
                 return;
               }
 
@@ -517,7 +530,11 @@ function MainPage({
                 item.reservation.size.valueOf() > table.tableCapacity
               ) {
                 console.log("Reservation is too big");
-                setErrorPopupMessage(`Table ${table.tableNumber} cannot accommodate a party of ${item.reservation.size.valueOf()}`);
+                setErrorPopupMessage(
+                  `Table ${
+                    table.tableNumber
+                  } cannot accommodate a party of ${item.reservation.size.valueOf()}`
+                );
                 setShowErrorPopup(true);
                 return;
               }
@@ -526,41 +543,67 @@ function MainPage({
                 item.walkin &&
                 item.walkin.size.valueOf() > table.tableCapacity
               ) {
-                setErrorPopupMessage(`Table ${table.tableNumber} cannot accommodate a party of ${item.walkin.size.valueOf()}`);
+                setErrorPopupMessage(
+                  `Table ${
+                    table.tableNumber
+                  } cannot accommodate a party of ${item.walkin.size.valueOf()}`
+                );
                 setShowErrorPopup(true);
                 return;
               }
-              
-              const twoHoursLater = new Date(selectedDateTime.getTime() + 2 * 60 * 60 * 1000);
-              
+
+              const twoHoursLater = new Date(
+                selectedDateTime.getTime() + 2 * 60 * 60 * 1000
+              );
+
               // Get all reservations and walk-ins for this table
-              const tableReservations = getReservationsForTable(reservations, Number(tables[index].tableNumber));
-              const tableWalkIns = getWalkInsForTable(waitlist, Number(tables[index].tableNumber));
-              
+              const tableReservations = getReservationsForTable(
+                reservations,
+                Number(tables[index].tableNumber)
+              );
+              const tableWalkIns = getWalkInsForTable(
+                waitlist,
+                Number(tables[index].tableNumber)
+              );
 
-              const hasConflict = [...tableReservations, ...tableWalkIns].some(entry => {
-                
-                if ('reservation' in item && entry._id === item.reservation._id) {
-                  console.log('Skipping - same reservation');
-                  return false;
-                }
-                if ('walkin' in item && entry._id === item.walkin._id) {
-                  console.log('Skipping - same walk-in');
-                  return false;
-                }
-                
-                const isConflictAtSelectedTime = isReservationActiveAtTime(entry, selectedDateTime);
-                const isConflictAtTwoHours = isReservationActiveAtTime(entry, twoHoursLater);
-                const isConflict = isConflictAtSelectedTime || isConflictAtTwoHours;
-               
-                return isConflict;
-              });
+              const hasConflict = [...tableReservations, ...tableWalkIns].some(
+                (entry) => {
+                  if (
+                    "reservation" in item &&
+                    entry._id === item.reservation._id
+                  ) {
+                    console.log("Skipping - same reservation");
+                    return false;
+                  }
+                  if ("walkin" in item && entry._id === item.walkin._id) {
+                    console.log("Skipping - same walk-in");
+                    return false;
+                  }
 
-              console.log('Final conflict result:', hasConflict);
+                  const isConflictAtSelectedTime = isReservationActiveAtTime(
+                    entry,
+                    selectedDateTime
+                  );
+                  const isConflictAtTwoHours = isReservationActiveAtTime(
+                    entry,
+                    twoHoursLater
+                  );
+                  const isConflict =
+                    isConflictAtSelectedTime || isConflictAtTwoHours;
+
+                  return isConflict;
+                }
+              );
+
+              console.log("Final conflict result:", hasConflict);
 
               if (hasConflict) {
-                console.error("Cannot place reservation: There is a conflicting reservation or walk-in within 2 hours");
-                setErrorPopupMessage("Cannot place reservation: There is a conflicting reservation or walk-in within 2 hours");
+                console.error(
+                  "Cannot place reservation: There is a conflicting reservation or walk-in within 2 hours"
+                );
+                setErrorPopupMessage(
+                  "Cannot place reservation: There is a conflicting reservation or walk-in within 2 hours"
+                );
                 setShowErrorPopup(true);
                 return;
               }
@@ -650,57 +693,64 @@ function MainPage({
         ))}
       </Grid>
       {addTableForm && (
-        <div className={classes.addTableFormContainer}>
-          <Title>Add a table</Title>
-          {errorMessage && (
-            <div style={{ color: "red", marginTop: "10px" }}>
-              {errorMessage}
-            </div>
-          )}
-          <button
-            className={classes.closeButton}
-            onClick={() => setAddTableForm(false)}
-          >
-            X
-          </button>
-          <form onSubmit={form.onSubmit(handleSubmit)}>
-            <NumberInput
-              label="Table Number"
-              required
-              min={1}
-              {...form.getInputProps("tableNum")}
-            />
+        <div>
+          <div className={classes.addTableFormContainer}>
+            <header>
+              <Title className={classes.tableFormTitle}>Add a table</Title>
+            </header>
+            {errorMessage && (
+              <div style={{ color: "red", marginTop: "10px" }}>
+                {errorMessage}
+              </div>
+            )}
+            <button
+              className={classes.closeButton}
+              onClick={() => setAddTableForm(false)}
+            >
+              X
+            </button>
+            <form onSubmit={form.onSubmit(handleSubmit)}>
+              <NumberInput
+                label="Table Number"
+                required
+                min={1}
+                {...form.getInputProps("tableNum")}
+              />
 
-            <NumberInput
-              label="Table Capacity"
-              required
-              min={1}
-              {...form.getInputProps("maxCapacity")}
-              mt="md"
-            />
+              <NumberInput
+                label="Table Capacity"
+                required
+                min={1}
+                {...form.getInputProps("maxCapacity")}
+                mt="md"
+              />
 
+              <Textarea
+                label="Comments"
+                autosize
+                minRows={2}
+                {...form.getInputProps("comments")}
+                mt="md"
+              />
 
-            <Textarea
-              label="Comments"
-              autosize
-              minRows={2}
-              {...form.getInputProps("comments")}
-              mt="md"
-            />
-
-            <div className={classes.submitContainer}>
-              <Button type="submit" loading={loading}>
-                Submit
-              </Button>
-            </div>
-          </form>
+              <div className={classes.submitContainer}>
+                <Button type="submit" loading={loading}>
+                  Submit
+                </Button>
+              </div>
+            </form>
+          </div>
+          <div className={classes.grayedBackground}></div>
         </div>
       )}
       {showErrorPopup && (
         <div className={classes.addTableFormContainer}>
           <Title order={2}>Error</Title>
-          <p>{errorPopupMessage}</p>
-          <button className={classes.closeButton} onClick={() => setShowErrorPopup(false)}>
+          <p style={{ fontSize: "16px" }}>{errorPopupMessage}</p>
+          <button
+            className={classes.closeButton}
+            onClick={() => setShowErrorPopup(false)}
+          >
             X
           </button>
         </div>
