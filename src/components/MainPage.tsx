@@ -51,8 +51,13 @@ function formatToTime(dateInput: string | Date | null): string {
   // Check if date is valid
   if (isNaN(date.getTime())) return "";
 
-  let hours = date.getUTCHours();
-  const minutes = date.getUTCMinutes();
+  // Convert to Pacific time
+  const pacificTime = new Date(date.toLocaleString("en-US", {
+    timeZone: "America/Los_Angeles"
+  }));
+
+  let hours = pacificTime.getHours();
+  const minutes = pacificTime.getMinutes();
   const ampm = hours >= 12 ? "pm" : "am";
 
   hours = hours % 12;
@@ -199,17 +204,25 @@ function MainPage({
       return {
         isDragging: monitor.isDragging(),
         reservation: item && "reservation" in item ? item.reservation : null,
-        walkin: item && "walkin" in item ? item.walkin : null,
       };
     });
 
     useEffect(() => {
+      console.log('Drag Monitor State:', {
+        isDragging,
+        reservation,
+        selectedTime,
+      });
+
       if (isDragging && reservation) {
-        setSelectedTime(
-          convertDateToTime(reservation.startTime)
-            .toLowerCase()
-            .replace(/\s/g, "")
-        );
+        const convertedTime = convertDateToTime(reservation.startTime)
+          .toLowerCase()
+          .replace(/\s/g, "");
+        console.log('Setting selected time for reservation:', {
+          originalTime: reservation.startTime,
+          convertedTime
+        });
+        setSelectedTime(convertedTime);
       }
     }, [isDragging, reservation]);
 
@@ -503,7 +516,7 @@ function MainPage({
               }
 
               const time24h = convertTo24Hour(selectedTime);
-              const selectedDateTime = new Date(`${currDate.toISOString().split('T')[0]}T${time24h}:00.000Z`);
+              const selectedDateTime = new Date(`${currDate.toISOString().split('T')[0]}T${time24h}:00.000-07:00`);
               
               if (isNaN(selectedDateTime.getTime())) {
                 console.error('Invalid selectedDateTime created');

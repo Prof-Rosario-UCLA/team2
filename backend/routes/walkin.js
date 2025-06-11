@@ -62,17 +62,8 @@ router.post("/create", async (req, res) => {
     console.log("HEREEE");
     const walkInData = req.body;
 
-    const datePart = new Date(walkInData.date);
-
-    // Extract date components
-    const year = datePart.getFullYear();
-    const month = datePart.getMonth();
-    const day = datePart.getDate();
-
-    // Extract time components
-    const [hours, minutes] = walkInData.time.split(":").map(Number);
-
-    const timeAdded = new Date(Date.UTC(year, month, day, hours, minutes));
+    // Get current date and time in PDT
+    const now = new Date();
 
     console.log(walkInData);
 
@@ -81,7 +72,7 @@ router.post("/create", async (req, res) => {
       phoneNumber: walkInData.phone,
       tableNum: null,
       size: walkInData.partySize,
-      timeAddedToWaitlist: timeAdded,
+      timeAddedToWaitlist: now,
       startTime: null,
       endTime: null,
       comments: walkInData.specialRequests || "",
@@ -143,8 +134,14 @@ router.patch("/updateWalkin", async (req, res) => {
       }
       
       const date = new Date();
-      startTime = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), hours, minutes));
-      endTime = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), hours + 2, minutes));
+      // Create a date string in Pacific time
+      const pacificDate = new Date(date.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }));
+      const pacificTimeStr = `${pacificDate.getFullYear()}-${String(pacificDate.getMonth() + 1).padStart(2, '0')}-${String(pacificDate.getDate()).padStart(2, '0')}T${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00`;
+      
+      // Create dates with explicit Pacific timezone
+      startTime = new Date(`${pacificTimeStr}-07:00`);
+      endTime = new Date(`${pacificTimeStr}-07:00`);
+      endTime.setHours(endTime.getHours() + 2);
       
       // Only add time fields if time was provided
       updateData.startTime = startTime;

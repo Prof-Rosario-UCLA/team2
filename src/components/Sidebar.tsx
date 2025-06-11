@@ -43,22 +43,29 @@ export type DragItem =
     };
 
 export function convertDateToTime(startTime: string | Date): string {
-  const isoString =
-    typeof startTime === "string" ? startTime : startTime.toISOString();
+  console.log('convertDateToTime input:', startTime);
+  
+  // Convert to Date object if it's a string
+  const date = typeof startTime === "string" ? new Date(startTime) : startTime;
+  console.log('Initial date object:', date);
+  
+  // Convert to Pacific time
+  const pacificTime = new Date(date.toLocaleString("en-US", {
+    timeZone: "America/Los_Angeles"
+  }));
 
-  // Extract the time portion
-  const timePart = isoString.split("T")[1]; // "17:00:00.000Z"
-  const [hourStr, minuteStr] = timePart.split(":"); // ["17", "00"]
-
-  let hours = parseInt(hourStr, 10);
-  const minutes = parseInt(minuteStr, 10);
+  // Get hours and minutes
+  let hours = pacificTime.getHours();
+  const minutes = pacificTime.getMinutes();
   const ampm = hours >= 12 ? "PM" : "AM";
 
   // Convert to 12-hour format
   hours = hours % 12;
   hours = hours === 0 ? 12 : hours;
 
-  return `${hours}:${minutes.toString().padStart(2, "0")} ${ampm}`;
+  const result = `${hours}:${minutes.toString().padStart(2, "0")} ${ampm}`;
+  console.log('Final formatted time:', result);
+  return result;
 }
 
 export const formatName = (name: string) => {

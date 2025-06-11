@@ -18,7 +18,6 @@ export async function getAllReservations() {
         const reservations = await Reservation.find()
             .sort({ startTime: 1 })
             .exec();
-        console.log(reservations);
         return reservations;
     } catch (error) {
         console.error('Error fetching reservations:', error);

@@ -11,18 +11,14 @@ function FloorPlan() {
   const { currDate } = useCurrDate();
 
   const currDateAsDate = new Date(currDate);
-  const tmrwDate = new Date(
-    Date.UTC(
-      currDateAsDate.getUTCFullYear(),
-      currDateAsDate.getUTCMonth(),
-      currDateAsDate.getUTCDate() + 1
-    )
-  );
+
+  const convertToPacificTime = (date: Date) => {
+    return new Date(date.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }));
+  };
 
   const fetchTodayReservations = async (
     type: string,
-    startDate: string,
-    endDate: string
+    startDate: string
   ) => {
     try {
       const baseUrl =
@@ -30,9 +26,16 @@ function FloorPlan() {
           ? `${API_BASE_URL}/reservations/range`
           : `${API_BASE_URL}/walkins/range`;
 
+      // Convert the start date to Pacific Time
+      const pacificStartDate = convertToPacificTime(new Date(startDate));
+      
+      // Create end date as exactly one day after start date in Pacific Time
+      const pacificEndDate = new Date(pacificStartDate);
+      pacificEndDate.setDate(pacificEndDate.getDate() + 1);
+
       const url = `${baseUrl}?startDate=${encodeURIComponent(
-        startDate
-      )}&endDate=${encodeURIComponent(endDate)}`;
+        pacificStartDate.toISOString()
+      )}&endDate=${encodeURIComponent(pacificEndDate.toISOString())}`;
 
       console.log("Fetch URL:", url);
 
@@ -103,13 +106,11 @@ function FloorPlan() {
   useEffect(() => {
     fetchTodayReservations(
       "reservation",
-      currDateAsDate.toISOString(),
-      tmrwDate.toISOString()
+      currDateAsDate.toISOString()
     );
     fetchTodayReservations(
       "waitlist",
-      currDateAsDate.toISOString(),
-      tmrwDate.toISOString()
+      currDateAsDate.toISOString()
     );
   }, [currDate]);
 

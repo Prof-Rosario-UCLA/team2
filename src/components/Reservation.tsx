@@ -115,6 +115,14 @@ function ReservationForm({ onClose, reservationType }: ReservationFormProps) {
   const handleSubmit = async (values: any) => {
     setLoading(true);
     try {
+      // Format the date to YYYY-MM-DD format without time
+      const formattedValues = {
+        ...values,
+        date: values.date instanceof Date 
+          ? values.date.toLocaleDateString('en-CA')  // This will give YYYY-MM-DD format
+          : values.date
+      };
+
       const response = await fetch(
         reservationType === "reservation"
           ? `${API_BASE_URL}/reservations/create`
@@ -124,7 +132,7 @@ function ReservationForm({ onClose, reservationType }: ReservationFormProps) {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(values),
+          body: JSON.stringify(formattedValues),
         }
       );
 
