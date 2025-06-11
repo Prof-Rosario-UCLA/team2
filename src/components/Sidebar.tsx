@@ -7,7 +7,7 @@ import ReservationForm from "./Reservation";
 import { IconPlus } from "@tabler/icons-react";
 import { IconTrash } from "@tabler/icons-react";
 import { useCurrDate } from "./CurrDateProvider";
-import { API_BASE_URL } from "../frontend-config";
+// import { API_BASE_URL } from "../frontend-config";
 
 export type Reservation = {
   _id: string;
@@ -213,19 +213,19 @@ export function CustomAddButton(
 interface SidebarProps {
   reservations: Reservation[];
   waitlist: Walkin[];
-  onReservationsChange: (reservations: Reservation[]) => void;
   fetchTodayReservations: (
     type: string,
     startDate: string,
     endDate: string
   ) => Promise<void>;
+  handleDeleteReservation: (reservationID: string) => void;
 }
 
 function Sidebar({
   reservations,
   waitlist,
-  onReservationsChange,
   fetchTodayReservations,
+  handleDeleteReservation,
 }: SidebarProps) {
   const [showReservationForm, setShowReservationForm] = useState(false);
   const [formType, setFormType] = useState("reservation");
@@ -259,27 +259,6 @@ function Sidebar({
       window.removeEventListener("offline", handleOffline);
     };
   }, []);
-
-  const handleDeleteReservation = async (reservationId: string) => {
-    try {
-      const response = await fetch(
-        `${API_BASE_URL}/reservations/${reservationId}`,
-        {
-          method: "DELETE",
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to delete reservation");
-      }
-
-      onReservationsChange(
-        reservations.filter((res) => res._id !== reservationId)
-      );
-    } catch (error) {
-      console.error("Error deleting reservation:", error);
-    }
-  };
 
   return (
     <div className={classes.sidebarContainer}>

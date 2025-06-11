@@ -24,7 +24,6 @@ function FloorPlan() {
     startDate: string,
     endDate: string
   ) => {
-    
     try {
       const baseUrl =
         type === "reservation"
@@ -34,9 +33,9 @@ function FloorPlan() {
       const url = `${baseUrl}?startDate=${encodeURIComponent(
         startDate
       )}&endDate=${encodeURIComponent(endDate)}`;
-      
-      console.log('Fetch URL:', url);
-      
+
+      console.log("Fetch URL:", url);
+
       const res = await fetch(url);
 
       if (res.ok) {
@@ -48,19 +47,39 @@ function FloorPlan() {
         console.error(`Failed to fetch ${type}:`, {
           status: res.status,
           statusText: res.statusText,
-          errorData
+          errorData,
         });
       }
     } catch (err) {
       console.error(`Error fetching ${type}:`, {
         error: err,
-        message: err instanceof Error ? err.message : 'Unknown error'
+        message: err instanceof Error ? err.message : "Unknown error",
       });
-    } 
+    }
+  };
+
+  const handleDeleteReservation = async (reservationId: string) => {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/reservations/${reservationId}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to delete reservation");
+      }
+
+      handleReservationsChange(
+        reservations.filter((res) => res._id !== reservationId)
+      );
+    } catch (error) {
+      console.error("Error deleting reservation:", error);
+    }
   };
 
   useEffect(() => {
-
     fetchTodayReservations(
       "reservation",
       currDateAsDate.toISOString(),
@@ -73,33 +92,36 @@ function FloorPlan() {
     );
   }, [currDate]);
 
-  const unassignedReservations = reservations.filter(res => !res.tableNum);
-  const unassignedWaitlist = waitlist.filter(walkin => !walkin.tableNum);
+  const unassignedReservations = reservations.filter((res) => !res.tableNum);
+  const unassignedWaitlist = waitlist.filter((walkin) => !walkin.tableNum);
 
   const handleReservationsChange = (newReservations: Reservation[]) => {
     setReservations(newReservations);
   };
 
   return (
-    <div style={{ 
-      display: "grid", 
-      gridTemplateColumns: "1fr 4fr",
-      width: "100%",
-      height: "100%"
-    }}>
-      <Sidebar 
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "1fr 4fr",
+        width: "100%",
+        height: "100%",
+      }}
+    >
+      <Sidebar
         reservations={unassignedReservations}
         waitlist={unassignedWaitlist}
-        onReservationsChange={handleReservationsChange}
         fetchTodayReservations={fetchTodayReservations}
+        handleDeleteReservation={handleDeleteReservation}
       />
-      <MainPage 
+      <MainPage
         reservations={reservations}
         onReservationsChange={handleReservationsChange}
         fetchTodayReservations={fetchTodayReservations}
+        handleDeleteReservation={handleDeleteReservation}
       />
     </div>
   );
 }
 
-export default FloorPlan; 
+export default FloorPlan;
