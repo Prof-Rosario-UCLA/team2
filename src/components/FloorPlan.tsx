@@ -80,6 +80,10 @@ function FloorPlan() {
     setReservations(newReservations);
   };
 
+  const handleWaitlistChange = (newWaitlist: Walkin[]) => {
+    setWaitlist(newWaitlist);
+  };
+
   return (
     <div style={{ 
       display: "grid", 
@@ -91,11 +95,14 @@ function FloorPlan() {
         reservations={unassignedReservations}
         waitlist={unassignedWaitlist}
         onReservationsChange={handleReservationsChange}
+        onWaitlistChange={handleWaitlistChange}
         fetchTodayReservations={fetchTodayReservations}
       />
       <MainPage 
         reservations={reservations}
+        waitlist={waitlist}
         onReservationsChange={handleReservationsChange}
+        onWaitlistChange={handleWaitlistChange}
         fetchTodayReservations={fetchTodayReservations}
       />
     </div>

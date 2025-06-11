@@ -22,3 +22,4 @@ const isReservationOnDay = (reservation, targetDate) => {
 export const getReservationsForDay = (reservations, date) => {
     return reservations.filter(reservation => isReservationOnDay(reservation, date));
 };
+

@@ -214,13 +214,15 @@ interface SidebarProps {
   reservations: Reservation[];
   waitlist: Walkin[];
   onReservationsChange: (reservations: Reservation[]) => void;
+  onWaitlistChange: (waitlist: Walkin[]) => void;
   fetchTodayReservations: (type: string, startDate: string, endDate: string) => Promise<void>;
 }
 
 function Sidebar({ 
   reservations, 
   waitlist, 
-  onReservationsChange, 
+  onReservationsChange,
+  onWaitlistChange,
   fetchTodayReservations 
 }: SidebarProps) {
   const [showReservationForm, setShowReservationForm] = useState(false);
@@ -271,6 +273,22 @@ function Sidebar({
     }
   };
 
+  const handleDeleteWaitlist = async (waitlistId: string) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/walkins/${waitlistId}`, {
+        method: "DELETE",
+      });
+  
+      if (!response.ok) {
+        throw new Error("Failed to delete waitlist item");
+      }
+  
+      onWaitlistChange(waitlist.filter((w) => w._id !== waitlistId));
+      
+    } catch (error) {
+      console.error("Error deleting waitlist item:", error);
+    }
+  };
 
   return (
     <div className={classes.sidebarContainer}>
@@ -385,17 +403,35 @@ function Sidebar({
           <p className={classes.italicText}>Drag and drop onto a table</p>
           <div className={classes.unassignedWaitContainer}>
             {waitlist.map((entry) => (
-              <DraggableWaitlist 
+              <div
                 key={entry._id}
-                walkin={entry} 
-                onDragEnd={() => {
-                  fetchTodayReservations(
-                    "waitlist",
-                    currDateAsDate.toISOString(),
-                    tmrwDate.toISOString()
-                  );
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
                 }}
-              />
+              >
+                <DraggableWaitlist 
+                  key={entry._id}
+                  walkin={entry} 
+                  onDragEnd={() => {
+                    fetchTodayReservations(
+                      "waitlist",
+                      currDateAsDate.toISOString(),
+                      tmrwDate.toISOString()
+                    );
+                  }}
+                />
+                <button onClick={() => handleDeleteWaitlist(entry._id)} 
+                  style={{
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    padding: 0,
+                  }}>
+                  <IconTrash size={IconTrashSize} className={classes.plusIcon} />
+                </button>
+              </div>
             ))}
           </div>
         </div>
