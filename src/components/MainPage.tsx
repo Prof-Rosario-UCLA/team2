@@ -497,6 +497,11 @@ function MainPage({
                 selectedTime: selectedTime
               });
               
+              if (!currDate) {
+                console.error('Current date is null');
+                return;
+              }
+
               const time24h = convertTo24Hour(selectedTime);
               const selectedDateTime = new Date(`${currDate.toISOString().split('T')[0]}T${time24h}:00.000Z`);
               
