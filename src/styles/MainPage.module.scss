@@ -145,8 +145,19 @@
   text-align: end;
 }
 
+.grayedBackground {
+  z-index: 5;
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  background-color: rgba(0, 0, 0, 0.3);
+  top: 0;
+  left: 0;
+}
+
 @media (max-width: 800px) {
-  .mainTitle {
+  .mainTitle,
+  .tableFormTitle {
     font-size: 30px;
   }
   .timeItem,
@@ -155,17 +166,40 @@
     padding: 4px 14px;
     font-size: 13px;
   }
+  .addTableFormContainer {
+    min-width: 420px;
+  }
 }
 
 @media (max-width: 650px) {
-  .mainTitle {
+  .mainTitle,
+  .tableFormTitle {
     font-size: 26px;
+  }
+  .calendarIcon {
+    width: 30px;
+    height: 30px;
+  }
+  .addTableFormContainer {
+    min-width: 380px;
+    padding: 1.4rem 3rem;
+  }
+  .closeButton {
+    font-size: 0.6rem;
   }
 }
 
 @media (max-width: 500px) {
-  .mainTitle {
+  .mainTitle,
+  .tableFormTitle {
     font-size: 22px;
+  }
+  .calendarIcon {
+    min-width: 26px;
+    min-height: 26px;
+  }
+  .addTableFormContainer {
+    min-width: 320px;
   }
 }
 
