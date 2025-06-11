@@ -501,10 +501,30 @@ function MainPage({
               
               const time24h = convertTo24Hour(selectedTime);
               const selectedDateTime = new Date(`${currDate.toISOString().split('T')[0]}T${time24h}:00.000Z`);
-              console.log('Created selectedDateTime:', selectedDateTime);
               
               if (isNaN(selectedDateTime.getTime())) {
                 console.error('Invalid selectedDateTime created');
+                return;
+              }
+
+              // Check table capacity first
+              if (
+                "reservation" in item &&
+                item.reservation &&
+                item.reservation.size.valueOf() > table.tableCapacity
+              ) {
+                console.log("Reservation is too big");
+                setErrorPopupMessage(`Table ${table.tableNumber} cannot accommodate a party of ${item.reservation.size.valueOf()}`);
+                setShowErrorPopup(true);
+                return;
+              }
+              if (
+                "walkin" in item &&
+                item.walkin &&
+                item.walkin.size.valueOf() > table.tableCapacity
+              ) {
+                setErrorPopupMessage(`Table ${table.tableNumber} cannot accommodate a party of ${item.walkin.size.valueOf()}`);
+                setShowErrorPopup(true);
                 return;
               }
               
@@ -554,22 +574,6 @@ function MainPage({
 
               // Step 1: Update the tables state to reflect the new arrangement
               // This gives immediate visual feedback to the user
-              if (
-                "reservation" in item &&
-                item.reservation &&
-                item.reservation.size.valueOf() > table.tableCapacity
-              ) {
-                console.log("Reservation is too big");
-                return;
-              }
-              if (
-                "walkin" in item &&
-                item.walkin &&
-                item.walkin.size.valueOf() > table.tableCapacity
-              ) {
-                console.log("Walkin party is too big");
-                return;
-              }
               setTables((prevTables) => {
                 const newTables = prevTables.map((table) => {
                   // If this table has the reservation/walk-in we're moving,
