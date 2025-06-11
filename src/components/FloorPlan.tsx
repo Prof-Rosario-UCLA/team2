@@ -12,9 +12,9 @@ function FloorPlan() {
 
   const currDateAsDate = new Date(currDate);
 
-  const convertToPacificTime = (date: Date) => {
-    return new Date(date.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }));
-  };
+  // const convertToPacificTime = (date: Date) => {
+  //   return new Date(date.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }));
+  // };
 
   const fetchTodayReservations = async (
     type: string,
@@ -26,23 +26,54 @@ function FloorPlan() {
           ? `${API_BASE_URL}/reservations/range`
           : `${API_BASE_URL}/walkins/range`;
 
-      // Convert the start date to Pacific Time
-      const pacificStartDate = convertToPacificTime(new Date(startDate));
+      console.log('Time Conversion Debug:', {
+        originalStartDate: startDate,
+        originalStartDateType: typeof startDate,
+        originalStartDateObject: new Date(startDate).toString()
+      });
+
+      // Extract just the date part (YYYY-MM-DD) from the input
+      const dateOnly = startDate.split('T')[0];
+      console.log('Extracted date:', dateOnly);
+
+      // Create start of day in Pacific time
+      const pacificStartDate = new Date(`${dateOnly}T00:00:00-07:00`);
       
-      // Create end date as exactly one day after start date in Pacific Time
-      const pacificEndDate = new Date(pacificStartDate);
-      pacificEndDate.setDate(pacificEndDate.getDate() + 1);
+      console.log('Pacific Time Start of Day:', {
+        pacificStartDate: pacificStartDate.toString(),
+        pacificStartDateISO: pacificStartDate.toISOString(),
+        pacificStartDateTimezone: pacificStartDate.getTimezoneOffset()
+      });
+      
+      // Create end of day in Pacific time (23:59:59.999)
+      const pacificEndDate = new Date(`${dateOnly}T23:59:59.999-07:00`);
+
+      console.log('Pacific Time End of Day:', {
+        pacificEndDate: pacificEndDate.toString(),
+        pacificEndDateISO: pacificEndDate.toISOString(),
+        pacificEndDateTimezone: pacificEndDate.getTimezoneOffset(),
+        timeDifference: pacificEndDate.getTime() - pacificStartDate.getTime()
+      });
 
       const url = `${baseUrl}?startDate=${encodeURIComponent(
         pacificStartDate.toISOString()
       )}&endDate=${encodeURIComponent(pacificEndDate.toISOString())}`;
 
       console.log("Fetch URL:", url);
+      console.log("Decoded URL parameters:", {
+        startDate: decodeURIComponent(url.split('startDate=')[1].split('&')[0]),
+        endDate: decodeURIComponent(url.split('endDate=')[1])
+      });
 
       const res = await fetch(url);
 
       if (res.ok) {
         const data = await res.json();
+        console.log(`Successfully fetched ${type}:`, {
+          count: data.length,
+          firstItem: data[0],
+          lastItem: data[data.length - 1]
+        });
 
         type === "reservation" ? setReservations(data) : setWaitlist(data);
       } else {
