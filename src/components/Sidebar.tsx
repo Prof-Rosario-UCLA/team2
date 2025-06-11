@@ -403,7 +403,7 @@ function Sidebar({
                   <IconTrash
                     size={IconTrashSize}
                     className={classes.trashIcon}
-                    onClick={() => handleDeleteReservation(entry._id)}
+                    onClick={() => handleDeleteWalkin(entry._id)}
                   />
                 </div>
               ))}

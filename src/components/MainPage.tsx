@@ -415,7 +415,9 @@ function MainPage({
                   onClick={() =>
                     table.reservation &&
                     !isDragging &&
-                    handleDeleteReservation(table.reservation._id)
+                    ("email" in table.reservation
+                      ? handleDeleteReservation(table.reservation._id)
+                      : handleDeleteWalkin(table.reservation._id))
                   }
                 />
               </div>
