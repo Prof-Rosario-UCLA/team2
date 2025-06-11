@@ -1,16 +1,8 @@
+import { Grid, Title, NumberInput, Textarea, Button, ScrollArea, Popover } from '@mantine/core';
+import { DatesProvider, DatePicker } from '@mantine/dates';
+import { useForm } from '@mantine/form';
+import { useState, useEffect } from 'react';
 import classes from "../styles/MainPage.module.scss";
-import {
-  Grid,
-  ScrollArea,
-  Title,
-  Popover,
-  NumberInput,
-  Textarea,
-  Button,
-} from "@mantine/core";
-import { DatesProvider, DatePicker } from "@mantine/dates";
-import { useForm } from "@mantine/form";
-import { useState, useEffect } from "react";
 import { useDrop, useDrag, useDragLayer } from "react-dnd";
 import { CustomAddButton, convertDateToTime, formatName } from "./Sidebar";
 import type { Reservation, Walkin, DragItem } from "./Sidebar";
@@ -21,8 +13,9 @@ import {
   updateReservationTable,
   updateWalkInTable,
 } from "../utils/mainpageUtils";
-// import { getReservationsAtTime } from "../utils/reservationUtils";
 import { IconTrash } from "@tabler/icons-react";
+import { getReservationsForTable, getWalkInsForTable } from '../utils/reservationUtils';
+import { isReservationActiveAtTime } from '../utils/reservationUtils';
 
 const times = Array.from({ length: 21 }, (_, i) => {
   const totalMinutes = 17 * 60 + i * 15; // Start at 5 PM (17:00)
@@ -147,6 +140,8 @@ function MainPage({
   const [loading, setLoading] = useState(false);
   const { currDate, setCurrDate } = useCurrDate();
   const [errorMessage, setErrorMessage] = useState("");
+  const [showErrorPopup, setShowErrorPopup] = useState(false);
+  const [errorPopupMessage, setErrorPopupMessage] = useState("");
 
   const currDateAsDate = new Date(currDate);
   const tmrwDate = new Date(
@@ -428,6 +423,21 @@ function MainPage({
     );
   };
 
+  function convertTo24Hour(time12h: string): string {
+    const [time, modifier] = time12h.split(/(?=[ap]m)/);
+    let [hours, minutes] = time.split(':');
+    
+    if (hours === '12') {
+      hours = '00';
+    }
+    
+    if (modifier.toLowerCase() === 'pm') {
+      hours = String(parseInt(hours, 10) + 12);
+    }
+    
+    return `${hours.padStart(2, '0')}:${minutes}`;
+  }
+
   return (
     <div className={classes.mainPageContainer}>
       <GlobalDragMonitor />
@@ -483,6 +493,65 @@ function MainPage({
             key={index}
             table={table}
             onDrop={(item) => {
+              // Check for conflicting reservations within 2 hours
+              console.log('Creating date with:', {
+                currDate: currDate,
+                selectedTime: selectedTime
+              });
+              
+              const time24h = convertTo24Hour(selectedTime);
+              const selectedDateTime = new Date(`${currDate.toISOString().split('T')[0]}T${time24h}:00.000Z`);
+              console.log('Created selectedDateTime:', selectedDateTime);
+              
+              if (isNaN(selectedDateTime.getTime())) {
+                console.error('Invalid selectedDateTime created');
+                return;
+              }
+              
+              const twoHoursLater = new Date(selectedDateTime.getTime() + 2 * 60 * 60 * 1000);
+              
+              // Get all reservations and walk-ins for this table
+              const tableReservations = getReservationsForTable(reservations, Number(tables[index].tableNumber));
+              const tableWalkIns = getWalkInsForTable(waitlist, Number(tables[index].tableNumber));
+              
+              // Check for conflicts in both reservations and walk-ins
+              console.log('Checking for conflicts:');
+              console.log('Item being moved:', item);
+
+              const hasConflict = [...tableReservations, ...tableWalkIns].some(entry => {
+                console.log('\nChecking entry:', entry);
+                
+                if ('reservation' in item && entry._id === item.reservation._id) {
+                  console.log('Skipping - same reservation');
+                  return false;
+                }
+                if ('walkin' in item && entry._id === item.walkin._id) {
+                  console.log('Skipping - same walk-in');
+                  return false;
+                }
+                
+                const isConflictAtSelectedTime = isReservationActiveAtTime(entry, selectedDateTime);
+                const isConflictAtTwoHours = isReservationActiveAtTime(entry, twoHoursLater);
+                const isConflict = isConflictAtSelectedTime || isConflictAtTwoHours;
+                console.log('Selected time (UTC):', selectedDateTime.toISOString());
+                console.log('Two hours later (UTC):', twoHoursLater.toISOString());
+                console.log('Entry start time (UTC):', new Date(entry.startTime).toISOString());
+                console.log('Entry end time (UTC):', new Date(entry.endTime).toISOString());
+                console.log('Conflict at selected time:', isConflictAtSelectedTime);
+                console.log('Conflict at two hours later:', isConflictAtTwoHours);
+                console.log('Final conflict result:', isConflict);
+                return isConflict;
+              });
+
+              console.log('Final conflict result:', hasConflict);
+
+              if (hasConflict) {
+                console.error("Cannot place reservation: There is a conflicting reservation or walk-in within 2 hours");
+                setErrorPopupMessage("Cannot place reservation: There is a conflicting reservation or walk-in within 2 hours");
+                setShowErrorPopup(true);
+                return;
+              }
+
               // Step 1: Update the tables state to reflect the new arrangement
               // This gives immediate visual feedback to the user
               if (
@@ -637,7 +706,16 @@ function MainPage({
           </form>
         </div>
       )}
-      {addTableForm && <div className={classes.grayedBackground}></div>}
+      {showErrorPopup && (
+        <div className={classes.addTableFormContainer}>
+          <Title order={2}>Error</Title>
+          <p>{errorPopupMessage}</p>
+          <button className={classes.closeButton} onClick={() => setShowErrorPopup(false)}>
+            X
+          </button>
+        </div>
+      )}
+      {showErrorPopup && <div className={classes.grayedBackground}></div>}
     </div>
   );
 }
