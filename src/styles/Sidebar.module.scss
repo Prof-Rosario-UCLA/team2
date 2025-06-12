@@ -47,8 +47,8 @@
   height: 100%;
 
   display: flex;
-  justify-content: center; /* Horizontal centering */
-  align-items: center; /* Vertical centering */
+  justify-content: center;
+  align-items: center;
 }
 
 .grayedBackground {
@@ -124,7 +124,7 @@
 
 .unassignedResContainer,
 .unassignedWaitContainer {
-  max-height: 330px; // make this not percent
+  max-height: 330px;
   overflow-y: auto;
   overflow-x: hidden;
 }

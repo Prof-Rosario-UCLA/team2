@@ -1,5 +1,5 @@
 .formContainer {
-  position: fixed; /* fixed keeps it relative to the viewport */
+  position: fixed;
   top: 54%; /* move it a bit below 50% */
   left: 50%;
   transform: translate(-50%, -50%);
@@ -34,14 +34,9 @@
   cursor: pointer;
 }
 
-// .popupCloseButton {
-//   right: calc();
-// }
-
 .form {
   text-align: start;
   width: fit-content;
-  // width: 100%;
   margin-left: auto;
   margin-right: auto;
   padding: 0;
@@ -105,10 +100,6 @@
 }
 
 @media (max-width: 700px) {
-  // .contactContainer {
-  //   display: flex;
-  //   flex-direction: column;
-  // }
   .formContainer {
     min-width: 85vw;
   }

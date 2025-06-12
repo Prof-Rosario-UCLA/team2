@@ -1,11 +1,10 @@
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import { createClient } from "redis";
-import { sassTrue } from "sass-embedded";
 dotenv.config();
 
 // Database configuration
-const isProduction = true;
+const isProduction = false;
 
 const ATLAS_URI = process.env.MONGO_URI;
 export const MONGO_URI = `${ATLAS_URI}`;

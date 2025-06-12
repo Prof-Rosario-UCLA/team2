@@ -1,21 +1,20 @@
 .login-page {
-    display: flex;
-    flex-direction: column;
-    align-items: center;     // horizontally center content
-    justify-content: center; // vertically center content
-    height: 100vh;
-    width: 100vw;            // ensure full width to center horizontally
-    text-align: center;
-  
-    h2 {
-      color: #333;           // dark grey
-      margin-bottom: 1.5rem;
-      font-size: 1.8rem;
-    }
-  
-    .google-login-button {
-      display: flex;
-      justify-content: center;
-    }
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  width: 100vw;
+  text-align: center;
+
+  h2 {
+    color: #333;
+    margin-bottom: 1.5rem;
+    font-size: 1.8rem;
   }
-  
+
+  .google-login-button {
+    display: flex;
+    justify-content: center;
+  }
+}
