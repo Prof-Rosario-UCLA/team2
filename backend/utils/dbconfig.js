@@ -24,10 +24,9 @@ console.log("Redis configuration:", {
   port: redisOptions.socket.port,
 });
 
-// Create Redis client
+
 export const redisClient = createClient(redisOptions);
 
-// Add error handler for Redis client
 redisClient.on("error", (err) => {
   console.error("Redis Client Error:", {
     message: err.message,
@@ -104,13 +103,12 @@ export const connectToRedis = async () => {
       port: redisOptions.socket.port,
     });
 
-    // Check if already connected
+
     if (redisClient.isOpen) {
       console.log("Redis client already connected");
       return true;
     }
 
-    // Connect with timeout
     const connectPromise = redisClient.connect();
     const timeoutPromise = new Promise((_, reject) => {
       setTimeout(() => reject(new Error("Redis connection timeout")), 5000);
