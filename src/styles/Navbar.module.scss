@@ -1,33 +1,6 @@
-// .navbar-container {
-//   display: flex;
-//   flex-direction: row;
-//   justify-content: space-between;
-//   align-items: center;
-//   height: 100%;
-//   padding: 0px 40px;
-// }
-
-// .navbar-right-options {
-//   display: flex;
-//   flex-direction: row;
-//   justify-content: space-between;
-//   align-items: center;
-//   gap: 30px;
-// }
-
-// .navbar-right-options > p {
-//   font-size: 1.3rem;
-// }
-
 .header {
-  // height: 76px;
-  // margin-bottom: 120px;
-  // background-color: var(--mantine-color-body);
   background-color: rgb(28, 43, 96);
   color: white;
-  // background-color: red;
-  // border-bottom: 1px solid
-  //   light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
   box-sizing: border-box;
   padding: 10px 40px;
 }

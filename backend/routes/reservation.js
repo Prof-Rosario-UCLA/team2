@@ -41,13 +41,6 @@ router.get("/range", async (req, res) => {
         .json({ error: "Start date and end date are required" });
     }
 
-    // const start = new Date(startDate);
-    // const end = new Date(endDate);
-
-    // if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-    //   return res.status(400).json({ error: "Invalid date format" });
-    // }
-
     const reservations = await getReservationsByDateRange(startDate, endDate);
     res.json(reservations);
   } catch (error) {
@@ -65,12 +58,16 @@ router.post("/create", async (req, res) => {
 
     console.log("DATA!!!!!", reservationData);
 
-    const startTime = new Date(`${reservationData.date}T${reservationData.time}:00-07:00`).toISOString();
-    
-    const [hours, minutes] = reservationData.time.split(':');
+    const startTime = new Date(
+      `${reservationData.date}T${reservationData.time}:00-07:00`
+    ).toISOString();
+
+    const [hours, minutes] = reservationData.time.split(":");
     const endHours = parseInt(hours) + 2;
-    const endTimeStr = `${endHours.toString().padStart(2, '0')}:${minutes}`;
-    const endTime = new Date(`${reservationData.date}T${endTimeStr}:00-07:00`).toISOString();
+    const endTimeStr = `${endHours.toString().padStart(2, "0")}:${minutes}`;
+    const endTime = new Date(
+      `${reservationData.date}T${endTimeStr}:00-07:00`
+    ).toISOString();
 
     console.log("Start (ISO):", startTime);
     console.log("End (ISO):", endTime);
@@ -117,7 +114,7 @@ router.patch("/updateReservation", async (req, res) => {
       });
     }
 
-    // Update the reservation - Mongoose will handle the conversion to Number type
+    // Update the reservation
     const updatedReservation = await Reservation.findByIdAndUpdate(
       reservationId,
       { tableNum: tableNum },
@@ -163,19 +160,19 @@ router.delete("/delete/:id", async (req, res) => {
 
     res.status(200).json({
       message: "Reservation deleted successfully",
-      deletedReservation
+      deletedReservation,
     });
   } catch (error) {
     console.error("Error in DELETE /reservations/:id:", error);
-    
+
     // Handle specific error cases
-    if (error.name === 'CastError') {
+    if (error.name === "CastError") {
       return res.status(400).json({ error: "Invalid reservation ID format" });
     }
-    
-    res.status(500).json({ 
+
+    res.status(500).json({
       error: "Failed to delete reservation",
-      details: error.message 
+      details: error.message,
     });
   }
 });

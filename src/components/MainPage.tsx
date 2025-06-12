@@ -63,9 +63,11 @@ function formatToTime(dateInput: string | Date | null): string {
   if (isNaN(date.getTime())) return "";
 
   // Convert to Pacific time
-  const pacificTime = new Date(date.toLocaleString("en-US", {
-    timeZone: "America/Los_Angeles"
-  }));
+  const pacificTime = new Date(
+    date.toLocaleString("en-US", {
+      timeZone: "America/Los_Angeles",
+    })
+  );
 
   let hours = pacificTime.getHours();
   const minutes = pacificTime.getMinutes();
@@ -219,7 +221,7 @@ function MainPage({
     });
 
     useEffect(() => {
-      console.log('Drag Monitor State:', {
+      console.log("Drag Monitor State:", {
         isDragging,
         reservation,
         selectedTime,
@@ -229,9 +231,9 @@ function MainPage({
         const convertedTime = convertDateToTime(reservation.startTime)
           .toLowerCase()
           .replace(/\s/g, "");
-        console.log('Setting selected time for reservation:', {
+        console.log("Setting selected time for reservation:", {
           originalTime: reservation.startTime,
-          convertedTime
+          convertedTime,
         });
         setSelectedTime(convertedTime);
       }
@@ -283,14 +285,12 @@ function MainPage({
         form.reset();
         fetchTables();
         setErrorMessage("");
-        // setSubmitted(true);
       } else {
         const error = await response.json();
         console.error("Submission error:", error);
         setErrorMessage(
           error.message || "Something went wrong. Please try again."
         );
-        // Handle error
       }
     } catch (error) {
       console.error("Submission error:", error);
@@ -475,7 +475,6 @@ function MainPage({
             Floor Plan - {formattedDate}
           </Title>
         </header>
-        {/* <IconCalendarWeek className={classes.calendarIcon} /> */}
         <CalendarIconTrigger currDate={currDate} setCurrDate={setCurrDate} />
       </div>
 
@@ -485,9 +484,7 @@ function MainPage({
           type="hover"
           scrollbarSize={6}
           style={{ position: "relative", zIndex: 1 }}
-          // className={classes.customScrollArea}
         >
-          {/* Inner flex container with width larger than parent to enable scroll */}
           <div style={{ display: "flex", gap: "16px", width: "max-content" }}>
             {times.map((time, index) => (
               <button
@@ -528,8 +525,12 @@ function MainPage({
 
               const time24h = convertTo24Hour(selectedTime);
 
-              const selectedDateTime = new Date(`${currDate.toISOString().split('T')[0]}T${time24h}:00.000-07:00`);
-              
+              const selectedDateTime = new Date(
+                `${
+                  currDate.toISOString().split("T")[0]
+                }T${time24h}:00.000-07:00`
+              );
+
               if (isNaN(selectedDateTime.getTime())) {
                 console.error("Invalid selectedDateTime created");
                 return;
@@ -620,7 +621,6 @@ function MainPage({
                 return;
               }
 
-              // Step 1: Update the tables state to reflect the new arrangement
               // This gives immediate visual feedback to the user
               setTables((prevTables) => {
                 const newTables = prevTables.map((table) => {
@@ -650,7 +650,7 @@ function MainPage({
                 return newTables;
               });
 
-              // Step 2: Update the reservation/walk-in data to reflect the new table assignment
+              // Update the reservation/walk-in data to reflect the new table assignment
               if ("reservation" in item) {
                 // For reservations: Update the reservation's table number in our local state
                 const updatedReservations = reservations.map((res) =>
@@ -660,7 +660,7 @@ function MainPage({
                 );
                 onReservationsChange(updatedReservations);
 
-                // Step 3: Persist the change to the backend
+                // Persist the change to the backend
                 // After successful backend update, re-fetch to ensure data consistency
                 updateReservationTable(
                   item.reservation._id,
@@ -681,7 +681,7 @@ function MainPage({
                 );
                 onWaitlistChange(updatedWaitlist);
 
-                // Step 3: Persist the change to the backend
+                // Persist the change to the backend
                 // Only update start time if it's not already set
                 const walkinToUpdate = waitlist.find(
                   (w) => w._id === item.walkin._id
